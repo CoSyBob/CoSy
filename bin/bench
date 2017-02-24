@@ -1,0 +1,21 @@
+#! /bin/bash 
+where=bench
+governor=`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`
+function bench () {
+	cpufreq-selector -g performance
+	cd $1 
+	../bin/reva bench.f
+	cd -
+	cpufreq-selector -g $governor
+}
+
+if [[ "$1" == "" ]]
+then
+	bench bench
+fi 
+
+while [[ "$1" ]]
+do 
+	bench $1/bench 
+	shift
+done
