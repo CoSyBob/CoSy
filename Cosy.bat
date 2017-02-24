@@ -1,0 +1,4 @@
+cd \4thCoSy
+SET REVAUSERLIB=\4thCoSy\CoSy\
+SET COSYSTARTFILE=\4thCoSy\CoSy\CoSy
+bin\reva CoSy\CoSy.f %COSYSTARTFILE%
