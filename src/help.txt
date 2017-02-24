@@ -1,0 +1,6731 @@
+| This file describes each word and what its stack diagram and syntax 
+| vim: tw=70 :
+
+orig: src/reva.f
+
+lang: de
+
+
+
+def: errno
+ctx: ~os
+stack:  --
+ver: 7.0.6
+desc: =
+	Returns the last os-specific error code.  On Windows this maps
+	to "GetLastError", on Linux it's 'errno'. 
+        =	
+de desc: =
+        Legt den letzten Fehlercode auf den Stack. Unter Windows wird das 
+        Wort mit der Funktion "GetLastError", unter Linux mit der Variablen 
+        'errno' verbunden.
+        =	
+
+def: [IFTEST] 
+ctx: ~
+stack:  --
+ver: 7.0.6
+desc: =
+	Used like "[IF]", but only true if the word "TESTING" has been
+	defined.  For example, if Reva has been started with the "-t"
+	option.
+        =
+de desc: = NOK
+        Wird mit "[IF]", "[THEN]" und "[ELSE]" für bedingtes Kompilieren 
+        benutzt. [IFTEST] ist dann wahr, wenn das Wort "TESTING" definiert 
+        ist.
+	
+        =
+def: foreach     
+ctx: ~    
+stack:  xt hi lo --
+ver: 7.0.5
+desc: =
+	One-line loop construct.  Call 'xt' for each value from 'lo'
+	to 'hi' (not including 'hi').  
+
+	Example:
+
+	    { . } 20 10 foreach
+
+	This uses an anonymous xt, and will print "10..19".
+=
+de desc: = 
+        Einzeiliges Schleifen Konstrukt.  'xt' wird für jeden Wert von
+        'lo' bis 'hi' ('hi' ausgeschlossen) aufgerufen  
+
+	Beispiel:
+
+	    { . } 20 10 foreach
+
+        Hier wird ein anonymer 'xt' zur Augabe der Zahlen von "10..19" benutzt.
+
+=
+def: -1throw
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Factorisation  of the common "-1 throw".
+=
+de desc: =
+        Ausklammerung des gebräuchlichen "-1 throw".       
+=
+def: cell+!
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Factorisation of the common "cell+ !"
+=
+de desc: =
+        Ausklammerung des gebräuchlichen "cell+ !".       
+=
+def: cell+@
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Factorisation of the common "cell+ @"
+=
+de desc: =
+        Ausklammerung des gebräuchlichen "cell+ @".       
+=
+def: cell-!
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Factorisation of the common "cell- !"
+=
+de desc: =
+        Ausklammerung des gebräuchlichen "cell- !".       
+=
+def: cell-@
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Factorisation of the common "cell- @"
+=
+de desc: =
+        Ausklammerung des gebräuchlichen "cell- @".       
+=
+def: dblquote
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Outputs a dbl-quote character, e.g. "
+=
+de desc: =
+        Ausgabe des Anführungszeichens. "
+=
+def: lparen
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Outputs a left parenthesis, e.g. (
+=
+de desc: =
+        Ausgabe der linken runden Klammer.  (
+=
+def: rparen
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Outputs a right parenthesis, e.g. )
+=
+de desc: =
+        Ausgabe der rechten runden Klammer. )
+=
+def: question
+ctx: ~
+stack:  --
+ver: 7.x
+desc: =
+	Outputs a question mark, e.g. ?
+=
+de desc: =
+        Ausgabe des Fragezeichens. ?
+=
+
+def: linefeed
+ctx: ~os
+stack:  -- a n
+ver: 7.0.3
+desc: =
+	Returns the os-specific line-termination.  That is, CR-LF on
+	Windows and just LF on Linux.
+=
+de desc: =
+        Ausgabe der betriebssystemabhängigen Zeilende. Unter Windows
+        ist das CR-LF unter Linux ist dies LF
+=
+def: 0;drop 
+ctx: ~
+stack:  n -- | exit and drop TOS if n=0 
+ver: 6.1.13
+desc: =
+	Same as "0;" but drops TOS whether or not it returns
+=
+de desc: *
+        Bricht die Ausführung des Wortes ab wenn "n" gleich 0 
+        ("n" == 0) ist. Der Test auf 0 entfernt den TOS.        
+        
+        Beispiel:
+        
+        ok> : 0;drop-test 0;drop ." Auf dem TOS war keine 0 !" ;
+
+        ok> 1 2 3 0;drop-test
+        Auf dem TOS war keine 0 !
+        ok> .s
+        (2) 1 2
+        ok>
+        
+        ok> 1 2 0 0;drop-test
+
+        ok> .s
+        (2) 1 2
+        ok>        
+*
+def: setheader~
+ctx: ~
+stack: xt <ctx> --
+ver: 6.1.12
+desc: =
+	Set the (header) word to the "xt" passed in, for this context
+=
+de desc: =
+      Kommt noch
+=
+
+def: 2constant
+ctx: ~
+stack: d <name> --
+ver: 6.1.11
+desc: =
+	Like "constant" but for double-cell values
+=
+de desc: =
+      Wie "constant" aber für double cell Werte.
+=
+
+
+def: context??
+ctx: ~
+stack: xt -- flag
+ver: 6.1.11
+desc: =
+	Given an xt, determines whether or not it is a context
+=
+de desc: =
+      ....
+=
+
+def: {{
+ctx: ~
+stack: -- 
+ver: 6.1.11
+desc: =
+	Begins an anonymous code fragment.  Paired with "}}"
+=
+
+de desc: =
+        Start eines anonymen Codefragments. Gepaart mit "}}"        
+=
+
+def: }}
+ctx: ~
+stack: -- 
+ver: 6.1.11
+desc: =
+	Terminates an anonymous code fragment started with "}}", and
+	executes it immediately.
+=
+de desc: =
+        Beendet ein anonymes Codefragment, das gestartet wurde mit "}}"        
+=
+
+def: THROW_NEEDS
+ctx: ~util
+stack:  -- -4
+desc: =
+	Thrown when a "needs" fails to load the library requested.
+	=
+de desc: =
+	"Thrown" wenn "needs" beim laden der Bibliothek fehl schlägt.	
+	=
+
+def: chain
+ctx: ~
+stack: <name> --
+ver: 6.1.7
+desc: =
+	Call the currently set value of a deferred word.  Lets you
+	easily override the word and yet use the old value.  
+
+	Example:
+
+		:: dup . chain emit ; is emit
+=
+de desc: =
+	Kommt noch	
+	=
+
+def: exception
+ctx: ~
+stack: EDI ESI EBX EDX ECX EAX EBP ESP EIP except_code  -- continueip|0
+ver: 6.1.5
+desc: =
+	Deferred word which is called when an "exception" occurs.
+	That is, something like "0 0 !" will generate a GPF which Reva
+	will trap.  Your handler can do something useful with this
+	information.  
+
+	The return must be one of "0" for "do the system default", or
+	the xt of some word you want to gain control after the
+	exception.
+
+	You do NOT need to consume the stack, as the stack provided
+	for the handler is dynamically allocated from the CPU stack
+	(e.g. ESP), and will be automatically released.  By the same
+	token, you have about 20 cells of stack space you can use --
+	so don't get carried away, just process and return to Reva.
+
+	NOTE: Exception codes are OS specific.  However, you can use
+	symbolic constants to refer to most of them if you "need
+	os/exceptions".
+
+	NOTE: Exception handlers get a temporary stack - you cannot,
+	therefore, use words like ".s" and "depth" which know
+	something about the stack, since their knowledge is incorrect.
+=
+de desc: =
+	Kommt noch	
+	=
+
+def: ctrl-c
+ctx: ~
+stack: --
+ver: 6.1.6
+desc: =
+	Deferred word which is called when an "Ctrl+C" occurs.
+
+	You should set a flag if you wish to interrupt an ongoing
+	process, and check for that flag in the process to be
+	interrupted.
+
+	The default behavior is to print "Break" and call "bye".
+=
+de desc: =
+	Das deferred Wort wird gerufen bei auftreten von "Ctrl+C"
+
+	Es sollte ein Flag gesetzt werden wenn ein laufenden Prozess
+	unterbrochen werden sollte.
+
+	Das normale Verhalten in diesem Fall ist die Ausgabe von 
+	"Break" und der Aufruf von "bye" 
+=
+def: revaver#
+ctx: ~reva
+stack: --
+ver: 6.1.6
+desc: =
+	Numeric equivalent of the string "revaver".  Currenty, it is
+	represented by the hexadecimal:
+		00MMmmpp
+
+	So Reva 6.1.5 would be:
+		00060105, where
+		"MM" is major release number, e.g. "6"
+		"mm" is minor release, e.g. "1"
+		"pp" is point release, e.g. "5"
+=
+de desc: =
+	Numerisches äquivalent des Strings "revaver". Zur Zeit wird
+	er repräsentiert durch den hexadezimalen Wert
+		00MMmmpp
+
+	Für Reva 6.1.5 wäre das:
+		00060105, wobei
+		"MM" das Hauptrelease, hier "6"
+		"mm" das Nebenrelease, hier "1"
+		"pp" das aktuelle Release, hier "5"			
+	=
+
+
+def: xchg2
+ctx: ~
+stack:  a b -- 
+ver: 6.1.5
+desc: =
+	Swaps the values pointed to by "a" and "b".  Essentially the
+	same as:
+
+	   2dup @ swap @    | a b b' a'
+	   rot !	    | a b'
+	   swap !
+	=
+de desc: =
+	Tauscht die Werte unter den Adressen "a" und "b". Grundsätzlich
+	das gleiche wie:	
+
+	   2dup @ swap @    | a b b' a'
+	   rot !	    | a b'
+	   swap !
+	=
+
+def: turnkey?
+ctx: ~
+ver: 6.0.10
+stack: -- flag
+desc: =
+	Are we in a turnkeyed application or not?
+=
+de desc: =
+	Sind wir in einer turnkey Anwendung oder nicht?
+=
+
+def: xt?
+stack: <name> -- xt | throw
+ver: 6.0.10
+ctx: ~sys
+desc: =
+	Parses the next word in the input, and returns its xt or
+	throws an exception if it is not a valid word or is not
+	visible in the search-order.
+=
+de desc: =
+	Parst das nächste Wort von der Eingabe und gibt den xt 
+	zurück. Ist das Wort nicht gültig oder wird es nicht
+	in der Suchordnung gefunden wird eine Exception geworfen.
+=
+
+def: isa
+ver: 6.0.10
+ctx: ~sys
+stack: class-xt a n -- xt | throw
+desc: =
+	Verifies that the word (a,n) is of the class represented by
+	the class-xt passed in.   If it is, it returns the xt of that
+	word; otherwise, it throws an exception.
+=
+de desc: =
+	Überprüft das Wort (a,n) ob es ein Repräsentant von "class-xt" 
+	ist. Wenn ja gibt es den xt des Wortes zurück ansonsten wird
+	eine Exception geworfen.
+=
+
+def: with~
+ver: 6.0.10
+ctx: ~
+stack: <ctx> --
+desc: =
+	Puts <ctx> in the search order, underneath the current
+	topmost context.  Sort of a "tuck" for contexts.
+=
+de desc: =
+	Setzt <ctx> in die Suchordnung. ............. 
+=
+
+def: without~
+ver: 6.0.10
+ctx: ~
+stack: --
+desc: =
+	Undoes the effect of the most recent "with~"
+=
+de desc: =
+	..............
+=
+
+def: defer?
+ver: 6.0.10
+ctx: ~sys
+stack: --
+desc: =
+	Returns the xt of the deferred word, or throws an exception.
+=
+de desc: =
+	Gibt den xt des deferred Wort zurück oder wirft eine Exception.
+=
+
+def: context?
+ver: 6.0.10
+ctx: ~sys
+stack: --
+desc: =
+	Returns the body of the context word, or throws an exception.
+=
+de desc: =
+	.........
+=
+
+def: stack-iterate
+ctx: ~util
+ver: 6.0.9
+stack: xt stack --
+desc: =
+	Executes "xt" on each item in the stack.
+=
+de desc: =
+	Führe den "xt" für jedes Stackelement aus.
+=
+
+def: peek-n
+ctx: ~util
+ver: 6.0.9
+stack: n stack -- m
+desc: =
+	Puts the "n"th item in stack on TOS
+=
+de desc: =
+	Legt das "n"-te Element "des selbstdefinierten Stacks" 
+	auf den System Datenstack.
+=
+
+def: peek
+ctx: ~util
+ver: 6.0.9
+stack: stack -- m
+desc: =
+	Puts the top item in stack on TOS
+=
+de desc: =
+	Legt das oberste Element "des selbstdefinierten Stacks" 
+	auf den System-Datenstack.
+=
+
+def: pop
+ctx: ~util
+ver: 6.0.9
+stack: stack -- m
+desc: =
+	Drops the top item off stack and puts it on TOS
+=
+de desc: =
+	.................
+=
+
+def: push
+ctx: ~util
+ver: 6.0.9
+stack: m stack -- 
+desc: =
+	Puts "m" on the stack.
+=
+de desc: =
+	.................
+=
+
+def: stack-empty?
+ctx: ~util
+ver: 6.0.9
+stack: stack -- flag
+desc: =
+	Returns whether or not the stack has items on it.
+=
+de desc: =
+	Gibt ein Flag zurück das angibt ob der Stack leer ist.
+=
+
+def: stack-size
+ctx: ~util
+ver: 6.0.9
+stack: stack -- n
+desc: =
+	Returns number of items currently on the stack
+=
+de desc: =
+	Gibt die Anzahl der Elemente auf dem angegebenen Stack 
+	zurück.
+=
+
+def: stack:
+ctx: ~util
+ver: 6.0.9
+stack: n <name> -- 
+desc: =
+	Declares a new stack named <name>, of size n
+=
+de desc: =
+	Erstellt einen neuen Stack mit dem Namen <name> und
+	der Größe n
+=
+
+def: (context)
+ctx: ~
+ver: 6.0.9
+stack:  a n -- 
+desc: =
+	Same as "context:" but takes the context to create in (a,n)
+=
+de desc: =
+	.....
+=
+
+def: reva
+ctx: ~
+stack: --
+ver: 6.0.9
+desc: =
+	Resets the search-order, and puts the following contexts in
+	the search-order:
+
+		~reva ~os ~util ~io ~string ~
+
+	So after executing this word, the "common" Reva words will all
+	be available, and mostly Reva will behave as it did before
+	version 6.0.8.  
+
+	To set up your own ordering, simply use "reset~" followed by
+	whatever contexts you wish ("~" will be first in search-order
+	and the only thing in it, after "reset~").
+=
+de desc: =
+	.................
+=
+
+def: only~
+ctx: ~
+stack: <ctx> --
+ver: 6.0.9
+desc: =
+	Makes the context following the only one in the search order.
+	This is useful for example if you want to expose only a limited
+	set of words.
+	
+	Example:
+
+		context: ~a
+		~a
+		: foo ." bar" cr ;
+		exit~
+		only~ ~a
+
+	After the last statement, the only word visible to the
+	interpreter will be "foo".
+=
+de desc: =
+	.................
+=
+
+def: .classes
+ctx: ~
+stack:  -- 
+ver: 6.0.8
+desc: =
+	Prints out a list of all classes which have been defined so far.
+=
+de desc: =
+	Gibt eine Liste von allen Klassen die bisher definiert wurden aus.
+=
+
+def: (words~)
+ctx: ~
+stack:  ctx -- 
+ver: 6.0.9
+desc: =
+	Given a context, prints all its words.
+=
+de desc: =
+	.................
+=
+
+def: words~
+ctx: ~
+stack:  <ctx> -- 
+ver: 6.0.9
+desc: =
+	Given the name of a context, prints all its words.
+=
+de desc: =
+	Gibt alle Wörter des angegebenen Kontextes aus.
+=
+
+def: find-word
+ctx: ~sys
+stack:  a n context -- 0 |  dict -1
+ver: 6.0.9
+desc: =
+	Looks for the word (a,n) in the context given.  Like find-dict
+=
+de desc: =
+	Schaut nach ob das Wort (a,n) im gegeben Kontext vorhanden ist.
+	Ähnlich wie find-dict.
+=
+
+def: @ 
+ctx: ~
+stack:  a -- n 
+desc: =
+	Returns the cell pointed to by the address in a 
+	Be careful not to pass an invalid address to it!
+=
+de desc: =
+	Gibt den Inhalt der Zelle zurück auf den die Adresse
+	a verweißt. Achtung bei Zugriffen auf ungültige 
+	Adressen.
+=
+
+def: ! 
+ctx: ~
+stack:  n a -- 
+desc: =
+	Store the cell "n" at address "a"
+=
+de desc: =
+	Speichert die Zelle "n" an der Adresse "a".
+=
+
+def: +!  
+ctx: ~
+stack:  n a -- 
+desc: =
+	Add "n" to cell at location "a". Same as effect as:
+
+		swap over @ + swap !
+=
+de desc: =
+	Addiert "n" zur Zelle am Speicherplatz "a". Der gleiche
+	Effekt hat:
+		
+		swap over @ + swap !
+=
+
+def: ++ 
+ctx: ~
+stack:  a -- 
+desc: =
+	Increment the cell at location "a".
+=
+de desc: =
+	Inkrementiert die Zelle unter der Adresse "a"
+=
+
+def: -- 
+ctx: ~
+stack:  a -- 
+desc: =
+	Decrement the cell at location "a". =
+de desc: =
+	Dekrementiert die Zelle unter der Adresse "a".
+=
+
+
+def: asciiz, 
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Puts the string 'a','n' into a counted-string at 'here' and
+	adjusts 'here'. 
+	=
+de desc: =
+	Setzt den String 'a','n' in einen "counted-string" an der Stelle
+	'here' und richtet 'here' neu ein.
+=
+
+def: asciizl, 
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Same as 'asciiz,' but puts a long-counted-string at 'here'.
+=
+de desc: =
+	Das gleiche wie 'asciiz' legt aber den long-counted-string auf 
+	'here'.
+=
+
+def: aligned 
+ctx: ~
+stack:  a -- a 
+desc: =
+	Align the address on TOS to the next four-byte boundary.
+	=
+de desc: =
+	.....
+=
+
+def: allot 
+ctx: ~
+stack:  n -- 
+desc: =
+	Allocate memory by moving "here" by "n" bytes.  Can also be used
+	for deallocation from 'here' if given a negative number. 
+	=
+de desc: =
+	Reserviert Speicher durch verschieben von "here" um "n" Bytes. Kann 
+	auch benutzt werden um den Speicher zu deallokieren durch Eingabe 
+	einer negativen Zahl
+=
+
+def: c! 
+ctx: ~
+stack:  n a -- 
+desc: =
+	Store byte "n" at address "a" 
+	=
+de desc: =
+	Speichert "n" Bytes an der Adresse "a".
+=
+
+def: c@ 
+ctx: ~
+stack:  a -- n 
+desc: =
+	Return the byte stored at address "a" 
+	=
+ de desc: =
+	Gibt das Byte zurück unter der Adresse "a".
+=
+
+def: w@ 
+ctx: ~
+stack:  a -- n 
+desc: =
+	Gets a short (2-bytes) from "a".
+	=
+de desc: =
+	Gibt ein short (2-Bytes) unter der Adresse "a" 
+	zurück. 
+=
+
+def: w!  
+ctx: ~
+stack:  n a -- 
+desc: =
+	Puts the short (2-bytes) "n" at "a".
+	=
+de desc: =
+	Speichert ein short (2-Bytes) "n" unter "a".
+=
+
+def: 2@ 
+ctx: ~
+stack:  2var -- d 
+desc: =
+	Gets a double (8 bytes) from address "2var".
+	=
+de desc: =
+	Ließt ein double (8 Bytes)  von der Adresse "2var".
+=
+
+def: 2!  
+ctx: ~
+stack:  d 2var -- 
+desc: =
+	Stores a double (8 bytes) "d" to a memory address "2var".
+	=
+de desc: =
+	Speichert ein Double (8 Bytes) "d" unter der Speicheradresse
+	"2var".
+=
+
+def: 2variable 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Creates a new variable "<name>" which can hold a double.
+	=
+de desc: =
+	Erstellt eine neue Variable "<name>" für einen Double Wert.
+=
+def: " 
+ctx: ~
+stack:  <str>" -- a n 
+desc: =
+	Create a string by parsing input up to the next double-quote.  If
+	compiling, the string data are put in the heap and the runtime
+	code will push the address and length of the string on the stack.
+	If interpreting, the address and length will be put on the stack,
+	and the string will be allocated from a buffer for transient
+	strings.  In either case, one may put a double quote inside a
+	string by prefacing it with the '\' (backslash) character:
+	"\"Hi!\", said Mary"
+
+	NOTE: strings created interactively have a 255 byte limit.
+	Compiled strings, do not have that limitation.
+	=
+de desc: =
+	.................
+=
+
+def: (s^)
+ctx: ~sys
+stack:  -- 
+desc: =
+	internal: used to implement "=
+de desc: =
+	Intern benutzt zur Implementierung von "
+=
+def: (") 
+ctx: ~strings
+stack:  -? 
+desc: =
+	Compiles the string "a,n" into the 'compiled string area' and
+	compiles code to push that string on the stack, in 'here'.  The
+	word "" is used by " in interpret mode to place the string in one
+	of several rotating buffers.=
+de desc: =
+	.................
+=
+
+def: "" 
+ctx: ~strings
+stack:  -- 
+desc: =
+	see (")=
+de desc: =
+	.................
+=
+
+def: +lplace 
+ctx: ~strings
+stack:  a n lstr -- 
+desc: =
+	Same as "+place" but for "long" strings over 255 characters
+	=
+de desc: =
+	Das gleiche wie "+place" aber für Strings größer als 
+	255 Zeichen "long" .
+=
+def: c+lplace 
+ctx: ~strings
+stack:  c lstr -- 
+desc: =
+	Like c+place except for long-strings.
+	=
+de desc: =
+	.......
+=
+
+def: c+place 
+ctx: ~strings
+stack:  c cstr -- 
+desc: =
+	Append byte "c" to a cstring. 
+	=
+de desc: =
+	Hängt Byte "c" an einen cstring. 
+=
+
+def: lplace 
+ctx: ~strings
+stack:  a n lstr -- 
+desc: =
+	Same as "place" but for long strings over 255 characters.
+	=
+de desc: =
+	Das gleiche wie "place" aber für lange Strings über 
+	255 Zeichen.
+=
+
+def: ." 
+ctx: ~
+stack:  <str>" -- 
+desc: =
+	Types the string <str>.  The same string definition rules apply as
+	for "
+	=
+de desc: =
+	.................
+=
+
+def: chop 
+ctx: ~strings
+stack:  a n c -- a1 n1 
+desc: =
+	Scan forward in string "a,n" for character "c". Returns the string
+	up to the point where that character was found, or the original
+	string if the character was not found 
+	=
+de desc: =
+	.................
+=
+
+def: -chop 
+ctx: ~strings
+stack:  a n c -- a1 n1
+desc: =
+	Same as chop but scans from the end of the string 
+	=
+de desc: =
+	Das gleiche wie chop aber beginnt den Scan vom 
+	Ende des Strings aus.
+=
+
+def: count 
+ctx: ~strings
+stack:  cstr -- a n 
+desc: =
+	Converts a counted-string to an address-count pair.
+	=
+de desc: =
+	Konvertiert einen counted-string zu einem address-count
+	Paar.
+=
+
+
+def: lcount 
+ctx: ~strings
+stack:  lstr -- a n 
+desc: =
+	Converts a long-counted-string (>255 chars) to an address-count
+	pair.
+	=
+de desc: =
+	.........
+=
+
+def: lc 
+ctx: ~strings
+stack:  c -- c 
+desc: =
+	Converts the character 'c' to its lowercase equivalent.  NOTE:
+	this is a simple ANSI transform, and does not work at all
+	correctly for accented characters (for example).
+	=
+de desc: =
+	Konvertiert ein Zeichen 'c' in einen Kleinbuchstaben.
+	Bemerkung: Dies ist eine einfache ANSI Transformation und 
+	funktioniert z.b. nicht korrekt mit akzentuierten Zeichen.
+=
+
+def: split 
+ctx: ~strings
+stack:  a n c -- a n false | a1 n1 a2 n2 true 
+desc: =
+	Split the string "a,n" at the first occurrence of "c". If the
+	character was not found, returns original string and false;
+	otherwise returns the split string and true.  
+
+	If "true" is returned, then "(a2,n2)" is the first part of the
+	string, and "(a1,n1)" is the latter half.
+
+	Example:
+		" Hello, world!" ', split
+	Returns "true" on TOS, then the string:
+		" Hello"
+	followed by:
+		"  world!"
+	=
+de desc: =
+	.................
+=
+
+def: rsplit 
+ctx: ~strings
+stack:  a n c -- a n false | a1 n1 a2 n2 true 
+ver: 6.1.1
+desc: =
+	Same as "split" but splits from the right side of the string.
+	=
+de desc: =
+	Das gleiche wie "split" aber teilt den String von der rechten
+	Seite aus.
+=
+
+def: (
+ctx: ~
+stack:  <text> -- 
+desc: =
+	Inline comment, most often used to document the stack effects of a
+	word.  Parses until the next ")" character and drops the parsed
+	text
+	=
+de desc: =
+	Inline Kommentar, oft benutzt zur Dokumentation von Stack-Effekten
+	eines Wortes. Parst den Text bis zum nächsten ")"  Zeichen und entfernt
+	ihn. 
+=
+
+def: .ver 
+ctx: ~reva
+stack:  -- 
+desc: =
+	Display the version, including OS =
+de desc: =
+	Ausgabe der Version einschließlich des Betriebssystems. 
+=
+
+def: revaver 
+ctx: ~reva
+stack:  -- a n 
+desc: =
+	String containing the Reva version.=
+de desc: =
+	Zeichenkette mit der Reva Version.
+=
+
+def: between 
+ctx: ~
+stack:  a b c -- flag 
+desc: -
+	Returns true if "a">="b" and "a"<="c" -
+de desc: -
+	Gibt ein True zurück wenn "a">="b" und "a"<="c"
+-
+
+def: cell+ 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Advance "n" by one cell (4 bytes) 
+	=
+de desc: =
+	.................
+=
+
+def: 2cell+ 
+ctx: ~util
+stack:  n -- n 
+desc: =
+	Advance "n" by two cells (8 bytes) 
+	=
+de desc: =
+	.................
+=
+
+def: 3cell+ 
+ctx: ~util
+stack:  n -- n 
+desc: =
+	Advance "n" by three cells (12 bytes) 
+	=
+de desc: =
+	.................
+=
+
+def: 4cell+ 
+ctx: ~util
+stack:  n -- n 
+desc: =
+	Advance "n" by four cells (16 bytes) 
+	=
+de desc: =
+	.................
+=
+
+def: cell- 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Diminish "n" by one cell (4 bytes) 
+	=
+de desc: =
+	.................
+=
+def: cells 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Return number of bytes required by "n" cells=
+de desc: =
+	----------
+=
+
+def: ms 
+ctx: ~
+stack:  n -- 
+desc: =
+	Pauses for n milliseconds 
+	=
+de desc: =
+	Pause für n Millisekunden.
+=
+
+def: ms@ 
+ctx: ~
+stack:  -- n 
+desc: =
+	Retrieves current millisecond count, which may be used for timing
+	=
+de desc: =
+	......
+=
+
+def: noop 
+ctx: ~
+stack:  -- 
+desc: =
+	Does nothing. This is the default value for 'defer'ed words.  =
+de desc: =
+	Tue nichts. Dies ist der Default Wert für ein 'defer'ed
+	Wort.
+=
+
+def: pathsep 
+ctx: ~
+stack:  -- c 
+desc: =
+	Returns an os-specific value for the file-path separator character
+	=
+de desc: =
+	Gibt das Betriebssystem spezifische Filepfadtrennzeichen aus.
+=
+
+def: scratch 
+ctx: ~
+stack:  -- a 
+desc: =
+	Returns the address of a 4K buffer which can be used for anything
+	by anyone.  Don't rely on it to stay unchanged 
+	=
+de desc: =
+	Gibt die Adresse eines 4k Puffers aus, der für alles Mögliche von 
+	jedem benutzt werden kann.
+=
+
+def: srcstr 
+ctx: ~sys
+stack:  -- a n 
+desc: =
+	Returns a string containing the remaining text to be processed by
+	the interpreter.  Mostly for use in 'scan-ahead' processing, for
+	example by "[IF]" etc.=
+de desc: =
+	.................
+=
+
+def: temp  
+ctx: ~
+stack:  -- a 
+desc: =
+	Variable for anyone to use for any purpose 
+	=
+de desc: =
+	Freie Variable die für alles Mögliche benutzt werden kann.
+=
+def: time&date 
+ctx: ~
+stack:  -- s m h dd mm yyyy 
+desc: =
+	Returns the current time and date =
+de desc: =
+	Gibt aktuelle Zeit und Datum aus.
+=
+
+def: true 
+ctx: ~
+stack:  -- flag 
+desc: =
+	Returns logical 'true', e.g. -1 (all bits set)
+	=
+de desc: =
+	Schreibt ein logisches "True" auf den Stack.
+=
+
+def: used 
+ctx: ~util
+stack:  -- dict-used code-used 
+desc: =
+	Puts the current memory usage (dict,code) on the stack.  =
+de desc: =
+	Legt die aktuelle Speicherbelegung auf den Stack (dict,code)
+=
+
+def: words 
+ctx: ~
+stack:  <opt> -- 
+desc: =
+	Display all words in the topmost context in search order.  If
+	<opt> was given, will show all words including <opt> as a
+	substring.
+=
+de desc: =
+	Zeigt alle Wörter aus dem obersten Kontext in der Suchreichenfolge.
+	Falls <opt> angegeben wurde, werden alle Wörter angezeigt die den 
+	Teilstring enthalten.
+=
+
+def: | 
+ctx: ~
+stack:  -- 
+desc: =
+	Comment to end-of-line. Same as \ in ANS Forth
+	=
+de desc: =
+	Kommentar bis zum Ende der Zeile. Das gleiche
+	wie \ in ANS Forth 
+=
+
+def: #!  
+ctx: ~
+stack:  -- 
+desc: =
+	Same as "|" - a comment to end-of-line.  This permits
+	Linux-scripts to indicate via a line like:
+		#! /bin/reva
+	that they should be interpreted by Reva.
+	=
+de desc: =
+	............
+
+=
+
+def: @rem 
+ctx: ~
+stack:  -- 
+desc: =
+	Same as "|" - a comment to end-of-line.
+	Used for writing Reva "batch" files under Windows
+	=
+de desc: =
+	Zeilenkommentar. Das gleiche wie "|". Wird benutzt 
+	Reva Batch-Files unter Windows zu erstellen.	 
+=
+
+def: (seek) 
+ctx: ~io
+stack:  whence offset handle -- 
+desc: =
+	Used to implement "seek"; this word is similar to the Unix "fseek"
+	word, and has the same semantics.  "whence" is one of:
+
+	0 - SEEK_SET, from the beginning of the file
+	1 - SEEK_CUR, relative to the current position, or
+	2 - SEEK_END, from the end of the file
+
+=
+de desc: =
+	.................
+=
+
+def: >name 
+ctx: ~util
+stack:  dict -- a 
+desc: =
+	Return the name field pointer from a dictionary pointer.
+=
+de desc: =
+	Gibt den Zeiger auf das Namensfeld (nfa) mit Hilfe des 
+	dictionary pointer. ........
+=
+
+def: >class 
+ctx: ~util
+stack:  dict -- a 
+desc: =
+	Return the class field pointer from a dictionary pointer.
+=
+de desc: =
+	.................
+=
+
+
+def: >xt 
+ctx: ~util
+stack:  dict -- a 
+desc: =
+	Return the xt field pointer from a dictionary pointer.
+=
+de desc: =
+	.................
+=
+
+
+def: '
+ctx: ~
+stack:  <name> -- xt 
+desc: =
+	Look up the word "<name>" in the dictionary.  Returns the xt of
+	the word in question.  Throws -1 if "<name>" doesn't
+	exist.
+	=
+de desc: =
+	Schaut nach dem Wort "<name>" im Verzeichnis und gibt den xt des 
+	Wortes zurück. Sollte das Wort nicht existieren, wird -1 geworfen.
+=
+
+def: '' 
+ctx: ~
+stack:  <name> -- dict
+desc: =
+	Similar to "'", but returns the dictionary pointer instead of the
+	xt 
+	=
+de desc: =
+	Ähnlich wie "'" aber gibt den dictionary pointer statt des xt zurücks.
+=
+
+def: find 
+ctx: ~
+stack:  a n -- xt | a n 0 
+desc: =
+	Look up a word in the dictionary.  Returns the xt of the word in
+	question, or the name and 0 on TOS.
+	=
+de desc: =
+        Schaut nach einem Wort im Wortverzeichnis und gibt falls vorhanden
+        den xt des Wortes auf den Stack zurück. Ist kein Eintrag vorhanden
+        wird der gesuchte Wortname und 0 auf den Stack geschoben. 
+        
+        Bsp:
+        ok> " Pit" find .s
+        (3) 1127705 3 0
+        ok> : Pit ." Hi, Pit!" ;
+        
+        ok> " Pit" find .s
+        (4) 1127705 3 0 6432860
+        ok> execute
+        Hi, Pit!
+        ok> 
+        =
+def: 0; 
+ctx: ~
+stack:  n -- n | exit and drop TOS if n=0 
+desc: -
+	Exit a word if "n" == 0, and also pop the stack in that case.
+	Does not change the stack it TOS not 0
+	-
+de desc: *
+        Bricht die Ausführung des Wortes ab wenn "n" gleich 0 
+        ("n" == 0) ist und die 0 wird vom TOS entfernt. Ist
+        "n" ungleich 0 ("n" != 0) wird der TOS nicht verändert.       
+        
+        Beispiel:
+        
+        ok> : 0;-test 0; ." Auf dem TOS war keine 0 !" ;
+
+        ok> 1 2 3 0;-test
+        Auf dem TOS war keine 0 !
+        ok> .s
+        (3) 1 2 3
+        ok>
+        
+        ok> 1 2 0 0;-test
+
+        ok> .s
+        (2) 1 2
+        ok>        
+*
+        
+def: 00; 
+ctx: ~
+stack:  n -- n | exit in n=0 
+desc: -
+	Exit a word if "n" == 0, but does NOT pop TOS.
+	Does not change the stack if TOS not 0
+	-
+de desc: *
+        Bricht die Ausführung des Wortes ab wenn "n" gleich 0 ("n" == 0) ist
+        Der TOS wird dabei nicht verändert.
+        
+        Beispiel:
+        
+        ok> : 00;-test 00; ." Auf dem TOS war keine 0 !" ;
+        
+        ok> 1 2 3 00;-test
+        Auf dem TOS war keine 0 !
+        ok> .s
+        (3) 1 2 3
+
+        ok> 1 2 0 00;-test
+        
+        ok> .s
+        (3) 1 2 0
+        ok>
+*
+def: alias 
+ctx: ~util
+stack:  xt <new> -- 
+desc: =
+	Create an alias for xt, so saying <new> results in the same. 
+	=
+de desc: =
+        Erzeugt ein Alias für den xt. 
+        
+        Beispiel:
+=
+
+def: alias: 
+ctx: ~util
+stack:  newname oldname -- 
+desc: =
+	Create alias 'newname' for the word 'oldname', keeping the proper
+	class semantics of the old word.
+	=
+de desc: =
+	........... 
+=
+
+def: bye 
+ctx: ~
+stack:  -- 
+desc: =
+	Same as "0 (bye)"
+	=
+de desc: =
+	Das gleiche wie "0 (bye)"
+=
+
+def: compiling? 
+ctx: ~sys
+stack:  -- flag
+desc: =
+	Returns a flag telling what the state of the interpreter/compiler
+	currently is.  Useful inside 'macro' class words so they can
+	behave differently if necessary depending on whether invoked by
+	the interpreter or the compiler.=
+de desc: =
+	Gibt ein Flag zurück in welchem Status der Interpreter/Compiler
+	................ 
+=
+
+def: constant 
+ctx: ~
+stack:  n <name> -- 
+desc: =
+	Create a constant named "<name>", with the value "n"
+	=
+de desc: =
+	Erstellt eine Konstante mit dem Namen "<name>" und 
+	dem Wert "n"
+=
+
+def: value 
+ctx: ~
+stack:  n <name> -- 
+desc: -
+	Create a value named "<name>", with the value "n".  A value is
+	like a variable in that it can be changed, but like a constant in
+	that you don't need to use '@' to get its value
+
+	Example:
+		12 value joe
+
+		joe 12 =if ... then 
+
+		34 to joe
+	-
+de desc: =
+	Erstellt ein Value mit dem Namen "name",  
+=
+
+def: to 
+ctx: ~
+stack:  n <value> -- 
+desc: =
+	Sets the value to 'n'.  
+	=
+de desc: =
+	Setzt den Wert auf 'n'.
+=
+
+def: create 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Create a named entry <name> in the dictionary.  Invoking this name
+	will cause the address of the item's private data area to be
+	pushed on the stack.  In effect, operating much like 'variable'.
+	
+	A 'created' item can be located using 'find' or 'find-dict', assuming
+	it was not hidden subsequently.
+	=
+de desc: =
+	.......
+=
+
+def: (create) 
+ctx: ~
+stack:  a n -- 
+desc: =
+	Same as 'create' but operates on a passed-in string
+	=
+de desc: =
+	...........
+=
+
+def: [ELSE] 
+ctx: ~
+stack:  -- 
+desc: =
+	Used with [IF] and [THEN] for conditional compilation 
+	=
+de desc: =
+	Benutzt mit [IF] und [THEN] für bedingte Kompilation
+=
+
+def: execute 
+ctx: ~
+stack:  xt -- 
+desc: =
+	Execute the word whose code is at "xt"
+	=
+de desc: =
+	Führt den Code unter "xt" aus.
+=
+
+def: exec
+ctx: ~
+ver: 6.1.3
+stack:  dict -- 
+desc: =
+	Execute the word whose dictionary pointer is at "dict".  This
+	will execute with the correct class semantics, unlike
+	"execute" which simply calls the address passed it.
+	=
+de desc: =
+	.......
+=
+
+def: @execute 
+ctx: ~
+stack:  a -- 
+desc: =
+	Same as "@ execute" but more efficient
+	=
+de desc: =
+	Das gleiche wie "@ execute" aber effizienter.
+=
+
+
+def: notail 
+ctx: ~
+stack:  -- 
+desc: =
+	Same as "forth", but sets the class as "'notail".  This class
+	supresses the 'tail-recursion-optimizer', and is used when using
+	the word as the last word in a colon-def causes problems because
+	the return stack is not what was expected.  Some words like ">rr"
+	use this class.  All 'macro' class words also suppress the
+	tail-optimizer now.
+	=
+de desc: =
+	.......
+=
+
+def: here 
+ctx: ~
+stack:  -- a 
+desc: =
+	Returns current value of "here", the end of currently allocated
+	dictionary space.
+	=
+de desc: =
+	.......
+=
+
+def: [IF] 
+ctx: ~
+stack:  n -- 
+desc: =
+	Used with [THEN] and [ELSE] for conditional compilation. Exactly
+	analagous to if/else/then, except that this allows one to compile
+	based on a condition. The code in the branch not taken is not
+	compiled and therefore doesn't contribute to the dictionary or
+	have any side-effects.  Similar to "#if ... #endif" in C
+
+	NOTE: one may NOT nest [IF]...[THEN] blocks!
+	=
+de desc: =
+        Wird mit [THEN] und [ELSE] für bedingte Übersetzung benutzt.
+        Das Verhalten ist identisch mit if/else/then. Nur der übersetzte 
+        Code wird ins Vokabular geschrieben. Seiteneffekte sind daher 
+        ausgeschlossen. 
+        kompilieren abhängig von Bedingungen. Nur der co
+=
+
+def: hide 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Makes the named word no longer visible in dictionary searches.
+	=
+de desc: =
+        Versteckt das Wort im Wortverzeichnis sodass es nicht mehr im 
+        Suchpfad liegt.
+        =
+       
+def: REVAUSERLIB 
+ctx: ~
+desc: =
+	This is an optional environment variable which, if set, must
+	contain the full path to the user's private library files, similar
+	to the 'libdir' path (terminated with a / or \ as expected on your
+	system)
+	=
+de desc: =
+	.......
+=
+
+def: needs 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Locates the file "<name>" in the user library directory or the
+	standard library directory includes it if it has not already been
+	included.
+	=
+de desc: =
+	Lokalisiert die Datei "<name>" im Verzeichnis der Benutzerbibliothek
+	oder im Verzeichnis der Standardbibliothek. Wenn die Datei noch nicht
+	eingebunden wurde, wird sie nun eingebunden.
+=
+
+def: libdir 
+ctx: ~
+stack:  -- a n 
+desc: =
+	Full path to "lib" directory, which is where the standard Reva
+	libraries are stored.  The word "needs" uses this to find
+	libraries.
+	=
+de desc: =
+	Vollständiger Pfad zum "lib" Verzeichnis. Der Ort an dem die Reva
+	Bibliotheken gespeichert sind. "libdir" wird von "needs"  benutzt
+	um die Bibliotheken zu finden.
+=
+def: :: 
+ctx: ~
+stack:  -- xt 
+desc: =
+	Create a new word without a dictionary entry. "xt" is the pointer
+	to the compiled code for the word.  This is mainly useful for
+	providing an anonymous function to use as an implmentation of a
+	defer-ed word.
+	=
+de desc: =
+	.......
+=
+
+def: p: 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Similar to the ANS word POSTPONE.  Compiles the "xt" of the word
+	"<name>" as well as a call to its class-handler.  This means that
+	the word will be executed when the containing word is executed,
+	rather than being run immediately.  Mostly useful for causing a
+	'macro' word to execute at run time rather than compile-time. 
+	=
+de desc: =
+	.......
+=
+
+def: p[
+ctx: ~
+ver: 6.1.3
+stack:  <name>... ]p -- 
+desc: =
+	Convenience word which executes "p:" for all the words up to
+	the first "]p".  Simply permits a cleaner-looking syntax.
+
+	Example:
+
+	One might do:
+		p: dup p: drop p: swap
+	but this is cleaner looking:	
+		p[ dup drop swap ]p
+
+	They are entirely equivalent, however.
+
+	=
+de desc: =
+	.......
+=
+
+def: reset 
+ctx: ~
+stack:  -- 
+desc: =
+	Resets stack to initial settings (e.g. drops everything) 
+	=
+de desc: =
+	Initialisert die Stacks (z.b. entfernt alle Einträge vom Stack) 
+=
+def: [THEN] 
+ctx: ~
+stack:  -- 
+desc: =
+	Used with [IF] and [ELSE] for conditional compilation 
+	=
+de desc: =
+	Benutzt mit [IF] und [ELSE] zur bedingten Kompilierung.
+=
+
+def: ['] 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Compile xt of "<name>".  Throws -1 if "<name>"
+	doesn't exist.
+	=
+de desc: =
+	Kompiliert den xt von "<name>". Wirft eine -1 Ausnahme falls
+	"<name>" nicht exsistiert.
+=
+def: [''] 
+ctx: ~
+stack:  <name> -- 
+ver: 6.1
+desc: =
+	Compile dict of "<name>"
+	=
+de desc: =
+	.......
+=
+
+def: dict?
+ctx: ~sys
+stack:  <name> -- 
+ver: 6.1
+desc: =
+	Puts dict of "<name>" in TOS, or throws -1 and prints "... is
+	not a word" if the word does not exist.
+	=
+de desc: =
+	Legt das Verzeichnis von "<name>" auf den TOS, oder wirft eine -1 Ausnahme
+	und gibt "... is not a word" ( "... ist kein Wort" ) aus falls das Wort
+	nicht existiert.
+=
+
+def: super> 
+ctx: ~
+stack:  <name> -- 
+ver: 6.1.8
+desc: =
+	Calls the code just after "does>" in the word "<name>".  Use
+	to override or superclass an existing word.
+
+	Example:
+		: const   create , does> @ ;
+		: const++ create , does> super> const 1+ ;
+=
+de desc: =
+	.......
+=
+
+def: does> 
+ctx: ~
+stack:  -- 
+desc: =
+	Change the runtime behavior of a "create"d word.  The normal
+	runtime behavior of a "create"d word is to push the address of its
+	data area on TOS.  "does>" appends whatever code is after it to
+	the default action.
+
+	Example:
+
+		: const create , does> @ ;
+		234 const x
+		12 const y
+
+	Executing 'x' will put '234' on TOS.  'y' will put '12' on TOS.
+	They do this because they are 'const's which as you can see from
+	the definition - stash away TOS in the private data area of the
+	word on word creation; and put that value on TOS when invoked.
+	
+	=
+de desc: =
+	.......
+=
+def: pdoes 
+ctx: ~sys
+stack:  -- 
+desc: =
+	Used to implement "does>"=
+de desc: =
+	Wird benutzt um "does>" zu implementieren.
+=
+
+def: literal, 
+ctx: ~
+stack:  n -- 
+desc: =
+	Same as "literal" but operates at run-time.
+	=
+de desc: =
+	Das gleiche wie "literal" aber operiert zur Laufzeit.
+=
+
+def: prior 
+ctx: ~util
+stack:  <word> -- 
+desc: =
+	Once a word is defined (with ':') any prior version of it is lost
+	to the interpreter.  This word allows invoking the previous
+	version of "<word>" even though it was hidden from the
+	interpreter.
+
+	Example:
+		: a ." hi" ;
+		: a prior a ." there" ;  
+
+	without the use of 'prior', the second 'a' would recurse forever.
+	=
+de desc: =
+	.......
+=
+
+def: [DEFINED] 
+ctx: ~
+stack:  <name> -- flag 
+desc: =
+	Returns "true" if the word has been defined, "false" otherwise.
+	Intended to be used to take some action based upon runtime
+	environmental issues.
+	=
+de desc: =
+	Gibt "true" zurück falls das Wort definiert ist, andernfalls "false".
+	........
+=
+def: <  
+ctx: ~
+stack:  m n -- flag
+desc: +
+	Returns 'true' or 'false' depending on the test "m<n" using
+	signed-math.
+	
+	Example:
+		2 3 < .
+			prints: -1
+		2 -3 < .
+			prints: 0
+
+	+
+de desc: =
+	.......
+=
+
+def: >  
+ctx: ~
+stack:  m n -- flag
+desc: +
+	Returns 'true' or 'false' depending on the test "m>n" using
+	signed-math.
+	+
+de desc: =
+	Gibt "true" zurück falls m>n, ansonsten "false".
+=
+
+def: =  
+ctx: ~
+stack:  m n -- flag
+desc: +
+	Returns 'true' or 'false' depending on the test "m=n" using
+	signed-math.
+	+
+de desc: *
+	Gibt "true" zurück falls m=n, ansonsten "false".
+*
+
+def: and 
+ctx: ~
+stack:  a b -- n 
+desc: =
+	AND top two items, like C bitwise operator: a & b
+	=
+de desc: =
+	UND-Verknüpfung der einzelnen Bits, genauso wie in C
+	der Operator: a & b
+=
+def: not 
+ctx: ~
+stack:  a -- n 
+desc: +
+	Logical not of a. 0 => -1, !0 => 0, similar to C "!" operator
+	+
+de desc: +
+	......
++
+
+def: or 
+ctx: ~
+stack:  a b -- n 
+desc: =
+	OR top two items, like C bitwise operator: a | b
+	=
+de desc: =
+	ODER Verknüpfung der ersten beiden Stackeinträge. 
+	Funktioniert wie der Bit-Operator in C: a | b
+	=
+def: xor 
+ctx: ~
+stack:  a b -- n 
+desc: =
+	XOR top two items. like C bitwise operator: a ^ b
+	=
+de desc: =
+	Exclusiv-ODER Verknüpfung der ersten beiden Stackeinträge. 
+	Funktioniert wie der Bit-Operator in C: a ^ b
+	=
+
+def: (.) 
+ctx: ~
+stack:  n -- a n 
+desc: =
+	Converts a number to a string using the current "base", without
+	trailing space. Used by "."
+	
+	NOTE: The string returned should be saved elsewhere if you won't
+	use it immediately!
+
+	=
+de desc: =
+	....
+	=
+
+def: .r 
+ctx: ~
+stack:  x y -- 
+desc: =
+	Prints number 'x' in a field 'y' wide.  Uses '(.r)' to format the
+	number and appe?ds a space afterwards, like '.'
+	=
+de desc: =
+	....
+	=
+def: (p.r) 
+ctx: ~
+stack:  n m c -- a n 
+desc: =
+	Prints the value "n" to a string "m" wide, left-padded with
+	character "c". The string returned should be saved elsewhere if
+	you won't use it immediately.
+	=
+de desc: =
+	....
+	=
+def: * 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Multiply top two items (signed): n=a*b
+	!
+de desc: =
+	....
+	=
+
+def: / 
+ctx: ~
+stack:  a b -- d 
+desc: !
+	Divide a by b (signed): n=a/b
+	!
+de desc: !
+	Teilt a durch b (vorzeichenbehaftet): n=a/b
+	!
+def: */ 
+ctx: ~
+stack:  a b c -- n 
+desc: !
+	Scaled multiplication operator (signed): n=(a*b)/c. 
+
+	This uses the CPU's internal accuracy, and so does not have
+	problems of 32-bit overflow errors which using * and / separately
+	might have.
+
+	!
+de desc: =
+	....
+	=
+def: + 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Add top two items: n=a+b
+	!
+de desc: !
+	Addiert die obersten beiden Einträge: n=a+b
+	!
+def: - 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Subtract b from a: n=a-b
+	!
+de desc: !
+	Subtrahiert b von a: n=a-b
+	!
+
+def: .  
+ctx: ~
+stack:  n -- 
+desc: =
+	Prints a number followed by a space using the default base 
+	=
+de desc: =
+	Gibt eine Zahl gefolgt von einem Leerzeichen aus.
+	Benutzt wird die Voreingestellte Basis.
+	=
+
+def: .x 
+ctx: ~
+stack:  n -- 
+desc: =
+	Print a number as 8 hex digits, regardless of "base"
+	=
+de desc: =
+	Gibt eine Zahl aus als 8 Hexadezimale Ziffern.
+	.....
+	=
+
+def: .2x 
+ctx: ~
+stack:  n -- 
+desc: =
+	Print low 8 bits of a number as 2 hex digits, regardless of "base"
+	=
+de desc: =
+	....
+	=
+
+def: << 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Shift a left b bits: n=a*2^b
+	!
+de desc: =
+	....
+	=
+def: >> 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Shift a right b bits: n=a/2^b
+	!
+de desc: =
+	....
+	=
+def: abs 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Return absolute value of top stack item.  =
+
+de desc: =
+	....
+	=
+def: decimal 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets "base" to 10.
+	=
+de desc: =
+	....
+	=
+def: octal 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets "base" to 8.
+	=
+de desc: =
+	Setzt "base" auf die Basis 8.
+	=
+
+def: binary 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets "base" to 2.
+	=
+de desc: =
+	Setzt "base" auf die Basis 2.
+	=
+
+def: hex 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets "base" to 16.
+	=
+de desc: =
+	Setzt "base" auf die Basis 16.
+	=
+
+def: false 
+ctx: ~
+stack:  -- flag 
+desc: =
+	Puts logical 'false' (no bits set, 0) on TOS
+	=
+de desc: =
+	....
+	=
+def: /mod 
+ctx: ~
+stack:  a b -- rem quo 
+desc: =
+	Divide "a" by "b", place remainder and quotient on stack 
+	=
+de desc: =
+	....
+	=
+def: invert 
+ctx: ~
+stack:  n -- n' 
+desc: /
+	Invert all bits in "!". Same as C "~" operator: n=~n
+	/
+de desc: =
+	....
+	=
+def: max 
+ctx: ~
+stack:  a b -- c 
+desc: !
+	Puts the max (signed) of a and b on TOS: c=max(a,b)
+	!
+de desc: =
+	....
+	=
+def: min 
+ctx: ~
+stack:  a b -- c 
+desc: !
+	Puts the min (signed) of a and b on TOS: c=min(a,b)
+	!
+de desc: =
+	....
+	=
+def: mod 
+ctx: ~
+stack:  a b -- n 
+desc: !
+	Divide a by b, and put the modulus (remainder) on TOS: n=a%b  
+	!
+de desc: =
+	....
+	=
+
+def: negate 
+ctx: ~
+stack:  n -- n 
+desc: !
+	Flip the sign of n, same as C "unary -" operator: n=-n
+	!
+de desc: =
+	....
+	=
+
+def: 1+ 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Increment TOS: ++n
+	=
+de desc: =
+	Inkrementiert den TOS: ++n
+	=
+
+def: 1- 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Decrement TOS: --n
+	=
+de desc: =
+	Dekrementiert den TOS: --n
+	=
+
+def: appdir 
+ctx: ~
+stack:  -- a n 
+desc: =
+	Return the full path to the running program, including trailing
+	path-separator character
+	=
+de desc: =
+	Gibt den vollständigen Pfad des laufenden Programms zurück.
+	Einschließlich den Pfadtrennzeichen.
+	=
+
+def: argv 
+ctx: ~
+stack:  n -- addr len 
+desc: =
+	Get command-line argument "n". The number is in the range
+	0.."argc". The first argument, "0 argv" is the name of the
+	program; 1 is the index of the first user-supplied argument, etc.  
+
+	If you pass a value that is out of range, it will be clamped to
+	the proper range.  So "-1 argv" is the same as "0 argv"
+	=
+de desc: =
+	....
+	=
+
+def: lib 
+ctx: ~
+stack:  a n <libname>-- 
+desc: =
+	Declares a word "<libname>" which encapulates a "dynamic library"
+	(DLL or SO).  When it is declared, it becomes the default library
+	for new 'func:' declarations.  When executed, it also becomes the
+	default library but in addition, puts the handle of the loaded
+	library on TOS.
+
+	NOTE: throws THROW_BADLIB when invoked but the library was not
+	loaded.  This may happen if the library doesn't exist on your
+	system or if you misspelled the library name.
+
+	=
+de desc: =
+	....
+	=
+
+def: vfunc: 
+ctx: ~
+ver: 6.1.7
+stack:  n <fname> -- 
+desc: =
+	Same as "func:", but for functions which are "void", e.g. they
+	don't return a value which we care about.  Convenience
+	word which allows us to avoid using "drop" after all such
+	words.
+=
+de desc: =
+	....
+	=
+def: func: 
+ctx: ~
+stack:  n <fname> -- 
+desc: =
+	Creates a word "<fname>" encapsulating a call to the function
+	named "<fname>" in the most recently used "lib", taking "n"
+	parameters.  If "n" is not correct, the function will crash when
+	invoked.
+
+	If you would like to refer to the function by some other name, use
+	the word "as" after it, with the name you would prefer.
+
+	NOTE: throws THROW_BAD?UNC when invoked but the function was not
+	loaded.  This may happen if the library was a different version
+	than you expected, or if you misspelled the function name.
+
+	NOTE: You cannot use ['] or ' on a "func:" and expect to get
+	back a code-address.  This is because the "xt" of a "func:"
+	contains data - among other things, the address of the
+	delay-loaded function itself.  Until the "func:" has been
+	successfully called at least once, that address will be zero.
+
+	To get the code-address pertaining to the "func:", you must
+	use "func:>xt" , which is not in the main Reva code but in
+	"util/misc"
+	=
+de desc: =
+	....
+	=
+
+def: as 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Used with "func:" to change the original name of the function to
+	a new one. 
+
+	Example: 
+		1 func: Sleep as rest
+
+	=
+de desc: =
+	....
+	=
+
+def: data: 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Like 'func:' but used to create a reference to exported data.
+	=
+de desc: =
+	....
+	=
+
+def: disassemble 
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Called bye "see" to implement "dump"
+	=
+de desc: =
+	....
+	=
+def: xt>size 
+ctx: ~util
+stack:  xt -- size 
+desc: =
+	Retrieves the size of the code corresponding to the "xt"
+	=
+de desc: =
+	....
+	=
+
+def: rol8 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Rotates the cell 'n' eight bits left.  For example, changes
+	$12345678 to $34567812 .  Used by ".x"
+	=
+de desc: =
+	....
+	=
+def: >body 
+ctx: ~util
+stack:  n -- n 
+desc: =
+	Takes a 'create'd word and returns a pointer to the 'body', e.g.
+	the cell which will be on the stack when the "does>" executes.
+	=
+de desc: =
+	....
+	=
+def: body>
+ctx: ~util
+stack:  n -- n 
+ver: 6.1.1
+desc: =
+	Takes the body of a 'create'd word and returns a pointer to
+	the 'xt'
+	=
+de desc: =
+	....
+	=
+
+def: g32 
+ctx: ~os
+stack:  -- n 
+os: Windows
+desc: =
+	Handle to GDI32 library 
+	=
+de desc: =
+	Das Handle zur GDI32 Bibliotek
+	=
+def: getpid 
+ctx: ~os
+stack:  -- n 
+desc: =
+	Get the current process id =
+de desc: =
+	Legt die aktuelle Prozess-ID auf den Stack.
+	=
+
+def: k32 
+ctx: ~os
+os: Windows
+stack:  -- n 
+desc: =
+	Handle to KERNEL32 library 
+	=
+de desc: =
+      ....
+=
+
+def: libc 
+ctx: ~os
+os: Linux
+stack:  -- n 
+desc: =
+	Returns a "lib" handle for libc. 
+	=
+de desc: =
+      ....
+=
+
+def: osname 
+ctx: ~os
+stack:  -- a n 
+desc: =
+	Returns the name of the os.  
+	=
+de desc: =
+                Gibt den Namen des Betriebssystem zurück.
+                
+                Beispiel:
+                
+                ok> osname type
+                Windows
+                ok>
+                =                             	
+def: u32 
+ctx: ~os
+stack:  -- n 
+os: Windows
+desc: =
+	Handle to USER32 library 
+	=
+de desc: =
+      ....
+=
+def: getenv 
+ctx: ~util
+stack:  a n -- a1 n1 
+desc: =
+	Given an environment variable, returns the value of the variable.
+	For example: " PATH" getenv
+	NOTE: This word is case-insensitive on Windows, but case-sensitive
+	on Linux.
+	=
+de desc: =
+      ....
+=
+def: setenv 
+ctx: ~util
+stack:  a1 n1 a2 n3 -- 
+ver: 6.1.1
+desc: =
+	Set the environment variable (a1,n1) to the value (a2,n2).
+	For example: " PATH" " whatever" setenv
+	=
+
+de desc: =
+      ....
+=
+def: -rot 
+ctx: ~
+stack:  a b c -- c a b 
+desc: =
+	Rotate top three items counter-clockwise 
+	=
+de desc: =
+      ....
+=
+def: .s 
+ctx: ~
+stack:  -- 
+desc: =
+	Displays (up to) top ten stack items.
+	=
+de desc: =
+      ....
+=
+def: .rs 
+ctx: ~
+stack:  -- 
+desc: =
+	Displays (up to) top ten return-stack items.
+	=
+de desc: =
+      ....
+=
+def: 0term 
+ctx: ~strings
+stack:  a n -- a n 
+desc: =
+	Forces the string "a,n" to be NUL terminated.
+	=
+de desc: =
+      ....
+=
+def: 2drop 
+ctx: ~
+stack:  a b -- 
+desc: =
+	Drop top two cells 
+	=
+
+de desc: =
+      ....
+=
+def: 2over 
+ctx: ~
+stack:  a b c d -- a b c d a b 
+desc: =
+	Copy 3rd and 4th stack items over TOS
+	=
+de desc: =
+      ....
+=
+def: 2swap 
+ctx: ~
+stack:  a b c d -- c d a b 
+desc: =
+	Swap top doubles
+	=
+de desc: =
+      ....
+=
+def: ?dup 
+ctx: ~
+stack:  n -- n n 
+desc: =
+	Duplicates TOS if it's not zero. 
+	=
+de desc: =
+      ....
+=
+def: depth 
+ctx: ~util
+stack:  -- n 
+desc: =
+	Puts the stack depth on the top of the stack. This is the number
+	of cells currently on the stack.  
+
+	NOTE: a negative value of 'depth' means the stack underflowed.
+	This is almost always indicative of a problem!
+
+	=
+
+de desc: =
+      ....
+=
+def: rdepth 
+ctx: ~
+stack:  -- n 
+desc: =
+	Returns depth of the return-stack
+	=
+de desc: =
+      ....
+=
+def: drop 
+ctx: ~
+stack:  a -- 
+desc: =
+	Drop the top stack item 
+	=
+de desc: =
+      ....
+=
+def: dup 
+ctx: ~
+stack:  a -- a a 
+desc: =
+	Duplicate the top stack item 
+	=
+de desc: =
+      ....
+=
+def: nip 
+ctx: ~
+stack:  a b c -- a c 
+desc: =
+	Drop the second stack item 
+	=
+de desc: =
+      ....
+=
+def: over 
+ctx: ~
+stack:  a b -- a b a
+desc: =
+	Put copy of second stack item on top of stack 
+	=
+de desc: =
+      ....
+=
+def: swap 
+ctx: ~
+stack:  a b -- b a 
+desc: =
+	Swap the top two stack items 
+	=
+de desc: =
+      ....
+=
+def: tuck 
+ctx: ~
+stack:  a b -- b a b 
+desc: =
+	Put a copy of top cell under second stack item 
+	=
+de desc: =
+      ....
+=
+def: pick 
+ctx: ~
+stack:  n -- n 
+desc: =
+	Return the n'th item from the stack. "0 pick" is the same as "dup", 
+	"1 pick" is the same as "over".
+	=
+de desc: =
+      ....
+=
+def: rot 
+ctx: ~
+stack:  a b c -- b c a 
+desc: =
+	Rotate top three items clockwise
+	=
+de desc: =
+      ....
+=
+def: >r 
+ctx: ~
+stack:  n -- r:n 
+desc: =
+	Puts top stack item on return stack 
+	=
+de desc: =
+      ....
+=
+def: r> 
+ctx: ~
+stack:  r:n -- n 
+desc: =
+	Pops top item off return-stack and pushes it onto the data stack 
+	=
+
+de desc: =
+      ....
+=
+def: r@ 
+ctx: ~
+stack:  -- n 
+desc: =
+	Puts a copy of the top item on the return-stack onto the data
+	stack.
+	=
+de desc: =
+      ....
+=
+def: rdrop 
+ctx: ~
+stack:  r:n -- 
+desc: =
+	Drop one value from return-stack.
+	=
+de desc: =
+      ....
+=
+def: rpick 
+ctx: ~util
+stack:  n -- m 
+desc: =
+	Grab the 'nth' value on the return-stack
+	=
+
+de desc: =
+      ....
+=
+def: rp@ 
+ctx: ~util
+stack:  -- n 
+desc: =
+	Grab the current value of the return-stack pointer
+	=
+de desc: =
+      ....
+=
+def: >rr 
+ctx: ~
+stack:  n -- 
+desc: =
+	Puts "n" under the top of the return-stack.  "tuck" for the
+	return-stack.
+	=
+
+de desc: =
+      ....
+=
+def: rr> 
+ctx: ~
+stack:  -- n 
+desc: =
+	Removes the second value off the return-stack. "nip" for the
+	return-stack.
+	=
+
+de desc: =
+      ....
+=
+def: seek 
+ctx: ~io
+stack:  n fileid -- 
+desc: =
+	Move current position of 'fileid' to n bytes from the beginning of
+	the file
+	=
+
+de desc: =
+      ....
+=
+def: tell 
+ctx: ~io
+stack:  fileid -- n 
+desc: =
+	Report on the position in 'fileid' relative to the beginning of
+	the file
+	=
+
+de desc: =
+      ....
+=
+def: rename 
+ctx: ~io
+stack:  a1 n1 a2 n2 -- 
+desc: =
+	Rename the file named "a1,n1" to the new name "a2,n2"
+	=
+
+de desc: =
+      ....
+=
+def: delete 
+ctx: ~io
+stack:  a n -- 
+desc: =
+	Delete the named file
+	=
+
+de desc: =
+      ....
+=
+def: stat 
+ctx: ~io
+stack:  a n -- n 
+desc: =
+	Get the permissions (file attributes) of the named file.
+	=
+
+de desc: =
+      ....
+=
+def: mtime 
+ctx: ~io
+stack:  a n -- n 
+desc: =
+	Get the last-modified time of the named file, in Unix "seconds
+	since 1/1/1970" format.
+	=
+
+de desc: =
+      ....
+=
+def: sm/rem 
+ctx: ~
+stack:  d n -- rem div 
+desc: =
+	Symmetrical divide of a 'double' by a cell, like /mod but one
+	argument is double.
+	=
+de desc: =
+      ....
+=
+def: cr 
+ctx: ~io
+stack:  -- 
+desc: =
+	Output a CR character (move to next line) 
+	=
+de desc: =
+      ....
+=
+def: file-io  
+ctx: meta
+desc: =
+	The file-io words supported by Reva are:
+
+		creat open/r open/rw read write fsize seek tell rename
+		delete stat mtime
+	=
+
+de desc: =
+      ....
+=
+def: key? 
+ctx: ~io
+stack:  -- flag 
+desc: =
+	Returns 'true' if a character is waiting to be read from the
+	input.
+	=
+de desc: =
+      ....
+=
+def: ekey 
+ctx: ~io
+stack:  -- c 
+desc: =
+	Returns the ASCII value of a keypress as soon as a key has been
+	pressed, including special keys.
+	=
+de desc: =
+      ....
+=
+def: space 
+ctx: ~io
+stack:  -- 
+desc: =
+	Print a space character (ASCII 32) 
+	=
+
+de desc: =
+      ....
+=
+def: spaces 
+ctx: ~io
+stack:  n -- 
+desc: =
+	Prints 'n' spaces 
+	=
+de desc: =
+      ....
+=
+def: accept 
+ctx: ~io
+stack:  a n -- m 
+desc: =
+	Accepts at most 'n' characters into the buffer at 'a'; returns 'm'
+	the number of characters read.  The ESC key cancels the accept and
+	returns '0', CR key ends input before 'n' characters have been
+	read.
+	=
+de desc: =
+      ....
+=
+def: console-io 
+ctx: meta
+desc: =
+	The following console I/O words are available in Reva:
+	
+		cr space emit key key? ekey type accept spaces
+	=
+de desc: =
+      ....
+=
+def: dump 
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Hex dump of the n bytes starting at a.  This is a 'traditional'
+	hex dump.=
+de desc: =
+      ....
+=
+def: see 
+ctx: ~util
+stack:  <name> -- 
+desc: =
+	Dumps the bytes corresponding to the "xt" of "<name>".
+	
+	If the library 'debugger' has not been 'need'ed yet, will do a
+	dump of the bytes corresponding to the xt.  If that library has
+	been 'need'ed, it will try to disassemble.
+	=
+de desc: =
+      ....
+=
+def: =if 
+ctx: ~
+stack:  a b -- 
+desc: !
+	Execute condition if "a" = "b"
+	!
+
+de desc: =
+      ....
+=
+def: <if 
+ctx: ~
+stack:  a b -- 
+desc: =
+	Execute condition if "a" < "b"
+	=
+de desc: =	
+        Führe das nächste Wort aus wenn "a" kleiner "b" ist.
+        
+        Beispiel:
+        
+        ok> : test 4 5 <if ." Hallo" then ;
+
+        ok> test
+        Hallo
+        ok> : test2 5 4  <if ." Hallo" then ;
+
+        ok> test2
+
+        ok>
+        =
+        
+def: >if 
+ctx: ~
+stack:  a b -- 
+desc: =
+	Execute condition if "a" > "b"
+	= 
+de desc: =	
+        Führe das nächste Wort aus wenn "a" größer "b" ist.
+        
+
+        = 
+              
+def: <>if 
+ctx: ~
+stack:  a b -- 
+desc: =
+	Execute condition if "a" <> "b" (not-equal)
+        =  
+de desc: = 	
+        Führe das nächste Wort aus wenn die beiden Werte a und b ungleich sind.
+        =
+        
+def: if 
+ctx: ~
+stack:  flag -- 
+desc: =
+	Execute condition if 'flag' is true
+	=
+de desc: =	
+        Führe das nächste Wort aus wenn das Boolsche Flag 'flag' wahr ist.
+        =
+        
+def: 0if 
+ctx: ~
+stack:  n -- 
+desc: =
+	Execute condition if 'n' is zero
+	=	
+de desc: *	
+        Führe das nächste Wort aus wenn der 'n' gleich 0 ("n" == 0) ist.
+        *
+def: else 
+ctx: ~
+stack:  -- 
+desc: =
+	Begin alternate clause of conditional, execute if conditional
+	false.
+	=
+de desc: =
+	........
+=
+        
+def: then 
+ctx: ~
+stack:  -- 
+desc: =
+	Ends the conditional started by one of the 'if' constructs 
+	=
+de desc: =
+      ....
+=
+def: (if 
+ctx: ~sys
+stack:  -- 
+desc: =
+	You don't want to use this word; it's internal to the
+	various conditionals.
+	=
+
+de desc: =
+      ....
+=
+def: if)  
+ctx: ~sys
+stack:  -- 
+desc: =
+	You don't want to use this word; it's internal to the
+	various conditionals.
+	=
+
+de desc: =
+      ....
+=
+def: (else) 
+ctx: ~sys
+stack:  -- 
+desc: =
+	You don't want to use this word; it's internal to the
+	various conditionals.
+	=
+de desc: =
+      ....
+=
+def: conditionals 
+ctx: meta
+desc: !
+	These are the conditional statements Reva provides:
+
+		if <>if 0if <if >if =if else then
+	!
+de desc: =
+      ....
+=
+def: again 
+ctx: ~
+stack:  -- 
+desc: =
+	Return to top of loop started by "repeat"
+	=
+de desc: =
+      ....
+=
+def: back 
+ctx: ~
+stack:  n -- 
+desc: =
+	Generates code to jump back to the address specified on TOS
+	=
+de desc: =
+      ....
+=
+def: do 
+ctx: ~
+stack:  max start -- 
+desc: =
+	ANS-compatible 'do'. Iterates from 'start' to 'max'-1. 
+	=
+de desc: =
+      ....
+=
+def: ?do 
+ctx: ~
+stack:  max start -- 
+desc: =
+	ANS-compatible '?do'. Iterates from 'start' to 'max'-1.  If 'max'
+	and 'start' are equal, will not do any iterations.
+	=
+
+de desc: =
+      ....
+=
+def: i 
+ctx: ~
+stack:  -- ix 
+desc: =
+	Current index of innermost "do" loop.
+	=
+
+de desc: =
+      ....
+=
+def: j 
+ctx: ~
+stack:  -- ix 
+desc: =
+	Current index of enclosing "do" loop.
+	=
+
+de desc: =
+      ....
+=
+def: remains 
+ctx: ~
+stack:  -- n 
+desc: =
+	How many more loops remain in this do..loop
+	=
+
+de desc: =
+      ....
+=
+def: more 
+ctx: ~
+stack:  n -- 
+desc: =
+	Set the do-loop to execute 'n' more iterations
+	=
+
+de desc: =
+      ....
+=
+def: leave 
+ctx: ~
+stack:  -- 
+desc: =
+	Quit the innermost do..loop immediately and continue processing
+	after the 'loop' word.
+	=
+
+de desc: =
+      ....
+=
+def: eleave 
+ctx: ~
+stack:  -- 
+desc: =
+	Quit the innermost do..loop at the end of the loop and continue
+	processing after the 'loop' word.  Essentially the same as
+	modifying the loop counter so the loop doesn't repeat again.
+	=
+de desc: =
+      ....
+=
+def: loop 
+ctx: ~
+stack:  -- 
+desc: =
+	If 'i' is less than the top bound for the current "do", return to
+	the top of the do..loop and increment 'i'; otherwise, fall out of
+	the do..loop
+	=
+de desc: =
+      ....
+=
+def: (while) 
+ctx: ~sys
+stack:  -- 
+desc: =
+	You don't want this word; see "while"
+	=
+de desc: =
+      ....
+=
+def: later 
+ctx: ~util
+stack:  -- 
+desc: =
+	This is a unique flow-control word.  What it does is return
+	immediately to the calling word, and when the calling word exits,
+	resumes after the 'later'.
+
+	Example:
+
+	    : a ." in a " later ." later, dude!" ;
+		: b ." in b " a ." after a " ;
+		b
+
+	Prints:
+
+	    in b in a after a later, dude!
+	=
+	
+
+de desc: =
+      ....
+=
+def: THROW_GENERIC 
+ctx: ~util
+stack:  -- -1 
+desc: =
+	Thrown for any generic error internal to Reva.
+	=
+
+de desc: =
+      ....
+=
+def: THROW_BADFUNC 
+ctx: ~util
+stack:  -- -2 
+desc: =
+	Thrown by 'func:' if the function is invoked but has not been
+	loaded.
+	=
+
+de desc: =
+      ....
+=
+def: THROW_BADLIB 
+ctx: ~util
+stack:  -- -3 
+desc: =
+	Thrown by 'lib' if the lib is invoked but has not been loaded.
+	=
+de desc: =
+      ....
+=
+def: throw-codes 
+ctx: meta
+desc: =
+	These are the predefined codes 'throw' will use from Reva:
+
+		THROW_GENERIC THROW_BADFUNC THROW_BADLIB THROW_NEEDS
+	=
+de desc: =
+      ....
+=
+def: skip 
+ctx: ~
+stack:  n -- 
+desc: =
+	Increment the loop index in a do..loop by 'n'.
+	=
+de desc: =
+      ....
+=
+def: unloop 
+ctx: ~
+stack:  -- 
+desc: =
+	Undoes the return-stack munging done by 'do', permitting use of
+	';;' without crashing
+	=
+de desc: =
+      ....
+=
+def: repeat 
+ctx: ~
+stack:  -- 
+desc: =
+	Start a loop to be used with "again" or "while"
+	=
+de desc: =
+      ....
+=
+def: while 
+ctx: ~
+stack:  n -- 
+desc: =
+	If TOS is not zero, return to most recent "repeat".
+	=
+de desc: =
+      ....
+=
+def: flow-control 
+ctx: meta
+desc: =
+	The following words for flow-control are provided by Reva:
+
+		do loop i j unloop leave
+		repeat again while back 
+		eleave
+		remains more skip ?do later 0do
+	=
+de desc: =
+      ....
+=
+def: save 
+ctx: ~util
+stack:  <name> -- 
+desc: =
+	Saves the 
+		current Reva to the file "<name>" as a 'turnkey'
+	program. 
+		
+	=
+de desc: =
+      ....
+=
+
+
+
+def: program-control 
+ctx: meta
+desc: =
+	These words are provided by Reva for program-control:
+
+		cold appstart prompt interp 
+		onstartup onexit 
+		save (save) bye (bye)
+
+	On startup, Reva goes through this process:
+		1. do OS-specific startup code
+		2. unpack the dictionary (it's compressed)
+		3. execute 'cold', which:
+		3a.  resets the data stack
+		3b.  calls the 'onstartup' handlers in order
+		3c.  calls 'appstart'
+
+		If 'appstart' returns to 'cold', Reva quits with exit code -1
+
+	Reva's version of 'appstart' does this:
+		1. if there are no arguments on the command-line, then print
+		the Reva version
+		2. process command-line arguments one at a time.  Each
+		argument is treated as a file name to be included, except:
+		   -a   load the 'ansi' library 
+		   -n   "need" the next argument (load that library)
+		   -e   "eval" the next argument
+		3. call 'interp' in an infinite loop
+		
+	Shutdown occurs when "bye" or "(bye)" are called.  (bye) does:
+		1. call 'onexit' handlers in reverse order
+		2. call OS-specific exit code with the desired exit code.
+	=
+
+de desc: =
+      ....
+=
+def: help 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Attempts to give help on the word named.=
+
+de desc: =
+      ....
+=
+def: help/ 
+ctx: ~
+ver: 6.0.9
+stack:  <name> -- 
+desc: =
+	Lists all words in the help database which either match the
+	given name or whose descriptions contain that name.  The
+	search is case-insensitive, and matches partial as well as
+	whole matches.
+=
+
+| META-topics: (not words)
+de desc: =
+      ....
+=
+def: classes 
+ctx: meta
+desc: =
+	Classes define the behavior of a word when executed by Reva.  A
+	word's class is usually defined at the same time as the word is,
+	but it can be modified later if desired.  The usual technique in
+	Reva is to define a series of words using the same class,
+	together; then switch back to the default 'forth' class:
+
+		macro
+		: in1 ... ;
+		: in2 ... ;
+		forth
+
+	=
+
+de desc: =
+      ....
+=
+def: stack-ops 
+ctx: meta
+desc: =
+	Manipulation of data on the 'stack' is one of the most important
+	things to understand in Reva or any Forth.  Every word has a
+	'stack-diagram', which is an explanation of how the word operates
+	on the stack.
+
+	Reva provides these stack manipulation words:
+	
+		dup drop swap over nip tuck rot -rot pick
+		2dup 2drop 2swap 2over 3dup 3drop
+	
+	Information about the stack can be got with:
+
+		.s depth
+	=
+de desc: =
+      ....
+=
+def: r-stack-ops 
+ctx: meta
+desc: =
+	Sometimes data are put on the return stack, or it is necessary to
+	change the return stack somehow.
+
+	Reva provides these return-stack manipulation words:
+
+		r> >r r@ rdrop rp@ rp0 rpick >rr rr>
+
+	Information about the return-stack can be got with:
+
+		.rs rdepth
+	=
+
+de desc: =
+      ....
+=
+def: nul 
+ctx: ~
+stack:  -- a 
+desc: =
+	Returns an "empty" NUL terminated string.  Good for when you need
+	to pass such a string to a C library.
+	=
+
+de desc: =
+      ....
+=
+def: strings 
+ctx: meta
+desc: =
+	Strings come in two varieties, "Forth" and "Counted".  A "Forth"
+	string is two cells on the stack, usually designated in
+	stack-diagrams as "a n", meaning 'address' and 'number of
+	characters'.  One can display such a string using "type".
+
+	"Counted" strings are just one cell on the stack, an address.  The
+	first byte (or cell) of this address is a count of characters.
+	There are two flavors of counted strings - "cstr" and "lstr".  The
+	cstr uses one byte for the count, and so can contain up to 255
+	characters (which is usually enough for most purposes), while the
+	lstr uses a cell for the count, and is therefore essentially of
+	unlimited length.  Reva has no words to print counted strings, but
+	they are easily converted to Forth strings using "count" and
+	"lcount".  Forth strings may be stored into counted strings using
+	"place" and "lplace", and appended with "+place" and "l+place".
+
+	Declaring strings is very easy.  Use the word '"' (that is, one
+	double-quote character), followed by ONE space, the desired
+	string, and a?closing double quote: " This is a Forth string"
+
+	If it is necessary to have double-quotes inside a string, it is
+	easily accommodated by using the backslash character:
+	" She said, \"Look, Ma - no hands!\""
+
+	If a backslash is necessary, simply use two backslashes in a row.
+
+	All strings created with '"' are NUL terminated, as are counted
+	strings.  So one may pass them to external routines which expect a
+	NUL terminated string.
+
+	NOTE: strings created interactively have a 255 byte limit.
+	Compiled strings, as well as strings created using "quote" do
+	not have that limitation.
+	=
+de desc: =
+      ....
+=
+def: preprocessor 
+ctx: meta
+desc: =
+	There are several words which allow one to conditionally compile.
+	These are called "preprocessor" words even though there is no such
+	phase to Reva compilation.
+
+	The words are:
+
+		[IF] [THEN] [ELSE] [DEFINED]
+	=
+de desc: =
+      ....
+=
+def: off 
+ctx: ~
+stack:  ptr -- 
+desc: =
+	Stores a zero at the address 'ptr'.  Same as "0 swap !"
+	=
+
+de desc: =
+      ....
+=
+def: on 
+ctx: ~
+stack:  ptr -- 
+desc: =
+	Stores a -1 (true) at the address 'ptr'.  Same as "true swap !"
+	=
+de desc: =
+      ....
+=
+def: sp 
+ctx: ~
+stack:  -- a 
+desc: =
+	Puts the current value of the stack pointer (ESI) on TOS.
+	=
+de desc: =
+      ....
+=
+def: 2* 
+ctx: ~
+stack:  n -- 2*n  
+desc: =
+	Multiply TOS by 2
+	=
+
+de desc: =
+      ....
+=
+def: 2/ 
+ctx: ~
+stack:  n -- 2*n  
+desc: =
+	Divide TOS by 2
+	=
+
+de desc: =
+      ....
+=
+def: .libs 
+ctx: ~
+stack:  -- 
+desc: =
+	Display list of libraries currently defined.  The handle shown is
+	0 if the library has not been loaded yet.  The word "::" indicates
+	the lib is not directly accessible.
+	=
+
+de desc: =
+      ....
+=
+def: .funcs 
+ctx: ~
+stack:  -- 
+desc: =
+	Display list of external functions currently defined.  The handle
+	shown is 0 if the function has not been loaded yet.  The word "::"
+	indicates the func is not directly accessible.
+	=
+
+de desc: =
+      ....
+=
+def: 3dup 
+ctx: ~
+stack:  a b c -- a b c a b c 
+desc: =
+	Similar to 2dup.  This has been used often enough to justify
+	adding it to the core.
+	=
+
+de desc: =
+      ....
+=
+def: 4dup 
+ctx: ~
+stack:  a b c d -- a b c d a b c d
+ver: 6.1.1
+desc: =
+	Like "dup" but for the top four stack items.
+	=
+
+de desc: =
+      ....
+=
+def: is 
+ctx: ~
+stack:  xt <name> -- 
+desc: =
+	Sets the deferred word "<name>" to execute "xt" when invoked.
+	Also set the default behavior of the word.  If you only want to
+	set the current-behavior, use ">defer" instead.
+	=
+de desc: =
+      ....
+=
+def: defer 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Create a deferred word "<name>". Initially this word will do
+	nothing.  Must be set to something more useful using "is".  
+	=
+
+de desc: =
+      ....
+=
+def: defer@ 
+ctx: ~
+stack:  xt -- xt' 
+desc: =
+	Given the xt of a deferred word, returns the current value the
+	word will execute.
+	=
+de desc: =
+      ....
+=
+def: defer@def
+ctx: ~
+stack:  xt -- xt' 
+ver: 6.0.12
+desc: =
+	Given the xt of a deferred word, returns the default value the
+	word will execute.
+	=
+de desc: =
+      ....
+=
+def: exceptions
+ctx: meta
+ver: 6.1.5
+desc: =
+	Exceptions in Reva include the CPU hardware exceptions like
+	"illegal instruction", protection errors like "illegal memory
+	write", as well as operator initiated actions such as "Ctrl+C
+	pressed".  These are all handled similarly.
+	
+	This should be contrasted with the "catch"/"throw" mechanism,
+	which is a programmer initiated action (usually in response to
+	a logic error or resource failure).  Those are also called
+	"exceptions", for lack of a better word ...
+
+	The CPU/user exceptions are handled by the "exception" word,
+	which needs to pass back the "xt" at which the user wishes to
+	continue processing.  The only special exception is "Ctrl+C"
+	or "Ctrl+Break", which is handled by calling the "ctrl-c"
+	word.
+
+=
+
+| new words: 6.0.4:
+
+de desc: =
+      ....
+=
+def: deferred-words 
+ctx: meta
+ver: 6.0.4
+desc: =
+	Deferred words are useful if you want to change the action a word
+	performs - for example, a 'print' word which might display to the
+	screen or print on the printer.
+
+	They are also useful when you have to make a word available before
+	it is defined (called a 'forward reference' in other languages).
+
+	A further use is permitting words to be redefined by later users.
+	Reva for example has 'key' and 'type' (among others) implemented
+	as deferred words.
+	=
+
+de desc: =
+      ....
+=
+def: >defer 
+ctx: meta
+ctx: ~
+stack:  xt <name> 
+ver: 6.0.4
+desc: =
+	Similar to "is", but does not affect default behavio?.  Changes
+	current behavior of the deferred word <name> to the "xt". If you
+	want to change the default behavior as well, use "is" instead.
+	=
+
+de desc: =
+      ....
+=
+def: undo 
+ctx: meta
+ctx: ~
+stack:  <name> 
+ver: 6.0.4
+desc: =
+	Restores the default behavior of a deferred word which was
+	overridden with ">defer" or "make"
+
+	=
+
+de desc: =
+      ....
+=
+def: make 
+ctx: meta
+ctx: ~
+stack:  <name> 
+ver: 6.0.4
+desc: =
+	Sets the default behavior of a deferred word to the code following
+	it.
+
+	Example:
+
+		defer joe
+		make joe ." Hi there!" cr ;
+
+	=
+
+de desc: =
+      ....
+=
+def: showhelp 
+ctx: meta
+ctx: ~help
+stack:  xt -- 
+ver: 6.0.4
+desc: =
+	Called to display help on the "xt".
+	=
+
+de desc: =
+      ....
+=
+def: nohelp 
+ctx: ~help
+stack:  a n -- 
+ver: 6.0.4
+desc: =
+	Called to display a help error message on the "a,n".
+	=
+
+de desc: =
+      ....
+=
+def: quote 
+ctx: ~strings
+stack:  <char> <...>char -- a n 
+ver: 6.0.4
+desc: =
+	Free-form string entry.  Parses input to find "<char>", which is
+	the character which will delimit the string.  Then parses input
+	until that character is found.
+
+	Used inside a colon-def, will compile the string.  Used from the
+	interpreter, will give a temporary address,count pair which must
+	either be consumed immediately or the contents transferred to a
+	safe location for later use.
+	=
+
+de desc: =
+      ....
+=
+def: ?literal 
+ctx: ~sys
+stack:  n -- n | 
+ver: 6.0.4
+desc: =
+	Compiles a literal value if compiling, otherwise lets it stay in
+	TOS.
+	=
+
+de desc: =
+      ....
+=
+def: then> 
+ctx: ~sys
+stack:  xt -- xt | 
+ver: 6.0.4
+desc: =
+	Compiles the XT if compiling, otherwise lets it stay in TOS.
+	=
+
+de desc: =
+      ....
+=
+def: ;then 
+ctx: ~
+stack:  -- 
+ver: 6.0.4
+desc: =
+	Exits the word and terminates the "if".  Same as ";; then"
+	=
+
+de desc: =
+      ....
+=
+def: ahead 
+ctx: ~
+stack:  -- a 
+ver: 6.0.4
+desc: =
+	Sets up a relative jump, and leaves "here" on TOS.  
+	=
+
+de desc: =
+      ....
+=
+def: >rel 
+ctx: ~sys
+stack:  xt -- rel 
+ver: 6.0.4
+desc: =
+	Converts an XT to a relative offset
+	=
+
+de desc: =
+      ....
+=
+def: rel> 
+ctx: ~sys
+stack:  rel -- xt 
+ver: 6.0.4
+desc: =
+	Converts a relative offset to an XT
+	=
+
+de desc: =
+      ....
+=
+def: vector 
+ctx: ~sys
+stack:  -- 
+ver: 6.0.4
+desc: =
+	Sets up a noop jump which can be vectored elsewhere.
+	Example:
+	  
+	  : v vector ." hi  there" ;
+	  v
+	  ' words >defer v
+	  v
+	=
+
+de desc: =
+      ....
+=
+def: vector! 
+ctx: ~sys
+stack:  rel -- 
+ver: 6.0.4
+desc: =
+	Same as "vector", but takes a relative offset to jump to
+	=
+
+| 6.0.5
+
+de desc: =
+      ....
+=
+def: xt>name 
+ctx: ~
+stack:  xt -- a n  
+ver: 6.0.5
+desc: =
+	Returns the name of the xt.
+	=
+
+de desc: =
+      ....
+=
+def: then,> 
+ctx: ~sys
+stack:  lit xt -- lit xt | 
+ver: 6.0.5
+desc: =
+	Compiles the literal and XT if compiling, otherwise lets them stay
+	in TOS.
+	=
+de desc: =
+        Kommt noch
+=
+
+def: 0do 
+ctx: ~
+stack:  max -- 
+ver: 6.0.5
+desc: =
+	Same as "0 do", but more efficient. Iterates from 0 to 'max'-1. 
+	=
+de desc: =
+        Das gleiche wie "0 do" aber effizienter. Iteriert von 0 bis 'max'-1
+        
+        Beispiel:
+        
+        ok> : 10- 10 0do ." -" loop cr ;
+
+        ok> 10-
+        ----------------
+
+=
+def: /string 
+ctx: ~strings
+stack:  a n m -- a1 n1 
+ver: 6.0.5
+desc: =
+	Advance the string by "m" characters.  Basically, cuts off the
+	first "m" characters.
+	=
+de desc: =
+        Kommt noch
+=
+
+def: z" 
+ctx: ~strings
+stack:  <name>" -- z 
+ver: 6.0.5
+desc: =
+	Create a NUL terminated string (C string) and put just the address
+	on TOS.  Essentially the same as using "zt" after a string.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: u< 
+ctx: ~
+stack:  n m -- flag 
+ver: 6.0.5
+desc: =
+	Same as "<" but compares as unsigned values
+	=
+de desc: =
+        Kommt noch
+=
+
+
+def: mnotail 
+ctx: ~
+stack:  -- 
+ver: 6.0.5
+desc: =
+	Like "notail" but for macro words.
+	=
+de desc: =
+        Kommt noch
+=
+
+
+def: xchg 
+ctx: ~
+stack:  n a -- a^  
+ver: 6.0.5
+desc: =
+	Swaps the value 'n' with the cell at address 'a', leaving that
+	cell on TOS.
+	=
+de desc: =
+        Kommt noch
+=
+
+
+def: findprev 
+ctx: ~util
+stack:  dict -- dict2 
+ver: 6.0.6
+desc: =
+	Given a dictionary entry pointer, finds the entry which is just
+	before it in the list of entries. 
+	=
+de desc: =
+        Kommt noch
+=
+
+def: <> 
+ctx: ~
+stack:  n m -- flag 
+ver: 6.0.6
+desc: +
+	Returns true if n!=m, false otherwise
+	+
+de desc: =
+        Kommt noch
+=
+
+def: (s0) 
+ctx: ~sys
+stack:  -- a 
+ver: 6.0.6
+desc: =
+	Address of value holding cu?rent beginning of stack.
+	=
+de desc: =
+        Kommt noch
+=
+
+def: put 
+ctx: ~util
+stack:  a n -- 
+ver: 6.0.6
+desc: =
+	Invert of "pick".  Puts value "a" at the "n"th location in stack.
+	=
+de desc: =
+        Kommt noch
+=
+
+def: inline{ 
+ctx: ~
+stack:  <bytes> <}> -- 
+ver: 6.0.6
+desc: =
+	Compiles "inline" the (hex) bytes following it.  This is good for
+	inline assembly code in a simple way:
+
+	Example:
+		: nop inline{ 90 } ;
+
+	If you want the numbers interpreted as other than 'hex', use the
+	numeric prefixes.
+
+	NOTE: This does *not* make the word an "inline" word!
+	=
+de desc: =
+        Kommt noch
+=
+
+def: (inline) 
+ctx: ~
+stack:  -- 
+ver: 6.0.6
+desc: =
+	Internally used by inline{
+	=
+de desc: =
+	Intern benutzt von inline{
+=
+
+def: 3drop 
+ctx: ~util
+stack:  a b c -- 
+ver: 6.0.6
+desc: =
+	Drop the three top items from the stack.
+	=
+de desc: =
+	Enfernt die obersten 3 Einträge vom Stack.
+=
+
+| 6.0.7
+
+def: .needs 
+ctx: ~
+stack:  -- 
+ver: 6.0.7
+desc: =
+	Shows list of files which have been loaded by "needs"
+	=
+
+de desc: =
+	Zeigt die Liste der Dateien die mit "needs" geladen wurden.
+=
+
+def: hex# 
+ctx: ~
+stack:  n -- a n 
+ver: 6.0.7
+desc: =
+	Prints "n" as a hex string.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: >base> 
+ctx: ~
+stack:  n -- 
+ver: 6.0.7
+desc: =
+	Sets the value of "base" to "n" temporarily.  When the calling
+	word exists, the "base" will be restored to what it was before.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: base! 
+ctx: ~
+stack:  n -- 
+ver: 6.0.7
+desc: =
+	Set the value of "base" to "n".
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: z, 
+ctx: ~util
+stack:  a n -- 
+ver: 6.0.7
+desc: =
+	Copies a string to "here" as a nul-terminated string.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: { 
+ctx: ~
+stack:  -- 
+ver: 6.0.7
+desc: =
+	Begins an "inline callback".  This is a sequence of words
+	terminated by "}", which can be called by other words.
+
+	NOTE: used to be called "cb{" and "}cb"
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: } 
+ctx: ~
+stack:  -- xt 
+ver: 6.0.7
+desc: =
+	Terminates an "inline callback" begun with "{".  Leaves the xt
+	of the callback in TOS, which can be passed to other words as
+	needed.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: ? 
+ctx: ~
+stack:  ptr -- 
+ver: 6.0.7
+desc: =
+	Same as "@ .".  That is, it prints the value of a variable.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: type_ 
+ctx: ~io
+ver: 6.0.7
+stack:  a n -- 
+desc: =
+	Same as "type space".
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: 2cell- 
+ctx: ~util
+ver: 6.0.7
+stack:  n -- n-8 
+desc: =
+	Same as "cell- cell-", but more efficient.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: 0drop; 
+ctx: ~util
+stack:  n -- n| 
+ver: 6.0.7
+desc: =
+	Similar to "0;", but drops the item under TOS as well, if TOS
+	is zero.
+	=
+
+de desc: *
+        Ähnlich wie "0;", aber das zweite Element auf dem Stack wird auch 
+        noch entfernt falls "n" gleich 0 ("n" == 0) ist.
+        
+        Beispiel: 
+        
+        ok> : 0drop;-test 0drop; ." Wort wurde regulär beendet" ;
+
+        ok> 1 2 3 0drop;-test
+        Wort wurde regulär beendet
+        ok> .s
+        (3) 1 2 3
+        
+        ok> 1 2 0 0drop;-test
+        
+        ok> .s
+        (1) 1
+        ok>
+*
+
+def: newclass 
+ctx: ~
+ver: 6.0.8
+stack:  -- 
+desc: =
+	Declares the last word defined as a new class defining word.=
+
+de desc: =
+        Kommt noch
+=
+def: (hide) 
+ctx: ~
+stack:  dict dict' -- 
+ver: 6.0.8
+desc: =
+	Given a dict entry and the preceding entry, hides the first
+	one =
+de desc: =
+        Kommt noch
+=
+
+| contexts
+
+
+def: ctx>name 
+ctx: ~
+stack:  ctx -- a n 
+ver: 6.0.8
+desc: =
+	Given the body ptr of a context, gives the name.=
+
+de desc: =
+        Kommt noch
+=
+def: exit~ 
+ctx: ~
+ver: 6.0.8
+stack:  -- 
+desc: =
+	Removes the current context from the search order, unless it
+	is the only context in the order.=
+
+de desc: =
+        Kommt noch
+=
+
+def: in~ 
+ctx: ~
+ver: 6.0.8
+stack:  <ctx> <word> -- 
+desc: =
+	Overrides the search order by looking for <word> in the
+	context <ctx>=
+
+de desc: =
+        Kommt noch
+=
+
+def: to~ 
+ctx: ~
+ver: 6.0.8
+stack:  <ctx> <word> -- 
+desc: =
+	Moves <word> from the current context, to <ctx>=
+
+de desc: =
+        Kommt noch
+=
+
+def: (to~)
+ctx: ~sys
+stack:  ctx dict -- 
+ver: 6.0.8
+desc: =
+	Internal implementation of to~=
+
+de desc: =
+        Kommt noch
+=
+
+def: setfind~ 
+ctx: ~
+stack:  xt <ctx> -- 
+ver: 6.0.8
+desc: =
+	Sets the "find-dict" for <ctx> to be "xt"=
+
+de desc: =
+        Kommt noch
+=
+
+def: setclass 
+ctx: ~
+ver: 6.0.8
+stack:  class -- 
+desc: =
+	Sets the class for this currently being-defined word to
+	whatever class was listed.=
+
+de desc: =
+        Kommt noch
+=
+
+def: .contexts 
+ctx: ~
+ver: 6.0.8
+stack:  -- 
+desc: =
+	Lists all contexts, whether visible currently or not.=
+
+de desc: =
+        Kommt noch
+=
+
+def: 'context 
+ctx: ~
+ver: 6.0.8
+stack:  xt -- 
+desc: =
+	Internal implementation for contexts.
+=
+
+de desc: =
+        Kommt noch
+=
+
+def: context: 
+ctx: ~
+ver: 6.0.8
+stack:  <name> -- 
+desc: =
+	Create a new context called "<name>".  Invoking the name of
+	the context makes it active and topmost in the search order.
+	New words get put in the topmost context.
+
+	A new context will be created only if a context by that name
+	in the search-order does not exist.  This lets you use, for
+	example:
+
+		context: ~mystuff
+
+	in several related files without worrying about the order the
+	files are used.
+=
+
+de desc: =
+        Kommt noch
+=
+
+def: .~ 
+ctx: ~
+stack:  -- 
+ver: 6.0.8
+desc: =
+	List current contexts in search order, leftmost is first
+=
+
+de desc: =
+        Kommt noch
+=
+
+def: reset~ 
+ctx: ~
+ver: 6.0.8
+stack:  -- 
+desc: =
+	Drops all contexts off the search order except the first one.=
+
+de desc: =
+        Kommt noch
+=
+
+def: xwords 
+ctx: ~
+ver: 6.0.8
+stack:  -- 
+desc: =
+	Shows all words in all contexts.=
+
+de desc: =
+        Zeigt alle Wörter in allen Kontexten.
+=
+
+def: +to 
+ctx: ~
+stack:  n <value> -- 
+ver: 6.0.8
+desc: =
+	Adds "n" to the <value>.=
+
+de desc: =
+        Kommt noch
+=
+
+def: |||
+ctx: ~
+stack: --
+ver: 6.0.9
+desc: =
+	Comment to end-of-file.  Useful especially in the library
+	files, to place help text in the same file as the code, but
+	after all the code.
+=
+
+de desc: =
+        Kommt noch
+=
+
+| ========== CORE WORDS (OS) ==========================
+orig: src/core{lin,win}.asm
+
+def: syscall 
+ctx: ~os
+os: Linux
+stack:  arg0...argN N+1 syscall -- result
+desc: =
+	Call the kernel directly using the syscall interface
+	NOTE: You really need to know what you are doing to use this
+	function.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: resize 
+ctx: ~
+stack:  a n -- a2 
+desc: =
+	Resize allocated memory "a" to "n" bytes. Returns the new buffer.
+	On failure, returns 0 (NULL pointer). Sets "ioerr".
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: free 
+ctx: ~
+stack:  a -- 
+desc: =
+	Free the memory address "a" which had been allocated with
+	"allocate".  Sets "ioerr".
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: allocate 
+ctx: ~
+stack:  n -- addr 
+desc: =
+	Allocates memory from the OS. Sets "ioerr".
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: fsize 
+ctx: ~io
+stack:  fileid -- n 
+desc: =
+	Given an open file handle, return the file size.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: write 
+ctx: ~io
+stack:  a n fileid -- 
+desc: =
+	Write 'n' bytes from address 'a' to 'fileid'.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: read 
+ctx: ~io
+stack:  a n fileid - n2 
+desc: =
+	Reads from 'fileid' into the buffer 'a n'.  'n2' is the number of
+	bytes read. 
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: close 
+ctx: ~io
+stack:  fileid -- 
+desc: =
+	Close "fileid" previously opened with 'open/r' 'open/rw' or
+	'creat'.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: open/r 
+ctx: ~io
+stack:  a n -- h 
+desc: =
+	Open the named file for reading.  Sets 'ioerr' appropriately to
+	indicate failure.  
+	
+	Will fail if the file does not exist or if the user has
+	insufficient privileges to access it.  In these cases, the
+	value of 'h' is indeterminate.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: open/rw 
+ctx: ~io
+stack:  a n -- h 
+desc: =
+	Like 'open/r' but open for both reading and writing.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: creat 
+ctx: ~io
+stack:  a n -- fileid 
+desc: =
+	Create a new file for reading and writing.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: (func) 
+ctx: ~sys
+stack:  a n lib -- handle 
+desc: =
+	Internal word used by 'func:' - you probably don't want to use it.
+	Returns a handle to the named funct?on from the library
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: (-lib) 
+ctx: ~sys
+stack:  handle -- 
+desc: =
+	You want to use "lib" instead.
+	OS code to unload the library handle (which had been created with
+	(lib))
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: (lib) 
+ctx: ~sys
+stack:  a n -- handle 
+desc: =
+	You want to use "lib" instead.
+	OS code to load the named library.  Returns a handle.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: key 
+ctx: ~io
+stack:  -- c 
+desc: =
+	Returns the ASCII value of a keypress, but only returns when CR
+	has been pressed
+	=
+de desc: =
+        Legt den ASCII Wert der gedrückten Taste auf den Stack. 
+        "key" wartet bis CR gedrückt wird.
+        
+        Beispiel:
+         
+        ok> key
+        a
+
+        ok>
+        ok> .s
+        (1) -159
+        ok> emit
+        a
+        ok> 
+        
+        =
+        
+def: emit 
+ctx: ~io
+stack:  c -- 
+desc: =
+	Print character corresponding to the ASCII value 'c'
+	=
+de desc: =
+        Gibt das Zeichen aus mit dem ASCII Wert "c".
+        
+        Beispiel:
+        
+        ok> 65 emit
+        A              
+=
+def: type 
+ctx: ~io
+stack:  a n -- 
+desc: =
+	Print a string (by default to the console).
+	NOTE: This word will not type a big string (32K or so) on Windows.
+	=
+de desc: =
+        Gibt einen String auf das Ausgabemedium aus. Die Standardausgabe
+        ist der Bildschirm.
+        Achtung: "type" gibt keine Strings aus die größer 32k sind.
+        
+        Beispiel:
+        
+        ok> " Hallo Ron" .s type
+        (2) 1127705 9 Hallo Ron
+        ok>
+=
+def: (bye) 
+ctx: ~sys
+stack:  n -- 
+desc: =
+	Leave Reva with errorcode "n"
+	=
+
+de desc: =
+        Kommt noch
+=
+
+| ========== CORE WORDS ==========================
+orig: src/revacore.asm
+
+def: state
+ctx: ~sys
+stack: -- a
+ver: 6.1.3
+desc: =
+	Variable containing the current compliation state.
+	"compiling?" is the same as "state @"
+=
+
+de desc: =
+        Kommt noch
+=
+
+def: slurp 
+ctx: ~util
+stack:  addr n -- addr2 n2 
+desc: =
+	Reads in file given by name and puts a string containing the
+	entire file on the stack. The string is allocated and needs to be
+	'free'd.  If the 'slurp' failed, the values "0 0" will be on the
+	stack.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: iterate 
+ctx: ~util
+stack:  xt list -- 
+ver: 6.0.7
+desc: =
+	Executes "xt" for each item in "list".  The "xt" must return
+	"false" to stop the iteration, or "true" to continue.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: link 
+ctx: ~util
+stack:  value list -- 
+ver: 6.0.7
+desc: =
+	Creates a new node in "list" and assigns "value" to it.  The node
+	is at the end of the list.  A "list" is simply a variable.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: /char 
+ctx: ~strings
+stack:  a n c -- a1 n1 
+desc: =
+	Find character 'c' in string. Returns string beginning with the
+	character found, or 0 0.  
+	=
+
+de desc: =
+        Kommt noch
+=
+def: \char 
+ctx: ~strings
+stack:  a n c -- a1 n1 
+desc: =
+	Same as /char but scans from the end of the string  
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: (.r) 
+ctx: ~
+stack:  x y -- a n 
+desc: =
+	Converts the number "x" into a string of width "y", using
+	"padchar" to fill in on the left if necessary.  Uses the current
+	"base" for numeric conversion.
+	
+	NOTE: The string returned should be saved elsewhere if you won't
+	use it immediately.
+
+	NOTE: Does *not* truncate the outputted number to the width
+	specified.
+	
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: (save) 
+ctx: ~util
+stack:  -- 
+desc: =
+	Save the state of the program to the file named.  
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: appname 
+ctx: ~util
+stack:  -- a 
+desc: =
+	Return a NUL terminated string containing the fully qualified name
+	of the actual program file this application started from.
+	=
+
+de desc: =
+        Kommt noch
+=
+
+def: forth 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets the default class ("default_class") to be "'forth".
+	Subsequent words will be of the "forth" class (e.g. "normal" Forth
+	words)
+	=
+
+de desc: =
+        Kommt noch
+=
+def: macro 
+ctx: ~
+stack:  -- 
+desc: =
+	Sets the default class ("default_class") to be "'macro".
+	Subsequent words will be of the "macro" class - e.g, words which
+	are executed as soon as they are interpreted (like IMMEDIATE in
+	ANS)
+	=
+
+de desc: =
+        Kommt noch
+=
+def: parse 
+ctx: ~
+stack:  char <text>char -- a n 
+desc: =
+	Parse input stream until "char"; returns the string corresponding
+	to the read portion.  The remainder after "char" is still in the
+	input stream, and will be processed next.
+	=
+
+de desc: =
+        Kommt noch
+=
+def: parse/ 
+ctx: ~util
+stack:  char <text>char -- a n 
+desc: =
+	Same as "parse", but handles escaped "\" characters
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: eval 
+ctx: ~
+stack:  a n -- 
+desc: =
+	Interpret the string as if it had been typed in at the console
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: (include)
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Same as 'include', but reads the string passed as a file name.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: include 
+ctx: ~util
+stack:  <name> -- 
+desc: =
+	Read in the file "<name>" and evaluate it. Silent on failure, but
+	'ioerr' will be non-zero.
+
+	NOTE: the stack pointer is restored to whatever it was before
+	the "include".  That is, if the file to be included push
+	values on the stack, those values will NOT be present after
+	the "include".  This is intentional.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ,  
+ctx: ~
+stack:  n -- 
+desc: =
+	Put one cell at "here", and increment here by
+	the number of bytes put there.=
+
+de desc: =
+        Kommt noch
+=
+def: 1, 
+ctx: ~
+stack:  n -- 
+desc: =
+	Put one byte at "here", and increment here by
+	the number of bytes put there. =
+
+de desc: =
+        Kommt noch
+=
+def: 2, 
+ctx: ~
+stack:  n -- 
+desc: =
+	Put two bytes at "here", and increment here by
+	the number of bytes put there. =
+
+de desc: =
+        Kommt noch
+=
+def: 3, 
+ctx: ~
+stack:  n -- 
+desc: =
+	Put three bytes at "here", and increment here by
+	the number of bytes put there. =
+
+
+de desc: =
+        Kommt noch
+=
+def: variable 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Create a new variable called "<name>", with an intial value of zero 
+	=
+
+de desc: =
+        Kommt noch
+=
+def: variable, 
+ctx: ~
+stack:  n <name> -- 
+desc: =
+	Same as "variable", but initializes with the value "n" 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: base 
+ctx: ~
+stack:  -- a 
+desc: =
+	Returns a pointer to a variable containing the current base for
+	number conversion.
+
+	Example:
+
+		6 2 base ! .
+
+		prints "6" in binary, "110"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 2dup 
+ctx: ~
+stack:  a b -- a b a b 
+desc: =
+	Duplicate top two cells 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: last 
+ctx: ~
+stack:  -- a 
+desc: =
+	Address of variable holding the address of the most recently
+	defined dictionary entry
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: pad 
+ctx: ~
+stack:  -- a 
+desc: =
+	Return the address of "pad" ( a temporary buffer used by many
+	words ).   This buffer is 1024 bytes large.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: (here) 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Returns a pointer to the variable holding the value of 'here'
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: dict 
+ctx: ~sys
+stack:  -- n 
+desc: =
+	Returns the current dictionary pointer.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ] 
+ctx: ~
+stack:  -- 
+desc: =
+	Return to the compiler
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: [ 
+ctx: ~
+stack:  -- 
+desc: =
+	Stop compiling and switch to the interpreter 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ; 
+ctx: ~
+stack:  -- 
+desc: =
+	End a word definition started with ":".  Compiles a 'return' into
+	the code space.  If the last thing compiled was a call to a word,
+	optimizes it to a 'jump' to that word - thus implementing
+	"tail-call elimination".  It also signals that we've stopped
+	compiling.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: : 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Create a new word called "<name>".  Everything between this and
+	the corresponding ";" are executed when "<name>" is invoked.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >digit 
+ctx: ~util
+stack:  n -- c 
+desc: =
+	Convert digit to its ASCII representation 
+	Example:
+		10 >digit emit
+	shows 'A'
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: digit> 
+ctx: ~util
+stack:  c -- n 
+desc: =
+?Convert ASCII to the corresponding digit 
+	Example:
+		'9 digit> .
+	shows '9'
+
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: word?  
+ctx: ~sys
+stack:  a n -- a n 0 | xt 1 | n 2 | n m 3 | 4 
+desc: =
+	Last resort interpreter hook.  This gets called when the
+	interpreter cannot determine that a piece of text is a word or a
+	number.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >double 
+ctx: ~doubles
+ver: 6.0.4
+stack:  a n -- d true | a n false 
+desc: =
+	Converts a string to a double
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >single 
+ctx: ~util
+stack:  a n -- m true | a n false 
+desc: =
+	Convert string to a number.  TOS will be true or false; true if
+	the conversion succeeded - then 'm' will be the numeric value;
+	false if it failed, then 'a n' is the original string.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: find-dict 
+ctx: ~sys
+stack:  a n -- dict | a n 0 
+desc: =
+	Same as "find" but returns the dictionary pointer for the word.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: appstart 
+ctx: ~sys
+stack:  -- 
+desc: =
+	Similar to "main" in C,  this is the starting point for the
+	application itself. 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: interp 
+ctx: ~sys
+stack:  -- 
+desc: =
+	Force the interpreter loop to start again 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: compile 
+ctx: ~
+stack:  a -- 
+desc: =
+	Compiles a call to the address "a"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: here, 
+ctx: ~util
+stack:  a n -- 
+desc: =
+	Stores "n" bytes from address "a" to "here" and adjusts "here".  
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: align 
+ctx: ~
+stack:  -- 
+desc: =
+	Align "here" to the next four-byte boundary.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: parsews 
+ctx: ~
+stack:  -- a n 
+desc: =
+	Same as parse, but eliminates any "whitespace" from before or
+	after the word. 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: os 
+ctx: ~util
+stack:  -- n 
+desc: =
+	Returns 1 for Linux, 0 for Windows.  
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ;; 
+ctx: ~
+stack:  -- 
+desc: =
+	Exit the current word without signalling that compilation has
+	stopped.  It also applies the "tail-call elimination" that ";"
+	does.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: literal 
+ctx: ~
+stack:  n -- 
+desc: =
+	Compile the top stack item into the current word, as a literal. 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: header 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	Create a named entry "<name>" in the dictionary. 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: (header) 
+ctx: ~
+stack:  a n -- 
+desc: =
+	Create a new entry in the dictionary named for the passed-in string.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: stdin 
+ctx: ~
+stack:  -- n 
+desc: =
+	Return handle of standard-input
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: stdout 
+ctx: ~
+stack:  -- n 
+desc: =
+	Return handle of standard-output
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: hinst  
+ctx: ~os
+stack:  -- n 
+desc: =
+	Return process instance handle =
+
+
+de desc: =
+        Kommt noch
+=
+def: zcount 
+ctx: ~strings
+stack:  z -- a n 
+desc: =
+	Convert NUL-terminated string to address-count "Forth" format.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: zt 
+ctx: ~strings
+stack:  a n -- z 
+desc: =
+	Zero terminate string "a,n". Must be sure there is space for the
+	terminating NUL before using!
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: fill 
+ctx: ~
+stack:  a c b -- 
+desc: =
+	Fill the memory at "a" with "c" copies of byte "b" 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: cmove> 
+ctx: ~
+stack:  src dst n -- 
+ver: 6.0.5
+desc: =
+	Moves "n" bytes from "src" to "dst", from high to low addresses.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: move 
+ctx: ~
+stack:  src dst n -- 
+desc: =
+	Moves "n" bytes from "src" to "dst".
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: argc 
+ctx: ~util
+stack:  -- n 
+desc: =
+	One more than the number of command-line arguments passed to Reva.
+	So if no arguments were passed, argc is 1  
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: (argv) 
+ctx: ~util
+stack:  -- 
+desc: =
+	Pointer to the raw 'argv' data.  You probably want 'argv' instead.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: src 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Address of variable holding current value of ?ource pointer.  If
+	that pointer is zero, the input is from the keyboard
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: +place 
+ctx: ~strings
+stack:  a n cstr -- 
+desc: =
+	Append the string to a cstring, which is up to 255 characters.  
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: place 
+ctx: ~strings
+stack:  a n a2 -- 
+desc: =
+	Store the string "a,n" as a counted string at "a2" - up to 255
+	characters 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: cmpi 
+ctx: ~strings
+stack:  a1 n1 a2 n2 -- n 
+desc: =
+	Save as 'cmp', but compares ignoring case, e.g. 'A' and 'a' are
+	equivalent.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: cmp 
+ctx: ~strings
+stack:  a1 n1 a2 n2 -- n 
+desc: =
+	Compare two strings, lexicographically. 0 means equal. Useful for
+	sorting lists.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: search 
+ctx: ~strings
+stack:  a1 n1 a2 n2 -- a3 n3 true | false 
+desc: =
+	Look for substring "a2,n2" in "a1,n1". Returns 0 on failure, or the
+	matching tail "a3,n3", and true.  The matching substring is
+	the first "n2" characters of (a3,n3).  The characters after
+	"n3" are the remainder of the original string.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: tp 
+ctx: ~sys
+stack:  -- a  
+desc: =
+	Puts the pointer to the input buffer (TIB) on TOS.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: tib 
+ctx: ~sys
+stack:  -- tib 
+desc: =
+	Variable holding value of "terminal input buffer" 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >in 
+ctx: ~sys
+stack:  -- tin 
+desc: =
+	Variable holding pointer to current location in tib. 
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: fnvhash 
+ctx: ~util
+stack:  a n -- m
+desc: =
+	Returns the FNV-1a hash of the string passed in.=
+
+
+de desc: =
+        Kommt noch
+=
+def: (call) 
+ctx: ~sys
+stack:  func n -- 
+desc: =
+	Internal word used by 'func:' - you probably don't want to use it.
+	Calls 'func:', pushing N params from the Forth stack to the CPU
+	stack.  Cleans up the CPU stack afterwards, and leaves the
+	function result on TOS (garbage value if a "void" function
+	return).  
+	=
+
+de desc: =
+        Kommt noch
+=
+def: onstartup 
+ctx: ~sys
+stack:  xt -- 
+desc: =
+	Add the xt to the 'startup handlers list'.  This xt will be
+	executed when "cold" is called, just before "appstart" is called.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: onexit 
+ctx: ~sys
+stack:  xt -- 
+desc: =
+	Add the xt to the 'exit handlers list'.  This xt will be executed
+	when "bye" is called
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: padchar 
+ctx: ~
+stack:  -- a 
+desc: =
+	Address of variable holding the value used to 'pad' output
+	numbers.  Default is a space, but can be changed to anything in
+	order to get special output.
+
+	Example:
+		'* padchar !
+		234 10 .r
+
+	prints: *******234
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: rp0 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Variable holding value of start of return stack
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ioerr 
+ctx: ~io
+stack:  -- a 
+desc: =
+	The address of a variable containing the last "I/O error result",
+	which is zero for success.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: catch 
+ctx: ~
+stack:  xt -- throwcode 
+desc: =
+	Execute "xt", catching any throw which may have occurred. If no
+	throw happened, 'throwcode' is zero - otherwise it's the value
+	'throw'n
+	throwcode of zero. 
+	=
+
+de desc: =
+        Kommt noch
+=
+def: throw 
+ctx: ~
+stack:  n -- 
+desc: =
+	If TOS is zero, does nothing. Otherwise, passes control to the
+	most recent "catch"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'defer 
+ctx: ~
+ver: 6.0.4
+stack:  xt -- 
+desc: =
+	Class of defer words
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'macront 
+ctx: ~
+stack:  xt -- 
+ver: 6.0.6
+desc: =
+	Defines behavior of "mnotail" words.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'macro 
+ctx: ~
+stack:  xt -- 
+desc: =
+	Implementation of the "macro" class.=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'inline 
+ctx: ~
+stack:  xt -- 
+desc: =
+	Implementation of the "inline" class.=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'notail 
+ctx: ~
+stack:  xt -- 
+desc: =
+	Implementation of the "notail" class.=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'forth 
+ctx: ~
+stack:  xt -- 
+desc: =
+	Implementation of the "forth" c?ass.=
+
+
+de desc: =
+        Kommt noch
+=
+def:  'value
+ctx: ~
+stack:  xt -- 
+ver: 6.0.8
+desc: =
+	Class for "value"s
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'constant 
+ctx: ~
+stack:  xt -- 
+ver: 6.0.7
+desc: =
+	Class of constants
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'variable 
+ctx: ~
+stack:  xt -- 
+ver: 6.0.7
+desc: =
+	Class of variables
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >lz 
+ctx: ~util
+stack:  a n a2 -- a2 m 
+desc: =
+	Compress the buffer "a,n" into the buffer "a2".  Returns "a2,m",
+	where 'm' is the compressed length.  The buffer 'a2' must be big
+	enough to contain 'lzmax' characters - e.g. "n lzmax allocate"
+	will allocate a buffer big enough to hold the worst-case size of
+	compressing 'n' bytes.  Used by the turnkey code to compress the
+	dictionary and code data.
+	=
+
+de desc: =
+        Kommt noch
+=
+def: lz> 
+ctx: ~util
+stack:  a n a2 -- a2 n 
+desc: =
+	Decompress the (previously compressed) buffer "a,n" into buffer
+	"a2,n".  The 'n' is the uncompressed size of the buffer - so you
+	need to know this when you call the "lz>" word!
+	=
+
+de desc: =
+        Kommt noch
+=
+def: lzmax 
+ctx: ~util
+stack:  n -- m 
+desc: =
+	Returns the maximum possible size required to compress a buffer of
+	'n' bytes.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: h0 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Variable holding value of start of code space (where "here"
+	starts)
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: d0 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Variable holding value of start of dict space (where dictionary
+	starts)
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: s0 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	Variable holding value of start of stack space
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: default_class 
+ctx: ~sys
+stack:  -- n 
+desc: =
+	Pointer to a variable containing the class which new words will
+	use.=
+
+
+de desc: =
+        Kommt noch
+=
+def: prompt 
+ctx: ~sys
+stack:  -- 
+desc: =
+	Called whenever Reva is waiting for input from the keyboard.  The
+	default action is to print "ok> "
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: cold 
+ctx: ~sys
+stack:  -- 
+desc: =
+	Resets the Reva virtual-machine to 'startup' state
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: nosavedict
+ctx: ~
+stack: -- a
+ver: 6.0.11
+desc: =
+	Variable which controls whether or not "save" also writes out
+	the dictionary.  Setting this to a non-zero value will make
+	turnkey applications which have no dictionary.
+=
+
+de desc: =
+        Kommt noch
+=
+def: -link
+ctx: ~
+stack: value list --
+ver: 6.1.2
+desc: +
+	Creates a new node in "list" and assigns "value" to it.  The node
+	is at the beginning of the list.  A "list" is simply a variable.
++
+
+de desc: =
+        Kommt noch
+=
+def: do_cr
+ctx: ~
+stack: --
+ver: 6.1.3
+desc: +
+	Called whenever the "parsews" sees a CR (character $0a).  The
+	default value of this word does nothing; it's intended as a
+	hook for those applications which need to know when a newline
+	has occurred in the input stream.
++
+
+
+de desc: =
+        Kommt noch
+=
+def: ;inline
+ctx: ~
+stack: --
+ver: 6.1.2
+desc: +
+	Terminate the current colon-def but make it an "inline" word.
+	This replaces the former word "inline", but with much the same
+	effect.
+
+	An inlined word cannot call other words, nor jump outside its
+	own code.  This is because jumps are relative, and the
+	";inline" code will be copied into whatever word uses it.
+
+	Generally (at least on 32-bit x86 platforms), an inlined word
+	should be five or fewer bytes.
++
+
+orig: src/reva.f
+
+de desc: =
+        Kommt noch
+=
+def: _2dup 
+ctx: ~
+stack:  a b c -- a b a b c
+ver: 6.1.1
+desc: =
+	Duplicate two cells just under TOS
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: _2nip 
+ctx: ~
+stack:  a b c -- c
+ver: 6.1.1
+desc: =
+	Removes two cells just under TOS
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: -swap
+ctx: ~
+stack: a b c -- b a c
+desc: =
+    Swap the second and third stack items.
+=
+
+
+
+de desc: =
+        Kommt noch
+=
+def: lastxt
+ctx: ~
+ver: 6.1.1
+stack:  -- n 
+desc: =
+	Same as "last @ >xt @"
+	=
+
+
+
+de desc: =
+        Kommt noch
+=
+def: case
+ctx: ~
+stack: -- 
+ver: 6.0.11
+desc: =
+	Begins a "case ... endcase" construct.  Used instead of
+	multiple "if ... else ?.. then".
+
+	Example:
+
+		case
+			1 of ... endof
+			4 of ... endof
+			| default case is here
+		endcase
+
+	If none of the cases is handled, it falls through to the
+	"default case" section.  The case selector will be in TOS
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: endcase
+ctx: ~
+stack: -- 
+ver: 6.0.11
+desc: =
+	Terminates a "case ... endcase" construct.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: of
+ctx: ~
+stack: n -- 
+ver: 6.0.11
+desc: +
+	Begins a "case selection".  If the case selector matches 'n',
+	then execution continues after the "of".  Otherwise it
+	continues after the matching "endof".  Essentially the same
+	as:
+
+		n over =if drop ... endif
++
+
+de desc: =
+        Kommt noch
+=
+def: endof
+ctx: ~
+stack: -- 
+ver: 6.0.11
+desc: +
+	Terminates a "case selection", whether begun with "of",
+	"strof" or "rangeof"
++
+
+de desc: =
+        Kommt noch
+=
+def: strof
+ctx: ~
+stack: a n -- 
+ver: 6.0.11
+desc: +
+	Same as "of", but the case selector is a string (a,n)
+	instead of a cell
++
+
+de desc: =
+        Kommt noch
+=
+def: rangeof
+ctx: ~
+stack: low high -- 
+ver: 6.0.11
+desc: +
+	Same as "of", but the case selector is tested against the
+	range (low,high), and the case is selected if the selector is
+	"between" (inclusive).
++
+
+de desc: =
+        Kommt noch
+=
+def: clamp
+ctx: ~util
+stack: n max -- n
+ver: 6.1.10
+desc: +
+	"Clamps" the value "n" to the range 0..max, inclusive.
++
+
+de desc: =
+        Kommt noch
+=
+def: defer:
+ctx: ~
+stack: <name> ...code... --
+ver: 6.1.10
+desc: +
+	Same as "defer <name> make <name> ...code..."
++
+
+
+de desc: =
+        Kommt noch
+=
+def: makeexename
+ctx: ~
+stack: a n -- a' n'
+ver: 6.0.12
+desc: =
+	Given a base name of a file, returns the "correct" file name
+	for an executable.  For example, on Windows:
+
+		" reva" makeexename
+
+	Returns "reva.exe".  On Linux it would return "reva".
+=
+
+de desc: =
+        Kommt noch
+=
+def: caught
+ctx: ~reva
+stack: n -- 
+ver: 6.0.12
+desc: =
+	Deferred word.  The default version of it simply prints
+	"Caught: " and the value of "n", which is the "throw-code"
+	passed to it.
+
+	This word is part of the default Reva "appstart", and you may
+	use it to do something different if an unhandled exception is
+	thrown.
+=
+
+de desc: =
+        Kommt noch
+=
+def: xfind
+ctx: ~
+stack: <name> -- 
+ver: 6.0.13
+desc: =
+	Looks for the word "<name>" in every context, and prints the
+	names of all contexts in which it can be found.
+=
+
+de desc: =
+        Kommt noch
+=
+def: (xfind)
+ctx: ~
+stack: a n -- 
+ver: 6.0.13
+desc: =
+	Same as "xfind", but uses the string (a,n) passed into it.
+=
+
+de desc: =
+        Kommt noch
+=
+def: push~
+ctx: ~
+stack: --
+ver: 6.0.13
+desc: =
+	Saves the current depth of the context "search order", to be
+	restored later using "pop~".  This is intended mainly for
+	library authors who might use it like so:
+
+		| order is now: ~ ~util ~strings
+		push~
+		~sys ~ context: ~xyz
+		~xyz
+		| order is now: ~xyz ~ ~sys ~ ~util ~strings
+			...
+		pop~
+		| order is now: ~ ~util ~strings
+
+	Essentially it makes managing arbitrary context depth easy.
+	Just be aware that one should NOT use "with~", at least not as
+	the first context is added, since that will result in an
+	incorrect ordering after the final "pop~".  
+
+	This word does NOT save the actual ordering, it merely
+	saves the ordering depth.
+=
+
+de desc: =
+        Kommt noch
+=
+def: pop~
+ctx: ~
+stack: --
+ver: 6.0.13
+desc: =
+	Companion to "push~", it restores the context search order.
+
+	This word does NOT restore the actual ordering, it merely
+	restores the ordering depth.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'does
+ctx: ~
+stack: xt -- 
+ver: 6.1.2
+desc: =
+	Class handler for words using 'does>'.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: 2nip 
+ctx: ~
+stack:  a b c d -- c d
+ver: 6.1.1
+desc: =
+	"nip" for double-cells.  Equivalent of "2swap 2drop".  
+	=
+
+de desc: =
+        Kommt noch
+=
+def: chdir 
+ctx: ~os
+stack:  a n --
+ver: 6.1.3
+desc: =
+	Changes the current working directory to (a,n).
+	=
+
+de desc: =
+        Kommt noch
+=
+def: getcwd 
+ctx: ~os
+stack:  -- a n
+ver: 6.1.3
+desc: =
+	Retrieves the current working directory.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: of 
+ctx: ~
+stack: -- ?ver: 6.0.4
+desc: @
+	Equivalent of "over =if drop"
+	@
+
+
+de desc: =
+        Kommt noch
+=
+def: bounds
+ctx: ~strings
+stack: a n -- a+n a
+ver: 6.1.9
+desc: =
+	Converts the string (a,n) into a (endaddress,startaddress)
+	suitable for using as arguments to a "do..loop".
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: &&
+ctx: ~
+stack: a b -- flag
+ver: 6.1.9
+desc: =
+	Logical "and" of a and b.  Not a bitwise "and".
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: ||
+ctx: ~
+stack: a b -- flag
+ver: 6.1.9
+desc: =
+	Logical "or" of a and b.  Not a bitwise "or".
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: .used
+ctx: ~
+stack: -- 
+ver: 6.1.9
+desc: =
+	Prints the memory usage (code and dictionary) of the program,
+	besides that used by the Reva core itself.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: _1+
+ctx: ~
+stack: a b --  a+1 b
+ver: 6.1.9
+desc: =
+	Increment the second stack item.  Like "1+" but for the item
+	under TOS.  Much more efficient than "swap 1+ swap"
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: _1-
+ctx: ~
+stack: a b --  a-1 b
+ver: 6.1.9
+desc: =
+	Decrement the second stack item.  Like "1-" but for the item
+	under TOS.  Much more efficient than "swap 1- swap"
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: _+
+ctx: ~
+stack: a b n --  a+n b
+ver: 6.1.9
+desc: =
+	Add "n" to the second stack item.  Like "+" but for the item
+	under TOS.  Much more efficient than "rot + swap"
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: dictgone
+ctx: ~
+stack: --  
+ver: 6.1.9
+desc: =
+	Word which gets called when the dictionary is out of space.
+	The default Reva behavior is to print a message and quit.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: heapgone
+ctx: ~
+stack: --  
+ver: 6.1.9
+desc: =
+	Word which gets called when the code area is out of space.
+	The default Reva behavior is to print a message and quit.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: parseln
+ctx: ~
+stack: -- a n
+ver: 6.1.9
+desc: =
+	Same as "10 parse".  Returns the entire line after the word.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: revaused
+ctx: ~
+stack: -- a 
+ver: 6.1.9
+desc: =
+	Variable containing the "used" value after Reva has been
+	compiled.  Used by ".used" and by "save" and "(save)" to show
+	how much space is taken by the current program.
+=
+| ============== REMOVED WORDS ===============
+orig: REMOVED
+
+
+de desc: =
+        Kommt noch
+=
+def: last!
+ctx: ~util
+ver: 6.0.9
+stack: n --  
+desc: =
+	REMOVED in 7.0.3
+	Same as "last !"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: last@
+ctx: ~util
+ver: 6.0.9
+stack:  -- n 
+desc: =
+	REMOVED in 7.0.3
+	Same as "last @"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: ?lib 
+ctx: ~
+ver: 6.0.5
+stack:  a n a n <name> -- 
+desc: =
+	REMOVED in 6.1.9
+	Convenience wrapper around "lib".
+	Load either the Linux or the Windows library as specified.  First
+	string is the Linux one, the second string is the Windows version.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: dodefer 
+ctx: ~
+ver: 6.0.4
+stack:  -- 
+desc: =
+	REMOVED in 6.1.1
+	Internal implementation word for defer
+	=
+
+de desc: =
+        Kommt noch
+=
+def: dovar 
+ctx: ~sys
+stack:  -- a 
+desc: =
+	REMOVED in 6.1.1
+	Returns the address of the code which handles 'variables'.=
+
+
+de desc: =
+        Kommt noch
+=
+def: d+  
+ctx: ~doubles
+ver: 6.0.4
+stack:  d1 d2 -- d3 
+desc: =
+	MOVED TO math/doubles in 6.0.11
+	Adds "d1" and "d2" to make "d3"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: d-
+ctx: ~doubles
+ver: 6.0.4
+stack:  d1 d2 -- d3 
+desc: =
+	MOVED TO math/doubles in 6.0.11
+	Subtracts "d2" from "d1" to make "d3"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: cleanup 
+ctx: ~sys
+stack:  -- 
+desc: =
+	REMOVED in 6.1.2
+	Deferred word which is called by the default 'bye'. Useful for
+	closing files etc.  =
+
+
+de desc: =
+        Kommt noch
+=
+def: 'mnotail 
+ctx: ~
+stack:  xt -- 
+ver: 6.0.5
+desc: =
+	REMOVED in 6.1.2
+	Implementation of the "mnotail" class.=
+
+
+de desc: =
+        Kommt noch
+=
+def: (env) 
+ctx: ~sys
+stack:  -- 
+desc: =
+	REMOVED in 6.1.1
+	Pointer to environment strings array.  You probably want "getenv"
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: inline 
+ctx: ~
+stack:  -- 
+desc: =
+	REMOVED: 6.1.2
+	Sets the default class ("default_class") to be "'inline".
+	Subsequent words will be o? the "inline" class - e.g, words whose
+	bodies are copied directly into the compiled code - rather than
+	the usual, which is to compile a call to the word's code
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: 'alias 
+ctx: ~
+stack:  xt -- 
+ver: 6.0.7
+desc: =
+	REMOVED: 6.1.2
+	Class of aliases
+	=
+
+de desc: =
+        Kommt noch
+=
+def: (find?) 
+ctx: ~
+stack:  a n -- dict 
+ver: 6.0.6
+desc: =
+	REMOVED in 6.0.10
+	Same as find-dict, but exits calling word if it did not find the
+	entry.
+	=
+
+de desc: =
+        Kommt noch
+=
+def: dodoes 
+ctx: ~sys
+stack:  -- 
+desc: =
+	REMOVED: 6.1.2
+	Used to implement "does>"=
+
+
+de desc: =
+        Kommt noch
+=
+def: loc: 
+ctx: ~
+stack:  -- 
+desc: =
+	REMOVED in 6.0.10
+	Begins a 'local definitions' list
+	Anything defined between loc: and loc; is "local" and not visible
+	in the dictionary unless specifically exposed.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: loc; 
+ctx: ~
+stack:  -- 
+desc: =
+	REMOVED in 6.0.10
+	Ends a 'local definitions' list.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: reveal 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	REMOVED in 6.0.10
+	Used inside a loc:...loc; block, makes the word <name> visible
+	outside that block.
+	=
+
+
+de desc: =
+        Kommt noch
+=
+def: >lit 
+ctx: ~
+stack:  xt -- xt' 
+desc: =
+	REMOVED in 6.0.9
+	Takes the xt of a 'literal', and returns the value it points to=
+
+
+de desc: =
+        Kommt noch
+=
+def: >size 
+ctx: ~util
+stack:  dict -- a 
+desc: =
+	REMOVED in 6.1.2
+	Return the size field pointer from a dictionary pointer.
+=
+
+
+de desc: =
+        Kommt noch
+=
+def: my 
+ctx: ~
+stack:  -- 
+ver: 6.0.4
+desc: =
+	REMOVED in 6.1.9
+	Moved to lib/util/disasm, where it is used
+	=
+
+de desc: =
+        Kommt noch
+=
+
+
+def: defaulthelp
+ctx: meta
+stack: --
+desc: =
+	Type 'help' followed by the word you want help on, to get help
+	specific to that word.  For example:
+
+		help @
+
+	Will display help about the word "@"
+
+	You may also ask for help about certain topics:
+
+		classes libraries preprocessor stack-ops file-io
+		console-io conditionals flow-control program-control
+		strings throw-codes languages
+
+	Asking for help on a context shows all the words in that context.  Asking for
+	help on a library (without the leading "lib/") shows all the words in that
+	library.
+
+	Use "help/" to search for the word or a description which may contain that word.
+=
+
+
+def: help-nohelp
+ctx: meta
+desc: =
+Sorry, I can't find help for the word: =
+def: help-notdefined
+ctx: meta
+desc: =
+It does not appear to be defined currently, either.
+=
+def: help-contexts
+ctx: meta
+desc: =
+	These are the contexts known to Reva (ask for help on each one to see which
+	words are defined in them):
+=
+
+def: help-libs
+ctx: meta
+desc: =
+	The set of words built-in to Reva is impressive considering the small size of
+	the program.  However, Reva also provides additional words covering a variety of
+	fields, ready for use. To use them, see the word "needs".
+	These extra 'libraries' are in the 'lib' subdirectory, and are currently:
+=
+def: help-total-lib
+ctx: meta
+desc: =
+words in the library
+=
+def: help-total-ctx
+ctx: meta
+desc: =
+words in the context
+=
+def: help-context:
+ctx: meta
+desc: =
+Context:=
+def: help-source:
+ctx: meta
+desc: =
+Source in:=
+
+def: help-only:
+ctx: meta
+desc: =
+ONLY=
+def: help-version:
+ctx: meta
+desc: =
+Version:=
+
+def: seealso
+ctx: meta
+desc: =
+See also: =
+
+def: languages1
+ctx: meta
+desc: =
+	English is the default language of Reva's help system.  As time progresses,
+	support for other languages is being added.  Currently, the languages known
+	to Reva are:
+=
+def: languages2
+ctx: meta
+desc: =
+	To use one of these languages as your primary help language, please set the
+	environment variable 'REVALANG' to the language you wish to use.
+=
+
+
+related: push~ pop~ with~ reva reset~ 
+related: xfind (xfind) find words
+related: case endcase of endof strof rangeof
+related: os osname
+related: c! c@ 
+related: i j do 0do loop unloop remains more skip eleave leave while
+related: @ ! +! ++ -- on off variable xchg xchg2
+related: , 1, 2, 3,
+related: asciiz, asciizl, z,
+related: align aligned
+related: allocate free resize
+related: move cmove
+related: w! w@
+related: 2! 2! 2variable
+related: strings " place c+place +place lplace +lplace c+lplace lcount ." /char \char chop -chop split rsplit cmp cmpi count lc search zt zcount z" 0term quote /string
+related: ( |
+related: cell+ 2cell+ 3cell+ 4cell+ cell- 2cell-
+related: >lz lz> lzmax
+related: ms ms@ time&date
+related: scratch temp pad
+related: slurp include needs (include) ioerr (needs)
+related: true false and or xor not
+related: #! @rem
+related: >name >class >size >xt xt>size >body body>
+related: 0; 00; 0drop;
+related: : :: ; ;;
+related: >in src tib
+related: create (create) does> 'does super>
+related: [ ] compile back create (create) does> header (header) ' '' ['] find find-dict findprev
+related: alias alias: 
+related: bye (bye)
+related: constant variable value to +to variable,
+related: [IF] [THEN] [ELSE] [DEFINED] preprocessor
+related: eval interp program-control
+related: execute @execute exec
+related: >r r> r@ rdrop >rr rr> r-stack-ops rp0 rpick rp@
+related: here (here) dict
+related: last lastxt find
+related: needs libdir REVAUSERLIB (needs)
+related: libdir appdir needs REVAUSERLIB appname pathsep (needs)
+related: parse parsews parse/
+related: reset cold appstart onstartup onexit
+related: h0 d0 s0 rp0
+related: literal literal, compile ?literal
+related: < > = u< <>
+related: . (.) (.r) .r (p.r) base .x .2x padchar hex# ?
+related: decimal octal hex binary base >base> base!
+related: >digit digit>
+related: not negate invert
+related: max min
+related: * / */ mod /mod + - << >> 1+ 1- 2* 2/
+related: argv argc (argv) argcend
+related: disassemble see dump util/disasm
+related: g32 k32 u32 lib func:
+related: libc lib syscall hinst
+related: stdin stdout
+related: getenv setenv
+related: .rs .rdepth >r r> r@ >rr rr>
+related: stack-ops rot -rot .s .rs 2drop 2dup 3drop 4dup drop dup swap tuck nip 2over over 2swap ?dup depth rdepth pick put 3dup (s0) s0 2nip _2dup _2nip -swap
+related: catch throw exceptions
+related: file-io close creat open/r open/rw read write fsize ioerr seek tell (seek) rename delete st?t mtime
+related: console-io cr emit type type_ key ekey key? space spaces accept linefeed
+related: conditionals if =if <if >if <>if 0if then else ;then (if if) (else) then> then,>
+related: flow-control again back do ?do loop i j remains more leave eleave (loop) (while) while later skip unloop repeat again 0do
+related: throw-codes THROW_BADLIB THROW_BADFUNC THROW_GENERIC THROW_NEEDS 
+related: program-control save (save) cold prompt onexit onstartup turnkey? makeexename
+related: classes forth macro inline notail mnotail 'macront 'forth 'macro 'inline 'notail 'variable 'constant 'defer 'does
+related: libraries needs (call) func: lib (lib) (-lib) .needs as data: .libs .funcs (needs) vfunc:
+related: deferred-words is defer defer@ defer@def >defer defer! undo make vector vector! chain
+related: iterate link -link
+related: { }
+related: push pop peek peek-n stack: stack-iterate stack-size stack-empty?
+related: help help/
+related: classes with~ without~
+related: context? defer? isa xt? chain
+related: chdir getcwd
+related: compiling? state
+related: ~help ~priv ~io ~util ~strings ~doubles ~os ~sys ~reva ~ .contexts  xfind
+related: revaver revaver#
+related: exception ctrl-c exceptions catch throw

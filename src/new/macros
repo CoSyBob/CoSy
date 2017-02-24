@@ -1,0 +1,118 @@
+; vim: ft=fasm :
+; These macros make life *much* easier for us in implementing
+; the compiler :)
+;
+; utility to display a hex number:
+
+1K equ 1024
+
+macro swap ; TODO: why doesn't this work on Windows?  "ebx" is busy...
+{
+	mov ebx, [esi]
+	mov [esi], eax
+	mov eax, ebx
+}
+macro swap { xchg eax, dword [esi] }
+macro dup
+{
+	lea esi, [esi-4]
+	mov [esi],eax
+}
+macro drop2 {
+	mov eax, [esi+4]
+	lea esi, [esi+8]
+}
+macro drop { 
+	mov eax, [esi]
+	lea esi, [esi+4]
+}
+macro rot {
+	push eax
+	mov eax, [esi+4]
+	mov ebx, [esi]
+	mov [esi+4], ebx
+	pop dword [esi]
+}
+macro mrot {
+	push eax
+	mov ebx, [esi+4]
+	mov eax, [esi]
+	mov [esi], ebx
+	pop dword [esi+4]
+}
+macro upsh a
+{
+	dup
+	mov eax, a
+}
+macro upop a
+{
+	mov a, eax
+	drop
+}
+
+;-------------------------------------------------------------------------
+macro countstr str
+{
+local eos
+	db (eos-$-1)
+	db str
+label eos
+}
+
+forth_link = 0       ;link to previous word in forth vocab
+macro_link = 0       ;link to previous word in forth vocab
+forthlist equ ''
+macrolist equ ''
+mylink = 0
+
+; --------------------------------------------------
+
+macro PROC xt {
+  align 4
+xt:	; the code itself goes here...
+}
+macro ENDP xt {
+}
+
+mylink=0
+macro DICT forthname,xt,dictxt,class {
+ align 4
+ local us
+if class eq
+	dd fclass
+else
+	dd class
+end if
+label  us
+label dictxt
+	dd mylink
+mylink = us
+	dd xt
+	countstr forthname
+}
+
+macro DEFER xt,fun
+{
+	PROC xt
+	db 0e9h	; JMP ...
+if fun eq
+	dd noop-$-4
+	db 0e9h	; JMP ...
+	dd noop-$-4
+else
+	dd fun-$-4
+	db 0e9h	; JMP ...
+	dd fun-$-4
+end if
+	ENDP xt
+}
+
+macro VARNEW xt,val {
+  align 4
+	if val eq
+	xt	dd 0
+	else
+	xt	dd val
+	end if
+}
