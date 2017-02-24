@@ -1,2 +1,2 @@
 # CoSy
-CoSy Living Log
+CoSy Life Log
