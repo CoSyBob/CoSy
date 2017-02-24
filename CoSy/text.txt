@@ -1,0 +1,117 @@
+
+ |  \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | 2015 | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
+
+ | ======================== | Wed.Sep,20150916 | ======================== |
+~ MinnowBrook
+
+ | ======================== | Sat.Nov,20151121 | ======================== |
+Stanford | 1147 |* 
+                                 FORTH DAY
+
+   		       HONORED TO BE HANGOUTing WITH
+		    THE FATHER OF THE LANGUAGE OF TODAY
+
+				CHUCK MOORE
+				
+			( JUST WORKING TO BRING 
+			  THE soul OF KEN IVERSON
+				TO THE PARTY )
+
+			| ------------------------ |
+
+		       TAKING SIMPLICITY to the EXTREME
+-- GOALS
+		   SUCCINCT ENOUGH TO TWEET GREAT THOUGHTS 
+		   | ----------------------------------- |
+
+		     ARTIFICIALLY AID *MY* INTELLIGENCE  
+	          FIT IN A SMALL HEAD   WITH A LEAKY MEMORY
+                     Working at my Peter Principle Limit
+  
+		      Maximize Rate of making mistakes
+		 -> NoteComputing interpretive environment 
+
+      EVERYTHING JUST TEXT			      TRANSPARENT STRUCTURE
+  ENTER : just newLine | F6 : DO	 		DOWN TO THE CHIP
+					
+		  GIVE PEOPLE CONTROL OVER THEIR OWN MACHINES
+
+-- USES
+			 Captain Picard's LOG
+
+		LOT's of ABILITIES w/in A SENTENCE OR 2
+
+	NOTATION for COMBINATORIC APPLICATION of FUNCTIONS to DATA
+
+	Vocablary evolved from APL , Particularly Arthur Whitney's K
+
+		     THE MOST ABSOLUTELY SOLID ACTION : 
+	        ctrlS : SAVE YOUR WORK , ie : SAVE the ` R TREE 
+
+ 	    $$$ Time stamped records for Billing & Court $$$
+		
+	IoT 	Instrumentation requiring complex algorithms 
+	3D printing , visualization  |  APL mkt : COMPLEX FINANCE
+-- GUTS
+				CORE CHALLENGE
+	   Transform fixed address space to  dynamic nested objects
+			      -> Reference Counting  
+
+		 EVERYTHING IS A LIST	ITEMS MAY BE LISTS
+                  http://cosy.com/CoSy/4th.CoSy.html#CoSyHeader
+
+	    A DICTIONARY IS A LIST OF 2 LISTS | ( Names ; Values )
+
+		    The "Root" dictionary is named  ` R
+
+ VOCABULARY on LISTS
+  R rho 	| APL word "count"  # of items in list  | raw :  i#	
+  R ' rho 'm 	| count each ( monadic )
+
+-- 
+| 3 genaric functions | ( ix i@ i! ; vx v@ V! ; Dvx Dv@ Dv! ; at at! )
+ 
+VOCABULARIES :
+ AltStackOps | Stack Diagram names for common stack permutations
+  s" jedit C:/4thCoSy/CoSy/AltStackOps.f " shell>
+ Reference Counting |
+  s" : ref" CShelp
+ Stack Frames |
+  s" : SF" CShelp
+  s" jEdit C:/4thCoSy/CoSy/CSauxstack.f" shell>
+
+STUBS : 
+ s" jedit CoSy/RecurInterp.f " shell>  	| lot done on input parsing 
+ s" jedit CoSy/Job.f" shell> 	| Functionalized IUP windows .
+				| Important use of ` meta 
+-- ToDo
+
+ ` ToDo ->
+ s" C:/CoSyNew/y15/ToDo_HIMYM_7-8crop.jpg " ' shell onvan
+
+
+| BEST OVERVIEW OF MAINSTREAM APL | 
+| Morten Kromberg, CTO, Dyalog Ltd. | Talks at Google 
+  https://youtu.be/PlM9BXfu7UY 
+
+
+
+	  A Great deal can be fleshed out quickly by individuals
+	  who can't go to sleep until they understand something .
+
+*| 1159 | 
+ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+
+ |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
+ s" =" 80 _take
+ | ====================================================================== |
+ | ###################################################################### | 
+ 
+  1 2 2015 30 DAYLNS  | sf6  | insert res in text using  F5 
+ | ======================== | Wed.May,20160525 | ======================== |
+CoSy.com Domain renew
+ | ======================== | Wed.Apr,20180411 | ======================== |
+MinnowBrook
+ 
+ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ 

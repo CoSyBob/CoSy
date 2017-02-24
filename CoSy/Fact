@@ -1,0 +1,286 @@
+| =================== / Facts , Constants & Conversions / =================== 
+|             / Additions ( and , heaven forfend ) corrections welcomed /
+
+0 [IF]
+  | .R . " timestamp now _n " |>| " /(/ thu.may.20040506.010440 /)/ "
+
+| Set printing precision |
+| \p 15
+
+: K : 1e3 />/ 1000.0
+: M : 1e6 />/ 1000000.0
+
+: cent : 1e-2 />/ 0.01
+: pt   : 1e-4 />/ 0.0001         / point
+
+
+: Pi : 3.14159265358979323
+Pi..h : " ratio of circumference to diameter of a circle "
+ Pi = 2 * _acos 0 />/ 1
+
+2 * Pi / Total radians in circle
+  
+degmin2rad : { ( base60 x ) * Pi % 180 }
+degmin2rad..h : "convert degrees and minutes to radians"
+base60 : { ( 60 _sv x ) % 60 }
+base60..h : "convert to minutes , hours"
+  
+4 * Pi / Total steradians on sphere .
+  
+: e  : _exp 1                      / 2.7182818284590451
+  
+/ SPACE_TIME / ================================ /
+: c  : 2.99792458e8                / "speed" of light / MpS  ( definitional )
+ 80000 % c />/ 0.00026685128
+/ TIME / ================================ /
+
+: SECpMIN : 60
+: MINpHR  : 60
+: SECpHR  : SECpMIN * MINpHR    / />/ 3600
+: HRpDAY  : 24
+: MINpDAY : MINpHR * HRpDAY     / />/ 1440
+: SECpDAY : SECpHR * HRpDAY     / />/ 86400
+: DAYpYR  : 365.25
+: MINpYR  : MINpDAY * DAYpYR    / />/ 525960.0
+: SECpYR  : SECpDAY * DAYpYR    / />/ 3.15576e+007
+
+/ : LightYR : c * SECpYR        / />/ 9.46073e+015
+: LightYR : 9.460528404846e015                    / official
+
+: 9.460528404846e015 % c       / />/ 3.15569e+007
+: r - SECpYR                   / />/ -674.025
+  r % SECpHR />/ -0.187229  / r * MINpHR />/ -11.2338  / minutes difference
+
+/ LENGTH / ======================== /
+/   I think pretty obviously , in the below ,  "p" means  "per" .
+/ / ENGLISH / ======================== /
+
+: IpF : 12
+: FpY : 3
+: FpMI : 5280
+: YpMI : FpMI % FpY                / 1760.0
+: IpMI : IpF * FpMI                / 63360
+: YpROD :  5.5     / Yard % Rod
+
+: FpFM   : 6     / Feet % Fathom   / nautical
+: MIpLEA : 3     / Mile % League   / nautical
+
+  
+// METRIC per ENGLISH / ======================== /
+  
+: CMpI  : 2.54
+: CMpF  : CMpI * IpF               / 30.48
+: KpMI  : ( CMpI * IpMI ) % 1e5    / 1.609344
+
+: IpM  : 100 % CMpI                / 39.3700787401575
+: FpM  : IpM % 12                  / 3.2808399
+ 208 % FpM />/ 63.3984  / r * _sqrt 2 />/ 89.658877
+ 1 - 45 90 % 250 / />/ 0.82 0.64  / 1000 * r * FpM />/ 2690.2887 2099.7375
+
+: MpK  : % KpMI                    / 0.621371192237334
+  
+/ AREA / ======================== /
+  
+/ / ENGLISH / ======================== /
+  
+: SqRODpROOD : 40
+: ROODpACRE : 4
+: ACREpSqMI / : 640                  / Section ~ SqMi
+  4000 % 640 />/ 6.25  / r ^ % 2 />/ 2.5
+: SqFpACRE : */ ROODpACRE , SqRODpROOD , ( YpROD * FpY ) ^ 2 />/ 43560.0
+  SqFpACRE * ACREpSqMI />/ 27878400.0
+
+   ( SqFpACRE * 14 ) ^ % 2 />/ 780.92253 / r * 4 />/ 3123.6901
+
+ ( FpMI ^ 2 ) % ACREpSqMI />/ 43560.0
+ SqFpACRE ^ % 2 />/ 208.71033
+ { ( t ; x % t : factors x ) } 43560
+
+/ / ENGLISH per METRIC / ======================== /
+  
+: F2pM2 : FpM ^2                   / 10.76391
+
+: SqMpHECTARE :  100 ^ 2                  / 10000.0
+: HECTAREpSqMI : ( 10 * KpMI ) ^ 2        / 258.9988110336
+: ACREpHECTARE : ACREpSqMI % HECTAREpSqMI / 2.47105381467166
+ % ACREpHECTARE />/ 0.40468564224
+
+
+/ VOLUME / ===================== /
+
+/ / ENGLISH / ======================== /
+  
+: QpGAL : 4
+: PpQ   : 2
+: FOpP  : 8
+
+: GALpBL : 42    / gallons per barrel of oil  / ( can't bring myself to use BBL )
+: BlpTON : 7.33331   / barrels per metric ton
+
+: GALpBeer : 31      / gallons per barrel of beer /
+
+/ / ENGLISH per METRIC / ======================== /
+  
+: LpGAL : 3.785306               / 231 cuIN
+: QpL   : LpGAL % QpGAL          / 0.9463265
+
+ : CCpI3 : CMpI ^ 3 />/ 16.387064   / Cubic Centimeters per Cubic Inch
+
+ 2294 % CCpI3 />/ 139.98847
+
+  
+/ MASS / ======================== /
+  
+/ / ENGLISH / ======================= /
+  
+: GRpLB : 7000                   / Grains % Pound
+: OZpLB : 16                     / Ounces % Pound ( LB from Latin Libra )
+
+: STONEpLB : 6.35029318 * LBpKG />/ 14.0
+  17 * STONEpLB />/ 238.0    / est & weight of Vassenka in Anna Karenina
+
+  
+/ / METRIC / ======================== /
+
+: GpKG  : 1000
+  
+/ / ENGLISH per METRIC / ======================== /
+  
+: LBpKG : 2.2046226
+   % .45359237 />/ 2.2046226
+
+  
+/ / METRIC per ENGLISH / ======================== /
+  
+: GpOZ  :  GpKG % OZpLB * LBpKG  / 28.3495182623
+  
+/ \/ FORCE & ENERGY \/ / ===================== \/ /
+  
+: N : {[ kg ; m ; s ] kg * m % s ^ 2 }  / Newton  ( force )
+  
+: J : {[ N ; m ] N * m }                / Joule  ( energy )
+  
+: W : {[ J ; s ] J % s }                / Watt   ( power )
+  
+$ EVpJ  : % 1.60207e-19     / ElectronVolt per Joule
+$ ERGpJ : % 1E7             / ergs ( cm g s  scale )
+: CALpJ : % 4.186           / CALories per Joule
+: BTUpJ : % 1.0548          / British Thermal Units per Joule
+: FtLBpJ : % 1.3558         / Foot Pounds per Joule
+: JpKWh :   */ 1000 60 60 />/ 3600000    / Joules per Kilowatt hour
+ 250e6 % JpKWh />/ 69.444444
+: BTUpKWh : BTUpJ * JpKWh />/ 3412969.28328
+
+: BTUpTHERM : 100000               / 100000
+: BTUpDEKATHERM : 10 * BTUpTHERM   / 1000000
+
+
+  `EnergyComparisons
+
+HP : 33000  /  ft * lb % min   / HorsePower
+: HPpKW : .7457    /
+  
+/ TEMPERATURE / ======================== /
+  
+ 273.15 constant Kel_C		| Absolute ( Kelvin temp )  :  Kel_C  +  Centigrade temp /
+: c2f : { 32 + x * 180 % 100 }  ; c2f..h : " centigrade to Fahrenheit "
+[THEN]
+
+: c2f 9. 5. f/ f* 32. f+ ;
+
+|||
+
+/ Note : K's solver function ? gives the inverse :
+: c2f ? 86 />/ 30.0
+
+ c2f ? 0 />/ -17.777778 / r + Kel_C />/ 255.37222
+
+/ EARTH MEASUREMENTS / ======================== /
+
+: MpAU : 1.49597870e11           / Meters % Astronomic Unit ( avg distance to Sun )
+: PeriAphelion : 147.5e6 152.6e6 / KM
+   %/ r />/ 0.96657929  / % r />/ 1.0345763  / r ^ 2 />/ 1.0703481
+: EarthGravity : 9.80621         / M % S ^ 2   / at sea level @ latitude Pi % 4
+: DfallInT : { ( EarthGravity * x ^ 2 ) % 2 }
+ DfallInT 9.222 15 />/ 416.98596 1103.1986
+: TtoFallD : { ( _sqrt 2 * EarthGravity * x ) % EarthGravity }
+ TtoFallD 417 />/ 9.2221553   / Time for object to fall height of taller WTC
+  1103 - 417 />/ 686  / 686 * FpM />/ 2250.6562
+  686 % 417 />/ 1.6450839
+
+: Sound : 331.36   / MpS         / Dry Air @ 0c /
+: Mach : 340.29    / MpS         / Google's value .
+: EquatorialRadius : 6378.388    / KM
+
+: PolarRadius : 6356.912         / KM
+ EquatorialRadius - PolarRadius     / 21.476   / KM
+ ( .R `avg ) EquatorialRadius , PolarRadius />/ 6367.65 />/ 6367.65
+  r % KpMI />/ 3956.6743
+ 39300 20000 4850 % r />/ 9.9325841 5.0547502 1.2257769
+: MeanDensity : 5.522            / GpCM^3
+: Albedo : 0.39
+
+
+/  MISCELLANY  / ================================ /
+  
+: CigarRing : { x % 64 }         / Cigar ring size to diameter in inches
+: CigarArea : { .R[ `Fact ; `Pi ] * _sqr .R[ `Fact ; `CigarRing ] x % 2 }  / Cigar cross section
+CigarArea 64
+: CigarSize : { x[ 0 ] * ( .R . `Fact `CigarArea ) x 1 }  / Cigar cubic inchs
+{ .R[ `Fact ; `Pi ] * .R[ `Fact ; `CigarRing ] x[ 1 ] % 2 } 5.5 64
+ Pi % 4 />/ 0.785398163397 / % r />/ 1.27323954474
+  CigarSize 4 48
+ ,/ + ( thru . 4 7 ) +\:/: 0 .25 .5 .75
+ ,/ r ,\:/: 43 45 50 51 54 55
+  r ,' CigarSize' r
+ ( .R `SORT )[ ; 2 ] @ + r
+ { x ,' CigarSize' x } ( 6. 55 ; 6. 51 ; 5.62 45 ; 5. 51 ; 4.75 50 ; 6.75 43 ; 7. 54 ; 6.5 34 )
+  r ,' 79 75 69 69 69 69 79 35
+ : Q : r ,' %/' r[ ; 3 2 ]
+ + ( .R `SORT )[ ; 4 ] @ + Q
+ .[ r ; ( ; 3 4 ) ; { x % 50 } ]
+
+
+
+/ Agricultural transport /
+
+ ( 60 16 ; ( trucks , railcars ) % barge )
+ ( 1500 ; tons % barge )
+ ( 15 ; barge % tow )
+
+/(/ ###################################################################### /
+
+( ! _d ) _dvl ` $ ( .R `cut )[ " " ] @ ,/ text ,\: " "  / any I forgot to f6 ?
+
+--------------------------------------------------------------------------
+
+http://www.erpud.com/comparison.htm
+
+Natural Gas           10 therms                $ .775 x 10  (Year Avg rate)  $ 7.75
+              $ .875 x 10  (Heat Only rate )   $ 8.75
+
+Kerosene                   7.1 gallons         $1.21 x 7.1                   $ 8.59
+
+Propane Gas                11 gallons          $1.26 x 11                    $13.86
+
+Electricity                293 kilowatts       $ .06 x 293                   $17.58
+
+---
+/ Americans use electricity equivalent to  21 lb coal % day / Discovery Chnl 040707
+/  ~ .55 electricity from coal
+
+: BTUpKWh : BTUpJ * JpKWh />/ 3412969.28328
+
+ 5120 % 1500 / />/ 3.41333333333
+/ 3.412  /  BTU % WattHr
+ 3.412 * 1500 />/ 5118.0
+ Propane / 92000 BTU % gallon
+ Natural Gas / 1000 BTU %  ft ^ 3
+  6 $ % 1e6 BTU nat gas near term
+
+/ SOURCES /
+
+ IE "http://www.census.gov/foreign-trade/guide/sec9.html"
+
+
+
