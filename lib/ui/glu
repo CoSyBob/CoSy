@@ -1,0 +1,259 @@
+| vim: ft=reva :
+| GLU binding for Reva/Retroforth. Version 1.0 alpha, 28Feb2006.
+| Conversion by Andrew Price. This is a comment stripped minimal version. See your glu.h for comments.
+| Converted version dedicated to the public domain 2006
+|
+| Original copyright follows:
+| /*
+| ** License Applicability. Except to the extent portions of this file are
+| ** made subject to an alternative license as permitted in the SGI Free
+| ** Software License B, Version 1.1 (the "License"), the contents of this
+| ** file are subject only to the provisions of the License. You may not use
+| ** this file except in compliance with the License. You may obtain a copy
+| ** of the License at Silicon Graphics, Inc., attn: Legal Services, 1600
+| ** Amphitheatre Parkway, Mountain View, CA 94043-1351, or at:
+| **
+| ** http://oss.sgi.com/projects/FreeB
+| **
+| ** Note that, as provided in the License, the Software is distributed on an
+| ** "AS IS" basis, with ALL EXPRESS AND IMPLIED WARRANTIES AND CONDITIONS
+| ** DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES AND
+| ** CONDITIONS OF MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
+| ** PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+| **
+| ** Original Code. The Original Code is: OpenGL Sample Implementation,
+| ** Version 1.2.1, released January 26, 2000, developed by Silicon Graphics,
+| ** Inc. The Original Code is Copyright (c) 1991-2000 Silicon Graphics, Inc.
+| ** Copyright in any portions created by third parties is as indicated
+| ** elsewhere herein. All Rights Reserved.
+| **
+| ** Additional Notice Provisions: This software was created using the
+| ** OpenGL(R) version 1.2.1 Sample Implementation published by SGI, but has
+| ** not been independently verified as being compliant with the OpenGL(R)
+| ** version 1.2.1 Specification.
+| */
+
+push~
+needs math/floats
+~ context: ~gl
+~util
+~floats
+~gl
+os [IF] " libGLU.so" [ELSE] " glu32.dll" [THEN] lib GLU
+GLU not [IF] ." Could not load the GLU library" cr -1 throw [THEN]
+
+1 constant GLU_EXT_object_space_tess
+1 constant GLU_EXT_nurbs_tessellator
+0 constant GLU_FALSE
+1 constant GLU_TRUE
+1 constant GLU_VERSION_1_1
+1 constant GLU_VERSION_1_2
+1 constant GLU_VERSION_1_3
+100800 constant GLU_VERSION
+100801 constant GLU_EXTENSIONS
+100900 constant GLU_INVALID_ENUM
+100901 constant GLU_INVALID_VALUE
+100902 constant GLU_OUT_OF_MEMORY
+100904 constant GLU_INVALID_OPERATION
+100240 constant GLU_OUTLINE_POLYGON
+100241 constant GLU_OUTLINE_PATCH
+100103 constant GLU_NURBS_ERROR
+100103 constant GLU_ERROR
+100164 constant GLU_NURBS_BEGIN
+100164 constant GLU_NURBS_BEGIN_EXT
+100165 constant GLU_NURBS_VERTEX
+100165 constant GLU_NURBS_VERTEX_EXT
+100166 constant GLU_NURBS_NORMAL
+100166 constant GLU_NURBS_NORMAL_EXT
+100167 constant GLU_NURBS_COLOR
+100167 constant GLU_NURBS_COLOR_EXT
+100168 constant GLU_NURBS_TEXTURE_COORD
+100168 constant GLU_NURBS_TEX_COORD_EXT
+100169 constant GLU_NURBS_END
+100169 constant GLU_NURBS_END_EXT
+100170 constant GLU_NURBS_BEGIN_DATA
+100170 constant GLU_NURBS_BEGIN_DATA_EXT
+100171 constant GLU_NURBS_VERTEX_DATA
+100171 constant GLU_NURBS_VERTEX_DATA_EXT
+100172 constant GLU_NURBS_NORMAL_DATA
+100172 constant GLU_NURBS_NORMAL_DATA_EXT
+100173 constant GLU_NURBS_COLOR_DATA
+100173 constant GLU_NURBS_COLOR_DATA_EXT
+100174 constant GLU_NURBS_TEXTURE_COORD_DATA
+100174 constant GLU_NURBS_TEX_COORD_DATA_EXT
+100175 constant GLU_NURBS_END_DATA
+100175 constant GLU_NURBS_END_DATA_EXT
+100251 constant GLU_NURBS_ERROR1
+100252 constant GLU_NURBS_ERROR2
+100253 constant GLU_NURBS_ERROR3
+100254 constant GLU_NURBS_ERROR4
+100255 constant GLU_NURBS_ERROR5
+100256 constant GLU_NURBS_ERROR6
+100257 constant GLU_NURBS_ERROR7
+100258 constant GLU_NURBS_ERROR8
+100259 constant GLU_NURBS_ERROR9
+100260 constant GLU_NURBS_ERROR10
+100261 constant GLU_NURBS_ERROR11
+100262 constant GLU_NURBS_ERROR12
+100263 constant GLU_NURBS_ERROR13
+100264 constant GLU_NURBS_ERROR14
+100265 constant GLU_NURBS_ERROR15
+100266 constant GLU_NURBS_ERROR16
+100267 constant GLU_NURBS_ERROR17
+100268 constant GLU_NURBS_ERROR18
+100269 constant GLU_NURBS_ERROR19
+100270 constant GLU_NURBS_ERROR20
+100271 constant GLU_NURBS_ERROR21
+100272 constant GLU_NURBS_ERROR22
+100273 constant GLU_NURBS_ERROR23
+100274 constant GLU_NURBS_ERROR24
+100275 constant GLU_NURBS_ERROR25
+100276 constant GLU_NURBS_ERROR26
+100277 constant GLU_NURBS_ERROR27
+100278 constant GLU_NURBS_ERROR28
+100279 constant GLU_NURBS_ERROR29
+100280 constant GLU_NURBS_ERROR30
+100281 constant GLU_NURBS_ERROR31
+100282 constant GLU_NURBS_ERROR32
+100283 constant GLU_NURBS_ERROR33
+100284 constant GLU_NURBS_ERROR34
+100285 constant GLU_NURBS_ERROR35
+100286 constant GLU_NURBS_ERROR36
+100287 constant GLU_NURBS_ERROR37
+100200 constant GLU_AUTO_LOAD_MATRIX
+100201 constant GLU_CULLING
+100203 constant GLU_SAMPLING_TOLERANCE
+100204 constant GLU_DISPLAY_MODE
+100202 constant GLU_PARAMETRIC_TOLERANCE
+100205 constant GLU_SAMPLING_METHOD
+100206 constant GLU_U_STEP
+100207 constant GLU_V_STEP
+100160 constant GLU_NURBS_MODE
+100160 constant GLU_NURBS_MODE_EXT
+100161 constant GLU_NURBS_TESSELLATOR
+100161 constant GLU_NURBS_TESSELLATOR_EXT
+100162 constant GLU_NURBS_RENDERER
+100162 constant GLU_NURBS_RENDERER_EXT
+100208 constant GLU_OBJECT_PARAMETRIC_ERROR
+100208 constant GLU_OBJECT_PARAMETRIC_ERROR_EXT
+100209 constant GLU_OBJECT_PATH_LENGTH
+100209 constant GLU_OBJECT_PATH_LENGTH_EXT
+100215 constant GLU_PATH_LENGTH
+100216 constant GLU_PARAMETRIC_ERROR
+100217 constant GLU_DOMAIN_DISTANCE
+100210 constant GLU_MAP1_TRIM_2
+100211 constant GLU_MAP1_TRIM_3
+100010 constant GLU_POINT
+100011 constant GLU_LINE
+100012 constant GLU_FILL
+100013 constant GLU_SILHOUETTE
+100000 constant GLU_SMOOTH
+100001 constant GLU_FLAT
+100002 constant GLU_NONE
+100020 constant GLU_OUTSIDE
+100021 constant GLU_INSIDE
+100100 constant GLU_TESS_BEGIN
+100100 constant GLU_BEGIN
+100101 constant GLU_TESS_VERTEX
+100101 constant GLU_VERTEX
+100102 constant GLU_TESS_END
+100102 constant GLU_END
+100103 constant GLU_TESS_ERROR
+100104 constant GLU_TESS_EDGE_FLAG
+100104 constant GLU_EDGE_FLAG
+100105 constant GLU_TESS_COMBINE
+100106 constant GLU_TESS_BEGIN_DATA
+100107 constant GLU_TESS_VERTEX_DATA
+100108 constant GLU_TESS_END_DATA
+100109 constant GLU_TESS_ERROR_DATA
+100110 constant GLU_TESS_EDGE_FLAG_DATA
+100111 constant GLU_TESS_COMBINE_DATA
+100120 constant GLU_CW
+100121 constant GLU_CCW
+100122 constant GLU_INTERIOR
+100123 constant GLU_EXTERIOR
+100124 constant GLU_UNKNOWN
+100140 constant GLU_TESS_WINDING_RULE
+100141 constant GLU_TESS_BOUNDARY_ONLY
+100142 constant GLU_TESS_TOLERANCE
+100151 constant GLU_TESS_ERROR1
+100152 constant GLU_TESS_ERROR2
+100153 constant GLU_TESS_ERROR3
+100154 constant GLU_TESS_ERROR4
+100155 constant GLU_TESS_ERROR5
+100156 constant GLU_TESS_ERROR6
+100157 constant GLU_TESS_ERROR7
+100158 constant GLU_TESS_ERROR8
+100151 constant GLU_TESS_MISSING_BEGIN_POLYGON
+100152 constant GLU_TESS_MISSING_BEGIN_CONTOUR
+100153 constant GLU_TESS_MISSING_END_POLYGON
+100154 constant GLU_TESS_MISSING_END_CONTOUR
+100155 constant GLU_TESS_COORD_TOO_LARGE
+100156 constant GLU_TESS_NEED_COMBINE_CALLBACK
+100130 constant GLU_TESS_WINDING_ODD
+100131 constant GLU_TESS_WINDING_NONZERO
+100132 constant GLU_TESS_WINDING_POSITIVE
+100133 constant GLU_TESS_WINDING_NEGATIVE
+100134 constant GLU_TESS_WINDING_ABS_GEQ_TWO
+1.0e150 fconstant GLU_TESS_MAX_COORD
+1 func:  gluBeginCurve
+1 func:  gluBeginPolygon
+1 func:  gluBeginSurface
+1 func:  gluBeginTrim
+9 func:  gluBuild1DMipmapLevels
+6 func:  gluBuild1DMipmaps
+10 func:  gluBuild2DMipmapLevels
+7 func:  gluBuild2DMipmaps
+11 func:  gluBuild3DMipmapLevels
+8 func:  gluBuild3DMipmaps
+2 func: gluCheckExtension
+6 func:  gluCylinder
+1 func:  gluDeleteNurbsRenderer
+1 func:  gluDeleteQuadric
+1 func:  gluDeleteTess
+5 func:  gluDisk
+1 func:  gluEndCurve
+1 func:  gluEndPolygon
+1 func:  gluEndSurface
+1 func:  gluEndTrim
+1 func: gluErrorString
+3 func:  gluGetNurbsProperty
+1 func: gluGetString
+3 func:  gluGetTessProperty
+4 func:  gluLoadSamplingMatrices
+18 func:  gluLookAt
+0 func:  gluNewNurbsRenderer
+0 func:  gluNewQuadric
+0 func:  gluNewTess
+2 func:  gluNextContour
+2 func:  gluNurbsCallback
+2 func:  gluNurbsCallbackData
+2 func:  gluNurbsCallbackDataEXT
+7 func:  gluNurbsCurve
+3 func:  gluNurbsProperty
+11 func:  gluNurbsSurface
+8 func:  gluOrtho2D
+11 func:  gluPartialDisk
+8 func:  gluPerspective
+9 func:  gluPickMatrix
+12 func: gluProject
+5 func:  gluPwlCurve
+3 func:  gluQuadricCallback
+2 func:  gluQuadricDrawStyle
+2 func:  gluQuadricNormals
+2 func:  gluQuadricOrientation
+2 func:  gluQuadricTexture
+9 func:  gluScaleImage
+5 func:  gluSphere
+1 func:  gluTessBeginContour
+2 func:  gluTessBeginPolygon
+3 func:  gluTessCallback
+1 func:  gluTessEndContour
+1 func:  gluTessEndPolygon
+7 func:  gluTessNormal
+4 func:  gluTessProperty
+3 func:  gluTessVertex
+12 func: gluUnProject
+19 func: gluUnProject4
+pop~
+|||

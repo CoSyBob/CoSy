@@ -1,0 +1,287 @@
+alias: \ |
+
+\ Header file for ARM/Windows applications
+\ Tests for the word 'arm' to be defined, and if so, loads the arm target compiler and performs
+\ other arm related functions. Otherwise it loads and defines some standard windows stuff so the
+\ application can be compiled for the desktop
+
+
+[DEFINED] arm [IF]    \ setup arm specific stuff
+
+needs arm/armtc    \ load the arm target compiler lib
+
+
+\ An implementation of simple C-like structures
+\ The word 'struct:' is never executed on the arm, so it is defined using the forth class and in the 
+\ ~ context, with the exception of the 'create' in the does> part. This 'create' makes a variable 
+\ that will be executed on the arm, so it must be the version from the ~arm context.
+
+\ revalit forth  exit~   \ drop ~arm context for now
+: struct:   \ "name" -- xx offset 
+    create     \ make a defining word eg PAINTSTRUCT
+      here    \ leave the address of the following sizeof-comma 
+      0 dup , \ initial size is zero and left on the stack 
+    does>     \ has the address of the sizeof-comma 
+     in~ ~arm  create  
+      here >r
+      @ dup allot \ and make the variable that long 
+      r> swap 0 fill
+;
+: struct; ( xx offset -- ) swap !  ;
+
+
+
+: field: ( offset field_size "name" -- offset' )
+   in~ ~arm create 
+            over , ( store the current end_offset )
+            +      ( increase the end_offset by the field_size )
+            \ we should align to current field size here, since arm cpu is fussy about 32bit alignment
+   in~ ~arm does>
+   in~ ~arm @ 
+   in~ ~arm +    ( add the memorized offset of the field)
+   in~ ~arm ;
+
+: byte: 1 field: ;
+: short: 2  field: ;
+: long: 4  field: ;
+
+\ : sizeof ( "name" -- size ) ' >xt @ ;
+
+~arm ~
+macro
+: sizeof    ( "name" -- size ) \ returns the size of a struct such as PAINTSTRUCT
+   ' @     \ get size
+   ['] (a-literal) 12 here,    \ move 12 bytes from (a-literal) to here 
+   ,   \ put the size
+; 
+exit~ exit~
+
+
+~arm armlit a-forth     \ switch to the arm target compiler environment
+
+
+\ FFI setup
+1 func: beep \ make an FFI word. 
+1 func: RegisterClass   
+1 func: GetModuleHandle
+12 func: CreateWindowEx
+4 func: DefWindowProc
+4 func: GetMessage
+1 func: TranslateMessage
+1 func: DispatchMessage
+1 func: PostQuitMessage
+2 func: loadcursor
+1 func: CreateSolidBrush
+2 func: BeginPaint
+2 func: EndPaint
+8 func: ExtTextOut
+3 func: InvalidateRect
+4 func: SetPixel
+3 func: FillRect
+4 func: MessageBox
+1 func: CreateFontIndirect
+2 func: SelectObject
+1 func: DeleteObject
+5 func: PeekMessage
+0 func: CreateMenu
+0 func: CreatePopupMenu
+4 func: AppendMenu
+3 func: CommandBar_Create
+4 func: CommandBar_InsertMenubarEx
+2 func: FindFirstFile
+2 func: FindNextFile
+1 func: FindClose
+5 func: DialogBoxIndirectParam
+0 func: GetDialogBaseUnits
+5 func: SendDlgItemMessage
+2 func: EndDialog
+1 func: Sleep
+
+\ The above words must have their xt's setup with the correct ProcAddr. This must be done at 
+\ runtime, so we make a word to do it which we then call from the main application code.
+: ffisetup   \ load the relevant lib then setup the functions we want to use
+   zu" coredll.dll" LoadLibrary  ffilib !  \ load coredll library
+
+   \ setup the ffi functions we want to use (must load correct lib first as above!!!)
+   zu" MessageBeep" GetProcAddr        to beep        \ get the beep ProcAddr from coredll lib
+   zu" RegisterClassW" GetProcAddr     to RegisterClass    \ get  ProcAddr of RegisterClass
+   zu" GetModuleHandleW" GetProcAddr   to GetModuleHandle  
+   zu" CreateWindowExW" GetProcAddr    to CreateWindowEx  
+   zu" DefWindowProcW" GetProcAddr     to DefWindowProc  
+   zu" GetMessageW" GetProcAddr        to GetMessage  
+   zu" TranslateMessage" GetProcAddr   to TranslateMessage  
+   zu" DispatchMessageW" GetProcAddr   to DispatchMessage  
+   zu" LoadCursorW" GetProcAddr        to loadcursor  
+   zu" CreateSolidBrush" GetProcAddr   to CreateSolidBrush  
+   zu" BeginPaint" GetProcAddr         to BeginPaint  
+   zu" EndPaint" GetProcAddr           to EndPaint  
+   zu" PostQuitMessage" GetProcAddr    to PostQuitMessage  
+   zu" ExtTextOutW" GetProcAddr        to ExtTextOut  
+   zu" InvalidateRect" GetProcAddr     to InvalidateRect  
+   zu" SetPixel" GetProcAddr           to SetPixel  
+   zu" FillRect" GetProcAddr           to FillRect  
+   zu" MessageBoxW" GetProcAddr        to MessageBox  
+   zu" CreateFontIndirectW" GetProcAddr to CreateFontIndirect  
+   zu" SelectObject" GetProcAddr       to SelectObject  
+   zu" DeleteObject" GetProcAddr       to DeleteObject  
+   zu" PeekMessageW" GetProcAddr       to PeekMessage  
+   zu" CreateMenu" GetProcAddr         to CreateMenu  
+   zu" CreatePopupMenu" GetProcAddr    to CreatePopupMenu  
+   zu" AppendMenuW" GetProcAddr        to AppendMenu  
+   zu" FindFirstFileW" GetProcAddr     to FindFirstFile 
+   zu" FindNextFileW" GetProcAddr      to FindNextFile   
+   zu" FindClose" GetProcAddr          to FindClose  
+   zu" DialogBoxIndirectParamW" GetProcAddr to DialogBoxIndirectParam  
+   zu" GetDialogBaseUnits" GetProcAddr to GetDialogBaseUnits 
+   zu" SendDlgItemMessageW" GetProcAddr to SendDlgItemMessage 
+   zu" EndDialog" GetProcAddr          to EndDialog  
+   zu" Sleep" GetProcAddr              to Sleep  
+
+   zu" COMMCTRL.dll" LoadLibrary  ffilib !   \ the following funcs are in the commctrl lib
+   zu" CommandBar_Create" GetProcAddr           to CommandBar_Create
+   zu" CommandBar_InsertMenubarEx" GetProcAddr  to CommandBar_InsertMenubarEx 
+;
+
+[THEN]   \ end of arm specific stuff 
+
+[DEFINED] arm not [IF]   \ desktop windows specific stuff       
+needs callbacks
+needs alg/structs
+
+\ FFI setup
+u32 drop  \ switch to USER lib
+1 func: MessageBeep as beep
+1 func: RegisterClassA as RegisterClass
+12 func: CreateWindowExA as CreateWindowEx
+2 func: LoadIconA as LoadIcon
+2 func: LoadCursorA as LoadCursor
+1 func: PostQuitMessage
+4 func: SendMessageA as SendMessage
+4 func: PostMessageA as PostMessage
+4 func: DefWindowProcA as DefWindowProc
+4 func: GetMessageA as GetMessage
+5 func: PeekMessageA as PeekMessage
+1 func: TranslateMessage
+1 func: DispatchMessageA as DispatchMessage
+2 func: BeginPaint
+2 func: EndPaint
+1 func: GetDC
+2 func: ReleaseDC
+3 func: FillRect
+3 func: InvalidateRect
+1 func: SetFocus
+4 func: RedrawWindow
+2 func: GetClientRect
+5 func: DrawTextA as DrawText
+
+k32 drop \ switch to KERNEL lib
+1 func: GetModuleHandleA as GetModuleHandle
+
+g32 drop \ switch to GDI lib
+5 func: TextOutA as TextOut
+8 func: ExtTextOutA as ExtTextOut
+1 func: CreateSolidBrush
+3 func: CreatePen
+4 func: SetPixel
+4 func: MoveToEx
+3 func: LineTo
+14 func: CreateFontA as CreateFont
+2 func: SelectObject
+1 func: DeleteObject
+2 func: SetROP2
+2 func: SetTextColor
+2 func: SetBkColor
+
+\ for arm compatibility
+: ffisetup ;
+macro
+: zu" p: z" ;
+: u" p: " ; 
+forth
+
+[THEN]   \ end of desktop windows specific stuff     
+
+
+
+\ windows constants
+
+32512       constant IDI_APPLICATION
+32512       constant IDC_ARROW
+15          constant COLOR_BTNFACE
+$10000000   constant WS_VISIBLE
+$00080000   constant WS_SYSMENU
+$0002       constant WM_DESTROY
+$00040000   constant WS_THICKFRAME
+$000F       constant WM_PAINT
+$40000000   constant WS_CHILD
+$C00000   	constant WS_CAPTION
+$800000   	constant WS_BORDER
+$01         constant BS_DEFPUSHBUTTON
+$0111       constant WM_COMMAND
+$201       	constant WM_LBUTTONDOWN
+$100       	constant WM_KEYDOWN
+$102       	constant WM_CHAR
+$01         constant PM_REMOVE
+$00         constant PM_NOREMOVE
+$20         constant CS_OWNDC
+$01			constant RDW_INVALIDATE
+5           constant CLEARTYPE_QUALITY
+
+1           constant SW_SHOWNORMAL
+$0110       constant WM_INITDIALOG
+$80000000   constant WS_POPUP
+$0180       constant LB_ADDSTRING
+$0A00003    constant LBS_STANDARD
+$010        constant FILE_ATTRIBUTE_DIRECTORY
+$0184       constant LB_RESETCONTENT
+$01         constant LBN_SELCHANGE
+$188        constant LB_GETCURSEL
+$189        constant LB_GETTEXT
+$00         constant BN_CLICKED
+$00         constant BS_PUSHBUTTON
+$200        constant DS_SETFOREGROUND
+$80         constant DS_MODALFRAME
+260         constant MAX_PATH	
+
+
+
+\ Windows structs
+struct: PAINTSTRUCT
+    long: ps_hdc
+    long: ps_ferase
+    long: ps_rcpaint.left
+    long: ps_rcpaint.top
+    long: ps_rcpaint.right
+    long: ps_rcpaint.bottom
+    long: ps_frestore
+    long: ps_fincupdate
+    32 field: ps_rgbreserved
+struct;
+struct: WNDCLASS
+    long: ->style
+    long: ->wndproc
+    long: ->cbClassExtra
+    long: ->cbWndExtra
+    long: ->hInstance
+    long: ->hIcon
+    long: ->hCursor
+    long: ->hbrBackground
+    long: ->lpszMenuName
+    long: ->lpszClassName
+struct;
+struct: MSG
+    long: ->hwnd
+    long: ->msg
+    long: ->wp
+    long: ->lp
+    long: ->time
+    long: ->x
+    long: ->y
+struct;
+struct: RECT
+    long: ->left
+    long: ->top
+    long: ->right
+    long: ->bottom
+struct;
+

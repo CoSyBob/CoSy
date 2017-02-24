@@ -1,0 +1,127 @@
+| New version of locals lib - by Gtinker March 2007
+| vim: ft=reva :
+
+| Locals are now defined using the 'value class so that they can use the existing 'to' and '+to' 
+| words. (But 'lto' and '+lto' are retained for now for backwards compatibility)
+| 'addr' will also work with 'value'. It returns the address of the local or value. 
+
+| Modified 25May07 to allow initialization code to be placed before locals definition.
+| eg  : test 1 2 local[ n1 n2 ] n1 . n2 . ;  this will init n1 to 1 and n2 to 2
+| ( This was my intention from the start, but an alignment problem made it flaky. It's now fixed )
+
+push~
+~priv ~sys ~util ~strings  ~
+~priv
+variable savelast
+variable savedict
+variable locptr      | points to the start of locals 
+variable locctr      | count of locals used in this word
+variable linitctr    | count of locals to be initialised from stack
+variable got|        | 1 = vertical slash received
+
+forth
+
+: localhdr ['] 'value setclass header 0 , ;
+: createlocals | define each local encountered in the input stream
+   repeat
+      >in @     | save input posn
+      parsews case
+         " |" strof drop got| on endof    | check for vertical slash
+         " ]" strof drop ;; endof             | found ']' so exit
+         " --" strof drop '] parse 2drop ;; endof   | parse to ] and exit
+         2drop
+         >in !    | restore input posn to start of local
+         localhdr | make a header for this local
+      |   default_class @  ['] 'value default_class ! header 0 , default_class !
+         locctr ++ got| @ 0if linitctr ++ then  | count locals
+      endcase
+   again
+;
+exit~
+
+macro
+: addr
+   [''] 'value isa   | check that the following word is a value (class is 'value) 
+   compiling? if literal, then   | compile in the address (xt) or leave it on tos
+;
+
+: local[    | parse input, defining locals until ']'
+   last @ savelast ! dict @ savedict !    | save dictionary ptrs so we can erase locals later
+   0 locctr !  0 linitctr !  got| off     | init stuf
+   0 2,                                    | reserve space for a short jump past the locals
+   here locptr !                          | ptr to start of locals
+   createlocals                           | define each local
+   $eb                                    | short jump opcode
+   locctr @ cells                         | number of bytes to jump
+   4 locptr @ - 3 and +                   | adjust for alignment
+   8 << or locptr @ 2 - w!                | put code to jump past the locals
+   linitctr @ 0 ?do                       | put code to init locals from stack
+      $a3 1, locptr @ aligned linitctr @ 1- i - cells + ,  | mov [locptr+linitctr-i], eax
+      $ad 1,                                       | lodsd
+   loop
+;
+
+~priv
+: g;
+   locptr @ if
+      0 locptr !
+      savedict @ dict !
+      savelast @ last !    | remove locals definitions
+   then
+   p: ;            | compile in normal ';'
+;
+exit~
+alias: ; g;    | make it the new ';'
+forth         
+
+| for backwards compatibility
+alias: lto to
+alias: +lto +to
+
+pop~
+
+|||
+def: local[
+ctx: ~
+stack: loc1init loc2init ... -- 
+desc: =
+	Begin the definition of a set of local values for use within
+   the word being defined. 
+   For example:-    local[ loc1 loc2 | loc3 loc4..locn -- ] 
+   Locals definition ends with the closing ']'.
+   Those defined before the '|' get initialized from the stack.
+   Those defined after the '|' are initialized to 0 at 
+   compiletime, but retain their value from call to call of the
+   word in which they are defined. (like "C" static variables)
+   There is no limit to the number of locals that can be defined.
+   A local behaves the same way as a value, and can be used with
+   'to' '+to' and 'addr'.
+   For bacwards compatibility with the old version, the words
+   'lto' and '+lto' are retained. 
+=
+
+def: lto
+ctx: ~
+stack: n <local> -- 
+desc: =
+   Sets the local to n. (Same as 'to')
+   Provided for backwards compatibility only. Use 'to' instead.
+=
+
+def: +lto
+ctx: ~
+stack: n <local> -- 
+desc: =
+   Adds n to the local. (Same as '+to')
+   Provided for backwards compatibility only. Use '+to' instead.
+=
+
+def: addr
+ctx: ~
+stack: <local> -- 
+desc: =
+   Puts the address of <local> on to tos. 
+   Can also be used with a value.
+=
+
+related: local[ to lto +to +lto addr value

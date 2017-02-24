@@ -1,0 +1,452 @@
+| vim: ft=reva
+|
+| allocated stack, by macoln
+
+push~
+
+needs alg/list
+
+~struct
+
+alias: (psh) (ins)
+alias: (psh$) (ins$)
+alias: (-psh) (-ins)
+alias: (-psh$) (-ins$)
+
+variable stk
+
+: psh ( data --)
+       stk @ (psh) ;
+: psh$ ( a-str u --)
+       stk @ (psh$) ;
+: -psh ( data --)
+       stk @ (-psh) ;
+: -psh$ ( a-str u --)
+       stk @ (-psh$) ;
+: pop ( -- data)
+       stk @ (pop) ;
+: pop$ ( -- a-str u)
+       stk @ (pop$) ;
+: -pop ( -- data)
+       stk @
+       : (-pop) ( node -- data)
+              dup (num) 2 - (th) (pop) ;
+: -pop$ ( -- data)
+       stk @
+       : (-pop$) ( node -- data)
+              dup (num) 2 - (th) (pop$) ;
+: pok ( data --) ( stack: a -- b)
+       stk @
+       : (pok) ( data stk --)
+              dup (num) 0if (psh) ;then @ cell+ ! ;
+: pok$ ( data --) ( stack: a -- b)
+       stk @
+       : (pok$) ( data stk --)
+              dup (num) 0if (psh$) ;then @ cell+ place ;
+: -pok ( data --) ( stack: a -- b)
+       stk @
+       : (-pok) ( data stk --)
+              dup (num) 0if (psh) ;then (end) cell+ ! ;
+: -pok$ ( data --) ( stack: a -- b)
+       stk @
+       : (-pok$) ( data stk --)
+              dup (num) 0if (psh$) ;then (end) cell+ place ;
+: pek ( -- data)
+       stk @
+       : (pek) ( node -- data)
+              @ cell+ @ ;
+: pek$ ( -- a-str u)
+       stk @
+       : (pek$) ( node -- a-str u)
+              @ cell+ count ;
+: npek ( n -- data)
+       stk @ swap
+       : (npek) ( stk n --)
+		      (th) cell+ fetch ;
+: npek$ ( n -- data)
+       stk @ swap
+       : (npek$) ( stk n --)
+		      (th) cell+ count ;
+: -pek ( -- data)
+       stk @
+       : (-pek) ( stk -- data)
+              dup (num) 1- (th) cell+ @ ;
+: -pek$ ( -- data)
+       stk @
+       : (-pek$) ( stk -- data)
+              dup (num) 1- (th) cell+ count ;
+: drp ( --) ( stack: a b -- a)
+       stk @ (drp) ;
+: cut ( --) ( stack: a b -- b)
+       stk @
+       : (cut) ( stk --)
+              @ (drp) ;
+: swp ( --) ( stack: a b -- b a)
+       stk @
+       : (swp) ( stk --)
+	       @ dup @
+           cell+ swap cell+
+           dup @
+           rot xchg
+           swap ! ;
+: cpy ( --) ( stack: a -- a a)
+       stk @ dup
+       : (cpy) ( stk node --)
+	       (pek) swap (psh) ;
+: ovr ( --) ( stack: a b -- a b a)
+       stk @
+       : (ovr) ( stk --)
+	       dup @ (cpy) ;
+: tuk ( --) ( stack: a b -- b a b)
+       stk @
+       : (tuk) ( stk --)
+	       dup (swp) (ovr) ;
+: hop ( --) ( stack: a b c -- b c a)
+       stk @
+       : (hop) ( stk --)
+	       dup @ @ (pop) swap (psh) ;
+: -hop ( --) ( stack: a b c -- c a b)
+       stk @
+       : (-hop) ( stk --)
+	       dup (hop) (hop) ;
+: pik ( n --)
+       stk @ dup rot
+       : (pik) ( stk --)
+	       (npek) swap (psh) ;
+
+| arithmetic words
+: add ( n --) ( stack: a -- a+n)
+       stk @
+       : (add)  tuck ['] +
+              : (math) ( stk n stk xt-math --)
+                     swap (pek) -rot execute swap (pok) ; ( stk n xt-math n)
+: sub ( n --) ( stack: a -- a-n)
+       stk @
+       : (sub)  tuck ['] - (math) ;
+: mul ( n --) ( stack: a -- a*n)
+       stk @
+       : (mul)  tuck ['] * (math) ;
+: div ( n --) ( stack: a -- a/n)
+       stk @
+       : (div)  tuck ['] / (math) ;
+: rmn ( n --) ( stack: a -- amodn)
+       stk @
+       : (rmn)  tuck ['] mod (math) ;
+: avg ( -- avg)
+       stk @
+       : (avg) ( stk -- avg)
+              0 { @ + dup } 2 pick iterate
+              swap (num) / ;
+
+: stackmode
+  { stk @ (num) } is num
+  { stk @ (fnd) } is fnd
+  { stk @ (rmv) } is rmv
+  { stk @ iterate } is itr
+  { stk @ dup (prt) ."  // stack of" space (num) . cr } is prt ;
+
+: stack ( <name> --)
+        create 0 ,
+        does> stk ! stackmode ;
+
+
+to~ ~priv (math)
+
+pop~
+
+
+|||
+def: stack
+ctx: ~struct
+stack: <name> --
+desc: =
+    Create the header for an allocated stack (or queue), for example:
+       ok> needs alg/stack
+       ok> ~struct ~myapp
+       ok> stack mystack
+
+    For convenience, declaring
+       ok> mystack
+
+    sets it as the active data structure, so words like 'psh' and 'pop'
+    automatically know to operate on it. If this is not desired use the
+    associated sub-word, eg. '(pop)', which then expects a stack point-
+    er on the, uh, stack. Any sub-words in alg/list may also be used.
+=
+def: stk
+ctx: ~struct
+stack: -- a
+desc: =
+	Variable holding the address of the active stack.
+=
+def: psh
+ctx: ~struct
+stack: data --
+desc: =
+    Push 'data' to the top of the active stack.
+
+    Sub-word: (psh)
+=
+def: psh$
+ctx: ~struct
+stack: a-string u --
+desc: =
+    A 'psh' for strings.
+
+    Sub-word: (psh$)
+=
+def: -psh
+ctx: ~struct
+stack: data --
+desc: =
+    Push 'data' to the bottom of the active stack.
+
+    Sub-word: (-psh)
+=
+def: -psh$
+ctx: ~struct
+stack: a-string u --
+desc: =
+    A '-psh' for strings.
+
+    Sub-word: (-psh$)
+=
+def: pek
+ctx: ~struct
+stack: -- data
+desc: =
+    Peek at the top data element of the active stack.
+
+    Sub-word: (pek)
+=
+def: pek$
+ctx: ~struct
+stack: -- a-string u
+desc: =
+    A 'pek' for strings.
+
+    Sub-word: (pek$)
+=
+def: npek
+ctx: ~struct
+stack: n -- data
+desc: =
+    Peek at the data element 'n' deep in the active stack.
+
+    Sub-word: (npek)
+=
+def: npek$
+ctx: ~struct
+stack: n -- a-string u
+desc: =
+    A 'npek' for strings.
+
+    Sub-word: (npek$)
+=
+def: -pek
+ctx: ~struct
+stack: -- data
+desc: =
+    Peek at the data element on the bottom of the active stack.
+
+    Sub-word: (-pek)
+=
+def: -pek$
+ctx: ~struct
+stack: -- a-string u
+desc: =
+    A '-pek' for strings.
+
+    Sub-word: (-pek$)
+=
+def: pop
+ctx: ~struct
+stack: -- data
+desc: =
+    Pop the top data element from the active stack to TOS.
+
+    Sub-word: (pop)
+=
+def: pop$
+ctx: ~struct
+stack: -- a-string u
+desc: =
+    A 'pop' for strings.
+
+    Sub-word: (pop$)
+=
+def: -pop
+ctx: ~struct
+stack: -- data
+desc: =
+    Pop the bottom data element from the active stack to TOS.
+
+    Sub-word: (-pop)
+=
+def: -pop$
+ctx: ~struct
+stack: -- a-string u
+desc: =
+    A '-pop' for strings.
+
+    Sub-word: (-pop$)
+=
+def: pok
+ctx: ~struct
+stack: data --
+desc: =
+    Replace the active stack's top data element with 'data', or
+    if empty, push it on.
+
+    Sub-word: (pok)
+=
+def: pok$
+ctx: ~struct
+stack: a-string u --
+desc: =
+    A 'pok' for strings.
+
+    Sub-word: (pok$)
+=
+def: -pok
+ctx: ~struct
+stack: data --
+desc: =
+    Replace the active stack's bottom data element with 'data', or
+    if empty, push it on.
+
+    Sub-word: (-pok)
+=
+def: -pok$
+ctx: ~struct
+stack: data --
+desc: =
+    A '-pok' for strings.
+
+    Sub-word: (-pok$)
+=
+def: drp
+ctx: ~struct
+stack: --
+desc: =
+    Drop the top data element from the active stack.
+
+    Sub-word: (drp)
+=
+def: cut
+ctx: ~struct
+stack: --
+desc: =
+    Cut, or nip, the second data element from the active stack.
+
+    Sub-word: (cut)
+=
+def: swp
+ctx: ~struct
+stack: --
+desc: =
+    Swap the top two data elements of the active stack.
+
+    Sub-word: (swp)
+=
+def: cpy
+ctx: ~struct
+stack: --
+desc: =
+    Duplicate the active stack's top data element.
+
+    Sub-word: (cpy)
+=
+def: ovr
+ctx: ~struct
+stack: --
+desc: =
+	Copy the second data element to over the top of the active stack.
+
+    Sub-word: (ovr)
+=
+def: tuk
+ctx: ~struct
+stack: --
+desc: =
+    Tuck the top data element below the second data element of the
+    active stack.
+
+    Sub-word: (tuk)
+=
+def: hop
+ctx: ~struct
+stack: --
+desc: =
+    Rotate the third data element to the top of the active stack.
+
+    Sub-word: (hop)
+=
+def: -hop
+ctx: ~struct
+stack: --
+desc: =
+    Rotate the top data element to below the third element of the
+    active stack.
+
+    Sub-word: (-hop)
+=
+def: pik
+ctx: ~struct
+stack: n --
+desc: =
+    Duplicate the data element located 'n' deep to the top of the active stack.
+
+    Sub-word: (pik)
+=
+def: add
+ctx: ~struct
+stack: n --
+desc: =
+    Add 'n' to the top element of the active stack.
+
+    Sub-word: (add)
+=
+def: sub
+ctx: ~struct
+stack: n --
+desc: =
+    Subtract top element of the active stack by 'n'.
+
+    Sub-word: (sub)
+=
+def: mul
+ctx: ~struct
+stack: n --
+desc: =
+    Multiply top element of the active stack by 'n'.
+
+    Sub-word: (mul)
+=
+def: div
+ctx: ~struct
+stack: n --
+desc: =
+    Divide top element of the active stack by 'n'.
+
+    Sub-word: (div)
+=
+def: rmn
+ctx: ~struct
+stack: n --
+desc: =
+    Divide top element of the active stack by 'n', replacing that
+    element with the remainder (modulus).
+
+    Sub-word: (rmn)
+=
+def: avg
+ctx: ~struct
+stack: -- n
+desc: =
+    Return the average of the contents of the active stack.
+
+    Sub-word: (avg)
+=
+
+related: stk stack itr psh psh$ -psh -psh$ pop pop$ -pop -pop$ pok pok$ -pok -pok$ pek pek$ npek npek$ -pek -pek$ num fnd drp cut swp cpy ovr tuk hop -hop pik rmv prt add sub mul div rmn avg

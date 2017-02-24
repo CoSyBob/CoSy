@@ -1,0 +1,267 @@
+| ---------------------------------------------------------------
+| vim: ft=reva: 
+| Gtk+ 2.0 bindings for RetroForth
+| Ported to Reva by Charles Childers
+|
+| To use this on Linux, change the "from" lines to the appropiate
+| library names.
+| ---------------------------------------------------------------
+| This provides both bindings to the API functions and also a
+| set of wrapper words that makes creating the user interface
+| easier.
+| ---------------------------------------------------------------
+
+| A .data class, variable, and variable: from retro
+| Reva's variables aren't tickable, at least not from
+| my tests.
+|
+
+push~
+~
+~util
+context: ~gtk2
+~sys
+~strings
+~gtk2
+
+: .data compiling? if literal, ;then ;
+: variable 0 : variable:
+  default_class @ >r
+  ['] .data default_class !
+  parsews (header) ,
+  r> default_class !
+;
+
+|
+| from Helmar (this is in retro9.1)
+|
+: callback [
+  $52515358 , $89555657 , $40ec83e6 , $00000ae8 , $40c48300 ,
+  $5a5f5e5d , $ffc35b59 , $e0 1,
+
+os [IF] " libgobject-2.0.so" [ELSE] " libgobject-2.0-0.dll" [THEN] lib libgobject
+ 6 func: g_signal_connect_data
+ 4 func: g_signal_connect_object
+
+os [IF] " libgtk-x11-2.0.so" [ELSE] " libgtk-win32-2.0-0.dll" [THEN] lib libgtk
+ 2 func: gtk_init
+ 1 func: gtk_window_new
+ 2 func: gtk_window_set_title
+ 3 func: gtk_window_set_default_size
+ 1 func: gtk_widget_show
+ 1 func: gtk_widget_hide
+ 0 func: gtk_main
+ 0 func: gtk_main_quit
+
+ 2 func: gtk_container_add
+ 0 func: gtk_widget_destroy
+ 5 func: gtk_box_pack_start
+ 2 func: gtk_hbox_new
+ 2 func: gtk_vbox_new
+ 0 func: gtk_hbutton_box_new
+ 0 func: gtk_vbutton_box_new
+ 2 func: gtk_scrolled_window_new
+
+ 1 func: gtk_button_new_with_label
+ 1 func: gtk_button_get_label
+ 2 func: gtk_button_set_label
+
+ 1 func: gtk_label_new
+ 2 func: gtk_label_set_text
+
+ 0 func: gtk_entry_new
+ 2 func: gtk_entry_set_max_length
+ 2 func: gtk_entry_set_text
+ 2 func: gtk_entry_append_text
+ 2 func: gtk_entry_prepend_text
+ 1 func: gtk_entry_get_text
+ 2 func: gtk_entry_set_width_chars
+
+ 0 func: gtk_text_view_new
+ 1 func: gtk_text_view_get_buffer
+ 3 func: gtk_text_buffer_set_text
+ 4 func: gtk_text_buffer_get_text
+ 3 func: gtk_text_buffer_get_bounds
+
+ 0 func: gtk_notebook_new
+ 3 func: gtk_notebook_append_page
+
+ 0 constant GTK_WINDOW_TOPLEVEL
+
+| ---------------------------------------------------------------
+| At this point the wrapper functionality begins. This is
+| intended to make the code easier to follow overall.
+| ---------------------------------------------------------------
+
+
+
+| ---------------------------------------------------------------
+| init
+|
+| Initializes the GTK+ environment
+|
+| ---------------------------------------------------------------
+: init 0 0 gtk_init ;
+
+
+
+| ---------------------------------------------------------------
+| Windows
+|
+| To create a window:
+|   window: name
+| To set the title:
+|   name " title" setTitle
+|
+| ---------------------------------------------------------------
+  variable which
+  : destroy callback gtk_main_quit cold ;
+
+  : create GTK_WINDOW_TOPLEVEL gtk_window_new which @ ! ;
+  : bind which @ @ " destroy" zt ['] destroy 0 g_signal_connect_object ;
+ :: variable here cell- which ! create bind ; alias window:
+
+: setTitle zt swap @ swap gtk_window_set_title ;
+
+
+| ---------------------------------------------------------------
+| Buttons
+|
+| To create a button:
+|   " initial label"   button:  name-of-button
+| To obtain the label of a button:
+|   name-of-button  button.getText
+| To set the label of a button:
+|   name-of-button  " new label"  button.setText
+|
+| ---------------------------------------------------------------
+
+  : create zt gtk_button_new_with_label ;
+ :: create variable: ; alias button:
+: button.getText @ gtk_button_get_label ;
+: button.setText >r >r @ r> r> zt gtk_button_set_label ;
+
+
+| ---------------------------------------------------------------
+| Labels
+|
+| To create a label:
+|   " initial text"   label:  label-name
+| To change the text of a label:
+|   label-name  " text"  label.setText
+|
+| ---------------------------------------------------------------
+
+  : create zt gtk_label_new ;
+ :: create variable: ; alias label:
+: label.setText >r >r @ r> r> zt gtk_label_set_text ;
+
+
+
+| ---------------------------------------------------------------
+| Containers
+|
+| All share a common syntax:
+|   <container>: name
+|
+| ---------------------------------------------------------------
+: hbox-fixed: -1 0 gtk_hbox_new variable: ;
+: vbox-fixed: -1 0 gtk_vbox_new variable: ;
+: hbox: 0 1 gtk_hbox_new variable: ;
+: vbox: 0 1 gtk_vbox_new variable: ;
+
+: hButtonBox: gtk_hbutton_box_new variable: ;
+: vButtonBox: gtk_vbutton_box_new variable: ;
+
+: scrolled: 0 0 gtk_scrolled_window_new variable: ;
+
+
+| ---------------------------------------------------------------
+| Single Line Text Entry
+|
+| To create a text entry field:
+|   entry:  name
+| To change the text of a field:
+|   name " text"  entry.setText
+| To get the text in a field:
+|   name entry.getText
+| To set the width of the field:
+|   name #chars  entry.setWidth
+| To set the maximum length of a field:
+|   name #chars  entry.setMaxLength
+| ---------------------------------------------------------------
+  : create gtk_entry_new ;
+ :: create variable: ; alias entry:
+
+: entry.setText >r >r @ r> r> zt gtk_entry_set_text ;
+: entry.getText @ gtk_entry_get_text zcount ;
+: entry.setWidth >r @ r> gtk_entry_set_width_chars ;
+: entry.setMaxLength >r @ r> gtk_entry_set_max_length ;
+
+
+
+| ---------------------------------------------------------------
+| Multiple Line Text Entry
+| ---------------------------------------------------------------
+: textbox: gtk_text_view_new variable: ;
+: textbox.getBuffer @ gtk_text_view_get_buffer ;
+: textbox.setText >r >r textbox.getBuffer r> r> gtk_text_buffer_set_text ;
+  : get-bounds textbox.getBuffer here pad gtk_text_buffer_get_bounds drop ;
+  : get-text   textbox.getBuffer here pad -1 gtk_text_buffer_get_text ;
+ :: dup get-bounds get-text zcount ; alias textbox.getText
+
+
+: notebook: gtk_notebook_new variable: ;
+: notebook.addPage >r >r @ r> @ r> @ gtk_notebook_append_page ;
+
+
+
+| ---------------------------------------------------------------
+| Add a container to a window
+|
+| Syntax:
+|   container add-to: window
+|
+| ---------------------------------------------------------------
+: add-to:  @ ' @ swap  0 0 0 gtk_box_pack_start ;
+
+
+| ---------------------------------------------------------------
+| Add an object to a container
+|
+| Syntax:
+|   container add: object
+|
+| ---------------------------------------------------------------
+: add:     @ ' @ gtk_container_add drop ;
+
+
+| ---------------------------------------------------------------
+| Show or hide something
+|
+| Syntax:
+|   show: object
+|   hide: object
+|
+| Please be sure to show: all widgets that should be visible by
+| default.
+|
+| ---------------------------------------------------------------
+: show:    ' @ gtk_widget_show drop ;
+: hide:    ' @ gtk_widget_hide drop ;
+
+
+| ---------------------------------------------------------------
+| Map signals to an object
+|
+| Syntax:
+|   window " signal" callback signal: object
+|
+| For callback, use an xt that is defined as a callback
+|
+| ---------------------------------------------------------------
+: signal:  >r >r >r @ here ! r> r> r> -rot zt swap ' @ -rot here @ g_signal_connect_object drop ;
+
+pop~
+
+||| 

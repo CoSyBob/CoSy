@@ -1,0 +1,535 @@
+| vim: ft=reva :
+| Implementation of Hebrew calendar
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+
+push~
+
+needs date/julian
+needs string/trim
+needs math/mod
+
+~strings ~io ~priv ~doubles ~date
+|  *******************************************************************
+|  *     Hebrew Calendar                                             *
+|  *******************************************************************
+
+|  Hebrew-Epoch          ( -- fixed-date )
+|     _fixed-date_ of start of the Hebrew calendar, that is,
+|     Tishri 1, 1 AM.
+
+|  Hebrew-Leap-Year? ( hebrew-year -- flag )
+|     True if year is a leap year on Hebrew calendar.
+
+|  Last-Month-of-Hebrew-Year ( hebrew-year -- hebrew-month )
+|     Last month of Hebrew year.
+
+|  Long-Heshvan? ( hebrew-year -- flag )
+|     True if Heshvan is long in Hebrew year.
+
+|  Short-Kislev?  ( hebrew-year -- flag )
+|     True if Kislev is short in Hebrew year.
+~priv
+-3760 constant hebrew-epoch-year 
+-1373427 constant hebrew-epoch
+exit~
+
+1 enum: Nissan Iyar Sivan Tammuz Av Elul Tishrei Heshvan Kislev Tevet Shevat Adar Adar2 enum;
+
+: hebrew-leap-year?  7 *  1+  19 _mod  6 - 0 max not not 1+ ;
+: last-month-of-hebrew-year hebrew-leap-year? Adar + ;
+
+~priv
+: hebrew-calendar-elapsed-days  ( h-year -- day )
+    235 * 234 - 19 /_      ( months-elapsed)
+    dup 13753 * 12084 +    ( month-elapsed parts-elapsed)
+    25920 /_ swap 29 * +   ( day)
+    dup 1+ 3 * 7 _mod 3 <if true else false then - ;
+
+: Hebrew-New-Year-Delay  ( h-year -- n )
+    dup 1- hebrew-calendar-elapsed-days ( year ny0)
+    over hebrew-calendar-elapsed-days   ( year ny0 ny1)
+    rot 1+ hebrew-calendar-elapsed-days ( ny0 ny1 ny2)
+    over - 356 = if  2drop  2
+    else swap - 382 =if    1
+    else                    0
+    then then ;
+exit~
+
+defer hebrew>fixed |  ( month day year -- date )
+
+: days-in-hebrew-year    ( h-year -- days )
+    >r  7 1 r@ 1+ hebrew>fixed
+    7 1 r> hebrew>fixed - ;
+
+~priv
+: long-heshvan?  ( h-year -- flag ) days-in-hebrew-year 10 mod 5 = ;
+: short-kislev?  ( h-year -- flag ) days-in-hebrew-year 10 mod 3 = ;
+exit~
+
+| create hebrewdays 
+| 	29 1, 30 1, 30 1, 20 1, 30 1, 30 1, 30 1, 29 1, 30 1, 29 1, 30 1, 29 1, 20 1,  30 1,
+
+: last-day-of-hebrew-month  ( month year -- day )
+    over 1 swap << %10010001010100 and
+	if 2drop  29 ;then
+
+    over Adar =if
+        dup hebrew-leap-year? not if 2drop  29  ;; then
+    then
+
+    over Heshvan =if
+        dup long-heshvan? not if 2drop  29  ;; then
+    then
+
+    over Kislev =if
+        dup short-kislev? if 2drop  29  ;; then
+    then
+
+    2drop  30 ;
+
+:: ( month day year -- date )
+    hebrew-epoch           ( month day year date)
+    over hebrew-calendar-elapsed-days +
+    over Hebrew-New-Year-Delay + third + 1-
+    fourth 7 <if
+        over last-month-of-hebrew-year 1+ 7 do
+            over i swap last-day-of-hebrew-month +
+        loop
+
+        fourth 1  2dup 1+ <if 2drop else 
+			do 
+				over i swap last-day-of-hebrew-month +
+			loop 
+		then
+    else
+        fourth 7  2dup 1+ <if 2drop else 
+			do
+				over i swap last-day-of-hebrew-month +
+			loop
+        then
+    then
+    nip nip nip ; is hebrew>fixed
+
+|  fixed>hebrew   ( fixed-date -- hebrew-date )
+|     Hebrew (month day year) corresponding to _fixed-date_. The
+|     fraction can be approximated by 365.25.
+: fixed>hebrew ( date -- month day year )
+	dup >r                          ( r: date)
+	hebrew-epoch -  98496  35975351  */_    ( approx)
+
+	repeat
+		7 1 third hebrew>fixed
+		r@ >if false else 1+ true then
+	while
+	
+	1- >r                     ( )( r: date year)
+	
+	2r@ 1 1 rot hebrew>fixed <if 7 else 1 then
+
+	repeat
+		dup dup r@ last-day-of-hebrew-month
+		r@ hebrew>fixed 2r@ drop <if 1+ true else false then
+	while
+
+	dup 1 r@ hebrew>fixed 2r@ drop swap - 1+
+										( month day)
+	r> ( month day year)  rdrop ;
+
+|  *******************************************************************
+|  *     Hebrew Holidays and Fast Days                               *
+|  *******************************************************************
+
+|  Yom-Kippur ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Yom Kippur occurring in
+|     _gregorian-year_.
+
+|  Passover ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Passover occurring in _gregorian-year_.
+
+|  Omer ( fixed-date -- omer-count )
+|     Number of elapsed weeks and days in the omer at date.
+|     Returns bogus if that date does not fall during the
+|     omer.
+
+|  Purim   ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Purim occurring in _gregorian-year_.
+
+|  Ta-Anith-Esther ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Ta'anith Esther occurring in
+|     _gregorian-year_.
+
+|  Tisha-B-Av ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Tisha B'Av occurring in Gregorianyear.
+
+|  Birkath-Ha-Hama  ( gregorian-year -- list-of-fixed-dates )
+|     List of _fixed-date_ of Birkath HaHama occurring in
+|     _gregorian-year_, if it occurs.
+
+|  Sh-Ela ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Sh'ela occurring in _gregorian-year_.
+
+|  Yom-Ha-Zikaron ( gregorian-year -- fixed-date )
+|     _fixed-date_ of Yom HaZikaron occurring in _gregorian-year_.
+: >hebepoch hebrew-epoch-year - ;
+: >hebdate rot hebrew>fixed ;
+
+: yom-kippur  ( gregorian-year -- fixed-date )
+	>hebepoch 1+ Tishrei 10 >hebdate ;
+
+: rosh-hashanah ( gregorian-year -- fixed-date )
+    >hebepoch 1+ Tishrei 1 >hebdate ;
+
+: rosh-chodesh? ( fixed-date -- flag )
+	fixed>hebrew drop nip
+	2 29 between not ;
+
+: passover            ( gregorian-year -- fixed-date )
+	>hebepoch Nissan 15 >hebdate ;
+: shavuot            ( gregorian-year -- fixed-date )
+	passover 50 + ;
+
+: purim   ( gregorian-year -- fixed-date )
+    >hebepoch
+    dup last-month-of-hebrew-year  ( h-year month)
+    14 >hebdate ;
+
+: omer ( fixed -- days ) 
+	dup fixed>hebrew _2nip	| fixed hyear
+	Nissan 15 >hebdate		| fixed fixed'
+	- dup 1 49 between not if drop 0 then
+	;
+
+: .omer ( fixed -- )
+	omer 0; dup . ." days, which are " 7 /mod . ." weeks and " . ." days" cr
+	;
+
+: taanit-esther    ( gregorian-year -- fixed-date )
+    purim dup fixed>dow Sun =if 3 - else 1- then ;
+: tisha-beav ( greg-year - fixed-date )
+	>hebepoch Av 9 >hebdate ;
+: yom-hashoah    ( gregorian-year -- fixed-date )
+    >hebepoch Nissan 27 >hebdate ;
+: yom-haatsmaut    ( gregorian-year -- fixed-date )
+    >hebepoch Iyar 5 >hebdate ;
+| need to look at fixed>gregorian-year -
+: hanukkah        ( gregorian-year -- fixed-date )
+    >hebepoch 1+ Kislev 25 >hebdate ;
+
+~priv
+create hmonths '' Nissan , '' Iyar , '' Sivan , '' Tammuz , '' Av ,  '' Elul ,
+	'' Tishrei , '' Heshvan , '' Kislev , '' Tevet , '' Shevat , '' Adar , '' Adar2 ,
+exit~
+
+: hebrew-month-name ( nr -- s c ) 1- 13 clamp hmonths array>name ;
+
+: (.hebrew)
+	>r (.) pad place 32 pad c+place 
+	hebrew-month-name pad +place 32 pad c+place 
+	r> (.) pad +place pad count ;
+: .hebrew (.hebrew) type ;
+
+: hebrewtoday today>fixed fixed>hebrew ;
+: .hebrewtoday hebrewtoday .hebrew ;
+| FROM	IN	ON	AT	SAVE	LETTER/S
+| 1948	May	23	0:00	2:00	DD
+| 1948	Nov	 1	2:00	0	S
+| 1949	May	 1	0:00	1:00	D
+| 1950	Apr	16	0:00	1:00	D
+| 1950	Sep	15	3:00	0	S
+| 1951	Apr	 1	0:00	1:00	D
+| 1951	Nov	11	3:00	0	S
+| 1952	Apr	20	2:00	1:00	D
+| 1952	Oct	19	3:00	0	S
+| 1953	Apr	12	2:00	1:00	D
+| 1953	Sep	13	3:00	0	S
+| 1954	Jun	13	0:00	1:00	D
+| 1954	Sep	12	0:00	0	S
+| 1955	Jun	11	2:00	1:00	D
+| 1955	Sep	11	0:00	0	S
+| 1956	Jun	 3	0:00	1:00	D
+| 1956	Sep	30	3:00	0	S
+| 1957	Apr	29	2:00	1:00	D
+| 1957	Sep	22	0:00	0	S
+| 1974	Jul	 7	0:00	1:00	D
+| 1974	Oct	13	0:00	0	S
+| 1975	Apr	20	0:00	1:00	D
+| 1975	Aug	31	0:00	0	S
+| 1985	Apr	14	0:00	1:00	D
+| 1985	Sep	15	0:00	0	S
+| 1986	May	18	0:00	1:00	D
+| 1986	Sep	 7	0:00	0	S
+| 1987	Apr	15	0:00	1:00	D
+| 1987	Sep	13	0:00	0	S
+| 1988	Apr	 9	0:00	1:00	D
+| 1988	Sep	 3	0:00	0	S
+| 1989	Apr	30	0:00	1:00	D
+| 1989	Sep	 3	0:00	0	S
+| 1990	Mar	25	0:00	1:00	D
+| 1990	Aug	26	0:00	0	S
+| 1991	Mar	24	0:00	1:00	D
+| 1991	Sep	 1	0:00	0	S
+| 1992	Mar	29	0:00	1:00	D
+| 1992	Sep	 6	0:00	0	S
+| 1993	Apr	 2	0:00	1:00	D
+| 1993	Sep	 5	0:00	0	S
+| 1994	Apr	 1	0:00	1:00	D
+| 1994	Aug	28	0:00	0	S
+| 1995	Mar	31	0:00	1:00	D
+| 1995	Sep	 3	0:00	0	S
+| 1996	Mar	15	0:00	1:00	D
+| 1996	Sep	16	0:00	0	S
+| 1997	Mar	21	0:00	1:00	D
+| 1997	Sep	14	0:00	0	S
+| 1998	Mar	20	0:00	1:00	D
+| 1998	Sep	 6	0:00	0	S
+| 1999	Apr	 2	2:00	1:00	D
+| 1999	Sep	 3	2:00	0	S
+| 2000	Apr	14	2:00	1:00	D
+| 2000	Oct	 6	1:00	0	S
+| 2001	Apr	 9	1:00	1:00	D
+| 2001	Sep	24	1:00	0	S
+| 2002	Mar	29	1:00	1:00	D
+| 2002	Oct	 7	1:00	0	S
+| 2003	Mar	28	1:00	1:00	D
+| 2003	Oct	 3	1:00	0	S
+| 2004	Apr	 7	1:00	1:00	D
+| 2004	Sep	22	1:00	0	S
+
+| note: only accurate for 2005 and later!
+: israel-dst? ( fixed -- flag )
+	dup fixed>gregorian-year
+		dup 2005 <if 2drop false ;then
+		>r
+		LAST Fri Apr 2 r@ nth-weekday	| last fri before 02Apr...
+		| Sunday between R"H and Y"K... so find Y"K
+		r> yom-kippur Sat weekday-before
+		between
+	;
+
+pop~
+||| 
+def: Nissan
+stack: -- 1
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Nissan"
+@
+def: Iyar
+stack: -- 2
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Iyar"
+@
+def: Sivan
+stack: -- 3
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Sivan"
+@
+def: Tammuz
+stack: -- 4
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Tammuz"
+@
+def: Av
+stack: -- 5
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Av"
+@
+def: Elul
+stack: -- 6
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Elul"
+@
+def: Tishrei
+stack: -- 7
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Tishrei"
+@
+def: Heshvan
+stack: -- 8
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Heshvan"
+@
+def: Kislev
+stack: -- 9
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Kislev"
+@
+def: Tevet
+stack: -- 10
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Tevet"
+@
+def: Shevat
+stack: -- 11
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Shevat"
+@
+def: Adar
+stack: -- 12
+ctx: ~date
+desc: @
+	Symbolic name for the Hebrew month "Adar"
+@
+def: Adar2
+stack: -- 13
+ctx: ~date
+desc: @
+	Symbolic name for the extra Hebrew month "Adar II"
+@
+
+def: hebrew-leap-year?
+stack: year -- flag
+ctx: ~date
+desc: @
+	Returns whether or not the Hebrew year is a leap year on Hebrew calendar
+@
+def: last-month-of-hebrew-year
+stack: year -- month
+ctx: ~date
+desc: @
+	Returns last month of that Hebrew year (e.g. Adar or Adar2)
+@
+def: days-in-hebrew-year
+stack: year -- days
+ctx: ~date
+desc: @
+	Returns number of days in the Hebrew year (353,354,355,383,384,385)
+@
+def: last-day-of-hebrew-month
+stack: month year -- day
+ctx: ~date
+desc: @
+	Returns the number of days in the given Hebrew month in that year.
+@
+def: hebrew>fixed
+stack: mm dd yyyy -- f
+ctx: ~date
+desc: @
+	 Return fixed date from Hebrew date. This word is designed so that it works
+	 for Hebrew dates month, day, year even if the month has fewer than day days
+	 -- in that case the function returns the (day-1)st day after month 1, year.
+	 This property is required by the functions hebrew-birthday and yahrzeit.
+@
+def: fixed>hebrew
+stack: f -- mm dd yyyy
+ctx: ~date
+desc: @
+     Hebrew date corresponding to the fixed date.
+@
+def: yom-kippur
+stack: year -- fixed
+ctx: ~date
+desc: @
+     Returns the fixed date on which Yom Kippur falls during the Gregorian year
+	 passed in.
+@
+def: rosh-hashanah
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Rosh Hashanah falls during the Gregorian
+	 year passed in.
+@
+def: rosh-chodesh?
+stack: fixed -- flag
+ctx: ~date
+desc: @
+	 Returns whether or not he fixed date is Rosh Chodesh.
+@
+def: passover
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Passover falls during the Gregorian year
+	 passed in.
+@
+def: purim
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Purim falls during the Gregorian year
+	 passed in.
+@
+def: taanit-esther
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Taanit Esther falls during the Gregorian
+	 year passed in.
+@
+def: tisha-beav
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Tisha Be'av falls during the Gregorian
+	 year passed in.
+@
+def: yom-hashoah
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Yom Hashoah falls during the Gregorian
+	 year passed in.
+@
+def: yom-haatsmaut
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which Yom Ha'atsmaut falls during the Gregorian
+	 year passed in.
+@
+def: hanukkah
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns the fixed date on which the first day of Hanukkah falls during the
+	 Gregorian year passed in.
+@
+def: hebrew-month-name
+stack: nr -- a n
+ctx: ~date
+desc: @
+	 Returns the Hebrew month name corresponding to the number passed in.
+@
+def: (.hebrew)
+stack: f -- a n
+ctx: ~date
+desc: @
+	 Prints the fixed date as a Hebrew calendar date, to the string.
+@
+def: .hebrew
+stack: f -- 
+ctx: ~date
+desc: @
+	 Prints the fixed date as a Hebrew calendar date.
+@
+def: hebrewtoday
+stack: -- mm dd yyyy
+ctx: ~date
+desc: @
+	 Returns todays date on the Hebrew calendar.
+@
+def: .hebrewtoday
+stack: -- 
+ctx: ~date
+desc: @
+	 Prints todays date on the Hebrew calendar.
+@
+def: israel-dst?
+stack: fixed -- flag
+ctx: ~date
+desc: @
+	 Returns whether or not the fixed date is under DST according to Israeli
+	 rules.
+@

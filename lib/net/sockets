@@ -1,0 +1,105 @@
+| vim: ft=reva :
+| Socket wrapper
+
+push~
+~util ~strings ~
+
+create CRLF 13 1, 10 1,
+: crlf CRLF 2 ;
+: bswap [ $c80f 2, ;
+create sockaddr 0 , 0 , 0 , 0 , 0 ,
+create socketparams 2 , 1 , 0 ,
+create listenparams 0 , 16 ,
+create null 0 ,
+create bindparams 0 , sockaddr , 16 ,
+create acceptparams 0 , sockaddr , null ,
+
+os [IF]
+with~ ~os with~ ~io
+:  htons ;
+:  htonl ;
+:  shutdown ;
+
+: socketcall 2 102 syscall ;
+: socket ( domain type proto -- sock )
+	socketparams >r
+	r@ 2 cells + !
+	r@ cell+ !
+	r@ !
+	r> 1 socketcall ;
+: bind   bindparams   2 socketcall ;
+: connect  ( socket sockaddr flags )
+	bindparams >r
+	r@ 2 cells + !
+	r@ cell+ !
+	r@ !
+	r>  3 socketcall ;
+: listen listenparams 4 socketcall ;
+: accept acceptparams 5 socketcall ;
+: sockerror errno ;
+1 func:  gethostbyname
+: closesocket close ;
+: send drop rot write ;
+: recv drop rot read ;
+4 cells constant HOSTADDRIP
+[ELSE]
+" wsock32.dll" lib wsock32
+3 cells constant HOSTADDRIP
+2 func:  WSAStartup
+0 func:  WSACleanup
+3 func:  accept 
+3 func:  bind
+3 func:  connect
+1 func:  gethostbyname
+3 func:  socket
+2 func:  listen
+4 func:  send
+4 func:  recv
+1 func:  htons
+1 func:  htonl
+1 func:  inet_addr
+1 func:  inet_ntoa
+1 func:  closesocket
+2 func:  shutdown
+0 func: WSAGetLastError
+| make sure we release stuff when we are done!
+: socketlib_close WSACleanup ;
+: sockerror WSAGetLastError ;
+create wsadata 560 allot
+: socketlib_start
+	wsadata 560 0 fill
+	$101 wsadata WSAStartup drop
+	;
+socketlib_start
+' socketlib_start in~ ~sys onstartup
+' socketlib_close in~ ~sys onexit
+
+[THEN]
+2 constant PF_INET
+1 constant PF_UNIX
+1 constant SOCK_STREAM
+2 constant SOCK_DGRAM
+: sockbad? dup 0 <if true else false then ;
+: tcpsock PF_INET SOCK_STREAM 0 socket ;
+: udpsock PF_INET SOCK_DGRAM 0 socket ;
+: host>addr ( a n -- ipaddr ) zt gethostbyname HOSTADDRIP + @ @ @ ;
+| Connect to a server using INET sockets.  If 'n' is non-zero, then a,n is a
+| string with the name of a server.  If 'n' is zero, then a is an IP address
+| Returns -1 on failure, or a valid socket number on success.
+: connectsocket ( a n port -- sock )
+	| make a socket and connect
+	tcpsock sockbad? if 3drop -1 ;; then
+	| valid socket.  stash away the new socket
+	>r
+	| set up the port/protocol
+	bswap ( htonl ) PF_INET or sockaddr !
+	| get the name of the server of interest
+	host>addr sockaddr cell+ !
+	| and try to connect to it:
+	r@ sockaddr 16 connect 0 <if r> closesocket -1 >r then
+	r>
+	;
+hide sockaddr
+
+pop~
+||| 

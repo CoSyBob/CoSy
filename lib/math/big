@@ -1,0 +1,244 @@
+| big (arbitrary precision) math
+| vim: ft=reva :
+| wrapper around imath library 
+|  (by M.J. Fromberger, <http://www.dartmouth.edu/~sting/> )
+
+push~
+~
+context: ~bigmath
+
+~bigmath
+
+os [IF] " libimath.so" [ELSE] " imath.dll" [THEN] lib imath
+
+~priv
+1 func: mp_int_init
+0 func: mp_int_alloc
+2 func: mp_int_copy
+1 func: mp_int_free
+2 func: mp_int_set_value
+3 func: mp_int_add
+3 func: mp_add_value
+2 func: mp_int_compare
+4 func: mp_int_to_string
+2 func: mp_int_string_len
+3 func: mp_int_read_string 
+3 func: mp_int_sub
+3 func: mp_sub_value
+3 func: mp_int_mul
+3 func: mp_int_mul_value
+4 func: mp_int_div
+3 func: mp_int_expt
+2 func: mp_int_to_int
+
+variable bigtemp
+~bigmath
+: big: ( -- )
+	create mp_int_alloc ,
+	does> @ ;
+
+: big-copy ( a b -- ) swap mp_int_copy drop ;
+: big-done ( a ) mp_int_free ;
+: int>big ( n a -- ) swap mp_int_set_value drop ;
+: big>int ( a -- n ) bigtemp mp_int_to_int drop bigtemp @ ;
+: big!: ( n -- ) big: lastxt @ int>big ;
+: big+ ( c a b -- c=a+b ) rot mp_int_add drop ;
+: big+n ( a b n -- a=b+n ) rot mp_add_value drop ;
+: big- ( c a b -- c=a-b ) rot mp_int_sub drop ;
+: big-n ( a b n -- a=b-n ) rot mp_sub_value drop ;
+: big* ( c a b -- c=a*b ) rot mp_int_mul drop ;
+: big*n ( a b n -- a=b*n ) rot mp_int_mul_value drop ;
+: big/mod ( r q a b -- ) 2swap swap mp_int_div drop ;
+: big/ ( q a b -- ) rot 0 mp_int_div drop ;
+: bigmod ( r a b -- ) rot 0 swap mp_int_div drop ;
+: bigexpt ( c a b -- c=a^b ) rot mp_int_expt drop ;
+
+: big= ( a b -- flag ) mp_int_compare not ;
+: big< ( a b -- flag ) mp_int_compare 0 <if true else false then ;
+: big> ( a b -- flag ) mp_int_compare 0 >if true else false then ;
+: biglen ( b -- n ) base @ mp_int_string_len ;
+: big>str ( a maxn b -- a n )
+	dup biglen	| a maxn b n
+	rot min     | a b n
+	rot			| b n a
+	base @ -rot | b r n a
+	swap mp_int_to_string drop
+	;
+: str>big ( a n b -- ) -rot zt base @ swap mp_int_read_string drop ;
+
+create bigbuf 1024 allot
+: (big) bigbuf 1024 rot big>str bigbuf zcount ;
+: .big ( a -- ) (big) type_ ;
+
+pop~
+
+|||
+def: big:
+stack: <name> --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Create a "big" math object, initialized to zero.
+~
+def: big-done
+stack: a --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Frees up the memory allocated to the big number "a".  The big number is
+	invalid after this and should not be used.
+~
+def: big-copy
+stack: a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Copies the value of the big number "b" into the big number "a"
+~
+def: int>big
+stack: n a --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Initialize the big number "a" with the single "n"
+~
+def: big!:
+stack: n <name> --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Like "big:", but also initializes the big number to the single "n"
+~
+def: big+
+stack: c a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Sets the big number "c" to the sum of big numbers "a" and "b"
+~
+def: big+n
+stack: a b n --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Adds the single "n" to the big number "b", assigning the result to "a"
+~
+def: big-
+stack: c a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Sets the big number "c" to the difference of the big numbers "a-b"
+~
+def: big-n
+stack: c a n --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Same as "big-" but subtracts the single "n" instead of a big number
+~
+def: big*
+stack: c a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Sets the big number "c" to the product of the big numbers "a*b"
+~
+def: big*n
+stack: c a n --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Same as "big*" but multiplies by the single "n" intead of a big number
+~
+def: big/mod
+stack: r q a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Same as "/mod" for big numbers.  Takes the big numbers "a" and "b" and
+	divides them, putting the quotient in "q" and the remainder in "r"
+~
+def: big/
+stack: q a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Same as "/" for big numbers.  Takes the big numbers "a" and "b" and
+	divides them, putting the quotient in "q"
+~
+def: bigmod
+stack: r a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Same as "mod" for big numbers.  Takes the big numbers "a" and "b" and
+	divides them, putting the remainder in "r"
+~
+def: bigexpt
+stack: c a b --
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Set big number "c" to big number "a" raised to the big number "b" power
+~
+def: big=
+stack: a b -- flag
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Returns "true" if "a" and "b" are equal
+~
+def: big<
+stack: a b -- flag
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Returns "true" if "a" < "b" 
+~
+def: big>
+stack: a b -- flag
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Returns "true" if "a" > "b" 
+~
+def: biglen
+stack: a -- n
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Returns the number of characters required to represent "a" in the current
+	"base"
+~
+def: big>str
+stack: a maxn b -- a n
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Prints the big number "b" in the buffer (a,maxn).  
+~
+def: str>big
+stack: a n b -- 
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Initialize the big number "b" to the number represented by the string (a,n)
+~
+def: (big)
+stack: b -- a n
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Print the big number "b" into a static buffer.  Maximum size of this buffer
+	is 1024 digits
+~
+def: (big)
+stack: b -- a n
+ctx: ~bigmath
+ver: 6.1.6
+desc: ~
+	Print the big number "b" (max 1024 digits)
+~
+
+related: big: big!: big+ big+n big- big-n big* big*n big/mod big/ bigmod bigexpt big= big> big< biglen big>str str>big int>big (big) .big big-copy big-done

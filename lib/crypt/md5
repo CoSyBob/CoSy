@@ -1,0 +1,227 @@
+| vim: ft=reva :
+| md5 routine in ans forth  by fredrick w warren  02nov2000
+| ported to Reva by Ron
+push~
+needs math/doubles
+~doubles
+~priv
+~io
+~strings
+variable a    variable b    variable c    variable d
+
+variable md5len
+
+create buf[] 64 allot
+create part[] 64 allot
+create md5pad 64 allot   md5pad 64 0 fill  128 md5pad c!
+
+: > >if true else false then ;
+: lroll ( n1 s1 -- res ) | roll left with c/o to bit 0
+  2dup 32 swap - >>  rot rot << or ;
+
+: F  rot dup invert rot and rot rot and or ;
+
+: G  swap over invert and rot rot and or ;
+
+: H  xor xor ;
+
+: I  invert rot or xor ;
+
+
+: FF  >r  cells buf[] + @ + >r
+  2over nip >r F + r> swap r> + r> lroll + ;
+
+: GG  >r  cells buf[] + @ +  >r
+  2over nip >r  G + r> swap r> + r> lroll + ;
+
+: HH  >r  cells buf[] + @ + >r
+  2over nip >r  H + r> swap r> + r> lroll + ;
+
+: II  >r  cells buf[] + @ + >r
+  2over nip >r  I + r> swap r> + r> lroll + ;
+
+
+hex
+: round1
+  a @ b @ c @ d @ 0d76aa478 00 07 FF a ! | 1
+  d @ a @ b @ c @ 0e8c7b756 01 0c FF d ! | 2
+  c @ d @ a @ b @ 0242070db 02 11 FF c ! | 3
+  b @ c @ d @ a @ 0c1bdceee 03 16 FF b ! | 4
+  a @ b @ c @ d @ 0f57c0faf 04 07 FF a ! | 5
+  d @ a @ b @ c @ 04787c62a 05 0c FF d ! | 6
+  c @ d @ a @ b @ 0a8304613 06 11 FF c ! | 7
+  b @ c @ d @ a @ 0fd469501 07 16 FF b ! | 8
+  a @ b @ c @ d @ 0698098d8 08 07 FF a ! | 9
+  d @ a @ b @ c @ 08b44f7af 09 0c FF d ! | 10
+  c @ d @ a @ b @ 0ffff5bb1 0a 11 FF c ! | 11
+  b @ c @ d @ a @ 0895cd7be 0b 16 FF b ! | 12
+  a @ b @ c @ d @ 06b901122 0c 07 FF a ! | 13
+  d @ a @ b @ c @ 0fd987193 0d 0c FF d ! | 14
+  c @ d @ a @ b @ 0a679438e 0e 11 FF c ! | 15
+  b @ c @ d @ a @ 049b40821 0f 16 FF b ! | 16
+  ;
+
+: round2
+  a @ b @ c @ d @ 0f61e2562 01 05 GG a ! | 1
+  d @ a @ b @ c @ 0c040b340 06 09 GG d ! | 2
+  c @ d @ a @ b @ 0265e5a51 0b 0e GG c ! | 3
+  b @ c @ d @ a @ 0e9b6c7aa 00 14 GG b ! | 4
+  a @ b @ c @ d @ 0d62f105d 05 05 GG a ! | 5
+  d @ a @ b @ c @ 002441453 0a 09 GG d ! | 6
+  c @ d @ a @ b @ 0d8a1e681 0f 0e GG c ! | 7
+  b @ c @ d @ a @ 0e7d3fbc8 04 14 GG b ! | 8
+  a @ b @ c @ d @ 021e1cde6 09 05 GG a ! | 9
+  d @ a @ b @ c @ 0c33707d6 0e 09 GG d ! | 10
+  c @ d @ a @ b @ 0f4d50d87 03 0e GG c ! | 11
+  b @ c @ d @ a @ 0455a14ed 08 14 GG b ! | 12
+  a @ b @ c @ d @ 0a9e3e905 0d 05 GG a ! | 13
+  d @ a @ b @ c @ 0fcefa3f8 02 09 GG d ! | 14
+  c @ d @ a @ b @ 0676f02d9 07 0e GG c ! | 15
+  b @ c @ d @ a @ 08d2a4c8a 0c 14 GG b ! | 16
+  ;
+
+: round3
+  a @ b @ c @ d @ 0fffa3942 05 04 HH a ! | 1
+  d @ a @ b @ c @ 08771f681 08 0b HH d ! | 2
+  c @ d @ a @ b @ 06d9d6122 0b 10 HH c ! | 3
+  b @ c @ d @ a @ 0fde5380c 0e 17 HH b ! | 4
+  a @ b @ c @ d @ 0a4beea44 01 04 HH a ! | 5
+  d @ a @ b @ c @ 04bdecfa9 04 0b HH d ! | 6
+  c @ d @ a @ b @ 0f6bb4b60 07 10 HH c ! | 7
+  b @ c @ d @ a @ 0bebfbc70 0a 17 HH b ! | 8
+  a @ b @ c @ d @ 0289b7ec6 0d 04 HH a ! | 9
+  d @ a @ b @ c @ 0eaa127fa 00 0b HH d ! | 10
+  c @ d @ a @ b @ 0d4ef3085 03 10 HH c ! | 11
+  b @ c @ d @ a @ 004881d05 06 17 HH b ! | 12
+  a @ b @ c @ d @ 0d9d4d039 09 04 HH a ! | 13
+  d @ a @ b @ c @ 0e6db99e5 0c 0b HH d ! | 14
+  c @ d @ a @ b @ 01fa27cf8 0f 10 HH c ! | 15
+  b @ c @ d @ a @ 0c4ac5665 02 17 HH b ! | 16
+  ;
+
+: round4
+  a @ b @ c @ d @ 0f4292244 00 06 II a ! | 1
+  d @ a @ b @ c @ 0432aff97 07 0a II d ! | 2
+  c @ d @ a @ b @ 0ab9423a7 0e 0f II c ! | 3
+  b @ c @ d @ a @ 0fc93a039 05 15 II b ! | 4
+  a @ b @ c @ d @ 0655b59c3 0c 06 II a ! | 5
+  d @ a @ b @ c @ 08f0ccc92 03 0a II d ! | 6
+  c @ d @ a @ b @ 0ffeff47d 0a 0f II c ! | 7
+  b @ c @ d @ a @ 085845dd1 01 15 II b ! | 8
+  a @ b @ c @ d @ 06fa87e4f 08 06 II a ! | 9
+  d @ a @ b @ c @ 0fe2ce6e0 0f 0a II d ! | 10
+  c @ d @ a @ b @ 0a3014314 06 0f II c ! | 11
+  b @ c @ d @ a @ 04e0811a1 0d 15 II b ! | 12
+  a @ b @ c @ d @ 0f7537e82 04 06 II a ! | 13
+  d @ a @ b @ c @ 0bd3af235 0b 0a II d ! | 14
+  c @ d @ a @ b @ 02ad7d2bb 02 0f II c ! | 15
+  b @ c @ d @ a @ 0eb86d391 09 15 II b ! | 16
+  ;
+decimal
+
+: transform
+  a @ b @   c @ d @  round1 round2 round3 round4
+  d @ + d !  c @ + c !    b @ + b !  a @ + a !  ;
+
+
+hex
+: md5int
+  067452301 a !   0efcdab89 b !
+  098badcfe c !   010325476 d ! 
+  0 md5len !  ;
+decimal
+
+-1 variable, md5int?
+ 
+: setlen ( count -- )
+  md5len @ 8 m*  buf[] 60 + ! buf[] 56 + ! ;
+
+| do all 64 byte blocks leaving remainder block
+: dofullblocks ( adr1 count1 --  adr2 count2 )
+	dup 63 >if
+	repeat
+		64 - swap dup buf[] 64 move
+        64 + swap transform
+		dup 63 >
+	while then ;
+
+: movepartial ( addr count -- )
+  swap over buf[] swap move
+  md5pad over buf[] + rot 64 swap - move ;
+
+: dofinal ( addr count -- )
+  2dup movepartial dup 55 >  
+  if  transform  buf[] 64 0 fill then
+  2drop setlen transform  ;
+
+| compute md5 from a counted buffer of text
+: (md5) ( addr count -- )
+  md5int dup md5len +!  dofullblocks dofinal ;
+
+
+: savepart ( adr count -- ) 
+  md5len @ 64 mod if  part[] swap move  else  2drop  then  ;
+
+: movepart ( adr1 count1 partindex -- adr2 count2 ) | add to part[]
+  2dup 64 swap - min >r  part[] + >r over r> r@ move
+  swap r@ + swap r> - ;
+
+
+: md5update ( adr count -- ) 
+  md5int? @ if md5int false md5int? ! then
+  md5len @ 64 mod over md5len +! ( adr count partindex -- )
+  dup if    2dup + 63 >
+            if    movepart part[] 64 dofullblocks  dofullblocks
+savepart cr
+            else  movepart 2drop then
+      else  drop dofullblocks savepart then ;
+
+
+: md5final ( adr count -- ) 
+  md5int? @ if md5int false md5int? ! then
+  md5len @ 64 mod over md5len +! ( adr count partindex -- )
+  dup if    2dup + 63 >
+            if    movepart part[] 64 dofullblocks  dofullblocks
+dofinal
+            else  movepart 2drop part[] md5len @ 64 mod dofinal then
+      else  drop dofullblocks dofinal then ;
+
+
+
+| functions for creating output string
+create digit$ 
+  48 1, 49 1, 50 1, 51 1, 52 1, 53 1, 54 1, 55 1, 56 1, 57 1,
+  97 1, 98 1, 99 1, 100 1, 101 1, 102 1,
+
+: intdigits ( -- )
+  0 pad ! ;
+: savedigit ( n -- ) | output digit at pad
+  pad c@ 1+ dup pad c! pad + c! ;
+: bytedigits ( n1 -- )
+  dup 4 >> digit$ + c@ savedigit  15 and digit$ + c@ savedigit ;
+
+
+  : celldigits ( a1 -- )
+    dup 4 + swap do i c@ bytedigits loop ;
+
+| md5string
+: md5 ( a n -- adr count ) | return address of counted md5 string
+	(md5) intdigits a celldigits b celldigits c celldigits d celldigits pad
+	count true md5int? ! ;
+to~ ~ md5
+pop~
+
+|||
+
+def: md5
+ctx: ~
+stack: a n -- a' n'
+desc: =
+	Given a string (a,n) returns the MD5 hash corresponding to it, (a1,n1).
+	For example:
+
+		" hello" md5 type
+
+	prints: 
+		5d41402abc4b2a76b9719d911017c592
+=

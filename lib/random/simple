@@ -1,0 +1,60 @@
+| vim: ft=reva :
+| random number generator from Brodie "Starting Forth"
+push~
+
+needs math/doubles
+
+~util
+~priv
+
+ms@ variable, rnd
+
+::  ms@  rnd !  ;  in~ ~sys onstartup
+
+~
+: random  ( -- u ) rnd @  31421 *  6927 +  dup rnd ! ; 
+: rnd-seed ( n -- ) rnd ! ;
+: choose  ( n -- 0..n-1 )  random  in~ ~doubles um*  nip  ;
+: choose[]  ( lo hi -- lo..hi )  1+  over -  choose  +  ;
+| chooser: choose range
+| select a random number between lo and hi-1 inclusive
+| e.g. 1 3 chooser can return either 1 or 2
+: chooser ( lo hi -- lo..hi-1) 1- choose[] ;
+pop~
+|||
+
+def: random
+stack: -- n
+ctx: ~
+desc: =
+	Get the next random number
+=
+
+def: choose
+stack: n -- 0..n-1
+ctx: ~
+desc: =
+	Select a number between zero and n-1 inclusive.
+=
+
+def: rnd-seed
+stack: n -- 
+ctx: ~
+desc: =
+	Use the value 'n' as the 'seed' for the random generator
+=
+def: choose[]
+stack: lo hi -- lo..hi
+ctx: ~
+desc: =
+	Select a number between lo and hi inclusive.
+=
+
+def: chooser
+stack: lo hi -- lo..hi-1
+ctx: ~
+desc: =
+	Select a number between lo and hi-1 inclusive.
+=
+
+related: chooser choose[] choose random rnd-seed

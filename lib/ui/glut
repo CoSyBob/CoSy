@@ -1,0 +1,326 @@
+| vim: ft=reva :
+| GLUT binding for Reva/Retroforth. Version 1.0 alpha, 28Feb2006.
+| Conversion by Andrew Price. This is a comment stripped minimal version. See your freeglut_std.h for comments.
+| Converted version dedicated to the public domain 2006
+|
+| Original copyright follows:
+| /*
+|  * freeglut_std.h
+|  *
+|  * The GLUT-compatible part of the freeglut library include file
+|  *
+|  * Copyright (c) 1999-2000 Pawel W. Olszta. All Rights Reserved.
+|  * Written by Pawel W. Olszta, <olszta@sourceforge.net>
+|  * Creation date: Thu Dec 2 1999
+|  *
+|  * Permission is hereby granted, free of charge, to any person obtaining a
+|  * copy of this software and associated documentation files (the "Software"),
+|  * to deal in the Software without restriction, including without limitation
+|  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+|  * and/or sell copies of the Software, and to permit persons to whom the
+|  * Software is furnished to do so, subject to the following conditions:
+|  *
+|  * The above copyright notice and this permission notice shall be included
+|  * in all copies or substantial portions of the Software.
+|  *
+|  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+|  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+|  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+|  * PAWEL W. OLSZTA BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+|  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+|  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+|  */
+
+push~
+needs math/floats
+~ context: ~gl
+~util
+~floats
+~gl
+
+os [IF] " libglut.so" [ELSE] " glut32.dll" [THEN] lib GLUT
+GLUT not [IF] ." Could not load the GLUT library" cr -1 throw [THEN]
+
+1 constant FREEGLUT
+4 constant GLUT_API_VERSION
+1 constant FREEGLUT_VERSION_2_0
+13 constant GLUT_XLIB_IMPLEMENTATION
+$0001 constant GLUT_KEY_F1
+$0002 constant GLUT_KEY_F2
+$0003 constant GLUT_KEY_F3
+$0004 constant GLUT_KEY_F4
+$0005 constant GLUT_KEY_F5
+$0006 constant GLUT_KEY_F6
+$0007 constant GLUT_KEY_F7
+$0008 constant GLUT_KEY_F8
+$0009 constant GLUT_KEY_F9
+$000A constant GLUT_KEY_F10
+$000B constant GLUT_KEY_F11
+$000C constant GLUT_KEY_F12
+$0064 constant GLUT_KEY_LEFT
+$0065 constant GLUT_KEY_UP
+$0066 constant GLUT_KEY_RIGHT
+$0067 constant GLUT_KEY_DOWN
+$0068 constant GLUT_KEY_PAGE_UP
+$0069 constant GLUT_KEY_PAGE_DOWN
+$006A constant GLUT_KEY_HOME
+$006B constant GLUT_KEY_END
+$006C constant GLUT_KEY_INSERT
+$0000 constant GLUT_LEFT_BUTTON
+$0001 constant GLUT_MIDDLE_BUTTON
+$0002 constant GLUT_RIGHT_BUTTON
+$0000 constant GLUT_DOWN
+$0001 constant GLUT_UP
+$0000 constant GLUT_LEFT
+$0001 constant GLUT_ENTERED
+$0000 constant GLUT_RGB
+$0000 constant GLUT_RGBA
+$0001 constant GLUT_INDEX
+$0000 constant GLUT_SINGLE
+$0002 constant GLUT_DOUBLE
+$0004 constant GLUT_ACCUM
+$0008 constant GLUT_ALPHA
+$0010 constant GLUT_DEPTH
+$0020 constant GLUT_STENCIL
+$0080 constant GLUT_MULTISAMPLE
+$0100 constant GLUT_STEREO
+$0200 constant GLUT_LUMINANCE
+$0000 constant GLUT_MENU_NOT_IN_USE
+$0001 constant GLUT_MENU_IN_USE
+$0000 constant GLUT_NOT_VISIBLE
+$0001 constant GLUT_VISIBLE
+$0000 constant GLUT_HIDDEN
+$0001 constant GLUT_FULLY_RETAINED
+$0002 constant GLUT_PARTIALLY_RETAINED
+$0003 constant GLUT_FULLY_COVERED
+$0064 constant GLUT_WINDOW_X
+$0065 constant GLUT_WINDOW_Y
+$0066 constant GLUT_WINDOW_WIDTH
+$0067 constant GLUT_WINDOW_HEIGHT
+$0068 constant GLUT_WINDOW_BUFFER_SIZE
+$0069 constant GLUT_WINDOW_STENCIL_SIZE
+$006A constant GLUT_WINDOW_DEPTH_SIZE
+$006B constant GLUT_WINDOW_RED_SIZE
+$006C constant GLUT_WINDOW_GREEN_SIZE
+$006D constant GLUT_WINDOW_BLUE_SIZE
+$006E constant GLUT_WINDOW_ALPHA_SIZE
+$006F constant GLUT_WINDOW_ACCUM_RED_SIZE
+$0070 constant GLUT_WINDOW_ACCUM_GREEN_SIZE
+$0071 constant GLUT_WINDOW_ACCUM_BLUE_SIZE
+$0072 constant GLUT_WINDOW_ACCUM_ALPHA_SIZE
+$0073 constant GLUT_WINDOW_DOUBLEBUFFER
+$0074 constant GLUT_WINDOW_RGBA
+$0075 constant GLUT_WINDOW_PARENT
+$0076 constant GLUT_WINDOW_NUM_CHILDREN
+$0077 constant GLUT_WINDOW_COLORMAP_SIZE
+$0078 constant GLUT_WINDOW_NUM_SAMPLES
+$0079 constant GLUT_WINDOW_STEREO
+$007A constant GLUT_WINDOW_CURSOR
+$00C8 constant GLUT_SCREEN_WIDTH
+$00C9 constant GLUT_SCREEN_HEIGHT
+$00CA constant GLUT_SCREEN_WIDTH_MM
+$00CB constant GLUT_SCREEN_HEIGHT_MM
+$012C constant GLUT_MENU_NUM_ITEMS
+$0190 constant GLUT_DISPLAY_MODE_POSSIBLE
+$01F4 constant GLUT_INIT_WINDOW_X
+$01F5 constant GLUT_INIT_WINDOW_Y
+$01F6 constant GLUT_INIT_WINDOW_WIDTH
+$01F7 constant GLUT_INIT_WINDOW_HEIGHT
+$01F8 constant GLUT_INIT_DISPLAY_MODE
+$02BC constant GLUT_ELAPSED_TIME
+$007B constant GLUT_WINDOW_FORMAT_ID
+$007C constant GLUT_INIT_STATE
+$0258 constant GLUT_HAS_KEYBOARD
+$0259 constant GLUT_HAS_MOUSE
+$025A constant GLUT_HAS_SPACEBALL
+$025B constant GLUT_HAS_DIAL_AND_BUTTON_BOX
+$025C constant GLUT_HAS_TABLET
+$025D constant GLUT_NUM_MOUSE_BUTTONS
+$025E constant GLUT_NUM_SPACEBALL_BUTTONS
+$025F constant GLUT_NUM_BUTTON_BOX_BUTTONS
+$0260 constant GLUT_NUM_DIALS
+$0261 constant GLUT_NUM_TABLET_BUTTONS
+$0262 constant GLUT_DEVICE_IGNORE_KEY_REPEAT
+$0263 constant GLUT_DEVICE_KEY_REPEAT
+$0264 constant GLUT_HAS_JOYSTICK
+$0265 constant GLUT_OWNS_JOYSTICK
+$0266 constant GLUT_JOYSTICK_BUTTONS
+$0267 constant GLUT_JOYSTICK_AXES
+$0268 constant GLUT_JOYSTICK_POLL_RATE
+$0320 constant GLUT_OVERLAY_POSSIBLE
+$0321 constant GLUT_LAYER_IN_USE
+$0322 constant GLUT_HAS_OVERLAY
+$0323 constant GLUT_TRANSPARENT_INDEX
+$0324 constant GLUT_NORMAL_DAMAGED
+$0325 constant GLUT_OVERLAY_DAMAGED
+$0384 constant GLUT_VIDEO_RESIZE_POSSIBLE
+$0385 constant GLUT_VIDEO_RESIZE_IN_USE
+$0386 constant GLUT_VIDEO_RESIZE_X_DELTA
+$0387 constant GLUT_VIDEO_RESIZE_Y_DELTA
+$0388 constant GLUT_VIDEO_RESIZE_WIDTH_DELTA
+$0389 constant GLUT_VIDEO_RESIZE_HEIGHT_DELTA
+$038A constant GLUT_VIDEO_RESIZE_X
+$038B constant GLUT_VIDEO_RESIZE_Y
+$038C constant GLUT_VIDEO_RESIZE_WIDTH
+$038D constant GLUT_VIDEO_RESIZE_HEIGHT
+$0000 constant GLUT_NORMAL
+$0001 constant GLUT_OVERLAY
+$0001 constant GLUT_ACTIVE_SHIFT
+$0002 constant GLUT_ACTIVE_CTRL
+$0004 constant GLUT_ACTIVE_ALT
+$0000 constant GLUT_CURSOR_RIGHT_ARROW
+$0001 constant GLUT_CURSOR_LEFT_ARROW
+$0002 constant GLUT_CURSOR_INFO
+$0003 constant GLUT_CURSOR_DESTROY
+$0004 constant GLUT_CURSOR_HELP
+$0005 constant GLUT_CURSOR_CYCLE
+$0006 constant GLUT_CURSOR_SPRAY
+$0007 constant GLUT_CURSOR_WAIT
+$0008 constant GLUT_CURSOR_TEXT
+$0009 constant GLUT_CURSOR_CROSSHAIR
+$000A constant GLUT_CURSOR_UP_DOWN
+$000B constant GLUT_CURSOR_LEFT_RIGHT
+$000C constant GLUT_CURSOR_TOP_SIDE
+$000D constant GLUT_CURSOR_BOTTOM_SIDE
+$000E constant GLUT_CURSOR_LEFT_SIDE
+$000F constant GLUT_CURSOR_RIGHT_SIDE
+$0010 constant GLUT_CURSOR_TOP_LEFT_CORNER
+$0011 constant GLUT_CURSOR_TOP_RIGHT_CORNER
+$0012 constant GLUT_CURSOR_BOTTOM_RIGHT_CORNER
+$0013 constant GLUT_CURSOR_BOTTOM_LEFT_CORNER
+$0064 constant GLUT_CURSOR_INHERIT
+$0065 constant GLUT_CURSOR_NONE
+$0066 constant GLUT_CURSOR_FULL_CROSSHAIR
+$0000 constant GLUT_RED
+$0001 constant GLUT_GREEN
+$0002 constant GLUT_BLUE
+$0000 constant GLUT_KEY_REPEAT_OFF
+$0001 constant GLUT_KEY_REPEAT_ON
+$0002 constant GLUT_KEY_REPEAT_DEFAULT
+$0001 constant GLUT_JOYSTICK_BUTTON_A
+$0002 constant GLUT_JOYSTICK_BUTTON_B
+$0004 constant GLUT_JOYSTICK_BUTTON_C
+$0008 constant GLUT_JOYSTICK_BUTTON_D
+$0000 constant GLUT_GAME_MODE_ACTIVE
+$0001 constant GLUT_GAME_MODE_POSSIBLE
+$0002 constant GLUT_GAME_MODE_WIDTH
+$0003 constant GLUT_GAME_MODE_HEIGHT
+$0004 constant GLUT_GAME_MODE_PIXEL_DEPTH
+$0005 constant GLUT_GAME_MODE_REFRESH_RATE
+$0006 constant GLUT_GAME_MODE_DISPLAY_CHANGED
+2 func: glutInit
+2 func: glutInitWindowPosition
+2 func: glutInitWindowSize
+1 func: glutInitDisplayMode
+1 func: glutInitDisplayString
+0 func: glutMainLoop
+1 func: glutCreateWindow
+5 func: glutCreateSubWindow
+1 func: glutDestroyWindow
+1 func:  glutSetWindow
+0 func:  glutGetWindow
+1 func:  glutSetWindowTitle
+1 func:  glutSetIconTitle
+2 func:  glutReshapeWindow
+2 func:  glutPositionWindow
+0 func:  glutShowWindow
+0 func:  glutHideWindow
+0 func:  glutIconifyWindow
+0 func:  glutPushWindow
+0 func:  glutPopWindow
+0 func:  glutFullScreen
+1 func:  glutPostWindowRedisplay
+0 func:  glutPostRedisplay
+0 func: glutSwapBuffers
+2 func:  glutWarpPointer
+1 func:  glutSetCursor
+0 func:  glutEstablishOverlay
+0 func:  glutRemoveOverlay
+1 func:  glutUseLayer
+0 func:  glutPostOverlayRedisplay
+1 func:  glutPostWindowOverlayRedisplay
+0 func:  glutShowOverlay
+0 func:  glutHideOverlay
+1 func:  glutCreateMenu
+1 func:  glutDestroyMenu
+0 func:  glutGetMenu
+1 func:  glutSetMenu
+2 func:  glutAddMenuEntry
+2 func:  glutAddSubMenu
+3 func:  glutChangeToMenuEntry
+3 func:  glutChangeToSubMenu
+1 func:  glutRemoveMenuItem
+1 func:  glutAttachMenu
+1 func:  glutDetachMenu
+3 func:  glutTimerFunc
+1 func:  glutIdleFunc
+1 func: glutKeyboardFunc
+1 func: glutSpecialFunc
+1 func: glutReshapeFunc
+1 func: glutVisibilityFunc
+1 func: glutDisplayFunc
+1 func: glutMouseFunc
+1 func:  glutMotionFunc
+1 func:  glutPassiveMotionFunc
+1 func:  glutEntryFunc
+1 func: glutKeyboardUpFunc
+1 func:  glutSpecialUpFunc
+2 func:  glutJoystickFunc
+1 func:  glutMenuStateFunc
+1 func:  glutMenuStatusFunc
+1 func:  glutOverlayDisplayFunc
+1 func:  glutWindowStatusFunc
+1 func:  glutSpaceballMotionFunc
+1 func:  glutSpaceballRotateFunc
+1 func:  glutSpaceballButtonFunc
+1 func:  glutButtonBoxFunc
+1 func:  glutDialsFunc
+1 func:  glutTabletMotionFunc
+1 func:  glutTabletButtonFunc
+1 func:  glutGet
+1 func:  glutDeviceGet
+0 func:  glutGetModifiers
+1 func:  glutLayerGet
+2 func:  glutBitmapCharacter
+2 func:  glutBitmapWidth
+2 func:  glutStrokeCharacter
+2 func:  glutStrokeWidth
+2 func:  glutBitmapLength
+2 func:  glutStrokeLength
+2 func: glutWireCube
+2 func: glutSolidCube
+4 func: glutWireSphere
+4 func: glutSolidSphere
+6 func: glutWireCone
+6 func: glutSolidCone
+6  func: glutWireTorus
+6 func: glutSolidTorus
+0 func: glutWireDodecahedron
+0 func: glutSolidDodecahedron
+0 func: glutWireOctahedron
+0 func: glutSolidOctahedron
+0 func: glutWireTetrahedron
+0 func: glutSolidTetrahedron
+0 func: glutWireIcosahedron
+0 func: glutSolidIcosahedron
+2 func: glutWireTeapot
+2 func: glutSolidTeapot
+1 func:  glutGameModeString
+0 func:  glutEnterGameMode
+0 func:  glutLeaveGameMode
+1 func:  glutGameModeGet
+1 func:  glutVideoResizeGet
+0 func:  glutSetupVideoResizing
+0 func:  glutStopVideoResizing
+4 func:  glutVideoResize
+4 func:  glutVideoPan
+4 func:  glutSetColor
+2 func: glutGetColor
+1 func:  glutCopyColormap
+1 func:  glutIgnoreKeyRepeat
+1 func:  glutSetKeyRepeat
+0 func:  glutForceJoystickFunc
+1 func:  glutExtensionSupported
+0 func: glutReportErrors
+pop~
+||| 

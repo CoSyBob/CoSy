@@ -1,0 +1,245 @@
+| vim: ft=reva
+|
+| allocated singly-linked list, by macoln, with ideas from danny
+
+push~
+
+needs alg/common
+
+~struct
+
+variable lst
+variable fnd?
+
+: (f&l) ( node-prev node --)                           | break the chain, free, then relink
+       dup @ swap free swap ! ;
+
+: (drp) ( lst --)
+       dup @ (f&l) ;
+
+: (pop) ( node -- data)
+       dup @ dup cell+ @ -rot (f&l) ;
+
+: (th) ( lst n -- node')
+       1+ 0do @ loop ;
+
+: (num) ( lst -- n)
+       0 ['] _1+ rot iterate ;
+
+: (end) ( lst -- node')
+       dup (num) 1- (th) ;
+
+: (ins) ( data node --)
+       2 cells allocate
+       tuck swap xchg
+       over ! cell+ ! ;
+
+: (-ins) ( data lst --)
+       dup (num)
+       dup 0if
+         drop
+       else
+         1- (th)
+       then (ins) ;
+
+: (del) ( data lst --)
+       dup @ 02drop; ( data lst node)
+       dup cell+ fetch
+       3 pick match if ( data lst node)
+         over swap (f&l)
+       else
+         nip
+       then
+       (del) ;
+
+: fndint ( data lst n -- a-data | 0)
+       >r
+       @ dup 0if 2drop r> ;then
+       2dup cell+
+       tuck fetch
+       match 0if
+         drop
+       else
+         -rot rp@ ++
+       then
+       r> fndint ;
+: (fnd) ( data lst -- a-data | 0)
+       0 fndint 00; drop ;                             | 0 to determine if any matches
+
+: (rmv) ( lst --)
+       dup
+       (num) 0 ?do
+         dup (drp)
+       loop
+       drop ;
+
+: (prt) ( lst --)
+       { print true }
+         swap iterate ;
+
+: prt$ ( --)
+       { ." \"" count type ." \" " } >defer print
+       prt
+|       undo print
+	   ;
+
+| string words
+: (ins$) ( a-str u lst --)
+       over 1 cells + 2 +
+       allocate ( a u lst a)
+       tuck swap xchg
+       over !
+       cell+ place ;
+
+: (-ins$) ( a u lst --)
+       dup (num)
+       dup 0if
+         drop
+       else
+         1- (th)
+       then
+       (ins$) ;
+
+: (pop$) ( node -- a-str u)
+       dup @ dup cell+ count
+       scratch place
+       (f&l) scratch count ;
+
+: fndstr ( a-str u lst -- a-string | 0)
+       -rot >r >r ( node)
+       @ dup 0if
+         drop rdrop rdrop
+       ;then
+       dup cell+ dup
+       fetch r@ 1 rpick
+       match 0if
+         swap fnd? ++
+       else
+         drop
+       then
+       r> r> rot
+       fndstr ;
+: (fnd$)
+       fnd? off fndstr fnd? @ 00; drop ;
+
+: $on ( --)
+       ['] cmp >defer match
+       ['] count >defer fetch
+       { 3dup (fnd$) not } >defer in? ;
+
+: $off ( --)
+       undo match
+       undo fetch
+       undo in? ;
+
+: (del$) ( a-str u lst --)
+       dup @ 03drop; ( a u lst node)
+       2over 2 pick
+       cell+ fetch ( a u lst node a u a'u')
+       match 0if
+         over swap (f&l)
+       else
+         nip
+       then
+       (del$) ;
+
+| sorting words
+: makebuf ( lst -- size lst buf)
+       dup (num)
+       tuck 1+ cells
+       allocate ;
+
+: lst>buf ( lst buf --)
+       { fetch over !
+           cell+ dup }
+         rot iterate
+       drop ;
+
+: buf>lst ( lst buf --)
+       { over fetch swap !
+           cell+ dup }
+       rot iterate
+       drop ;
+
+: (srt) ( lst --)
+       makebuf
+       2dup lst>buf
+       rot over swap sort
+       tuck buf>lst
+       free ;
+
+: listmode
+  { lst @ (num) } is num
+  { lst @ (end) } is end
+  { lst @ (ins) } is ins
+  { lst @ (-ins) } is -ins
+  { lst @ (del) } is del
+  { lst @ (fnd) } is fnd
+  { lst @ (rmv) } is rmv
+  { lst @ (srt) } is srt
+  { lst @ (ins$) } is ins$
+  { lst @ (-ins$) } is -ins$
+  { lst @ iterate } is itr
+  { lst @ swap (th) } is th
+  { $on lst @ (fnd$) $off } is fnd$
+  { $on lst @ (del$) $off } is del$
+  { lst @ dup (prt) ."  // list of" space (num) . cr } is prt ;
+
+: list ( <name> --)
+       create 0 ,
+       does> lst ! listmode ;
+
+
+to~ ~priv fndint
+to~ ~priv fndstr
+to~ ~priv makebuf
+
+pop~
+
+|||
+
+def: list
+ctx: ~struct
+stack: <name> --
+desc: =
+    Create the header for an allocated linked list, for example:
+
+       ok> needs alg/list
+       ok> ~struct ~myapp
+       ok> list mylist
+
+    For convenience, declaring
+
+       ok> mylist
+
+    sets it as the active data structure, so words like 'ins' and 'del'
+    automatically know to operate on it. If this is not desired, use
+    the associated sub-words, eg. '(ins)', which then expect a list or
+    node pointer on the stack. Any sub-words in alg/stack may also be
+    used.
+=
+def: lst
+ctx: ~struct
+stack: -- a
+desc: =
+    Variable holding the address of the active list.
+=
+
+def: lst>buf
+ctx: ~struct
+stack: list buffer --
+desc: =
+    Copy the contents of 'list' to 'buffer' of at least the same
+    size. Indirection may be handled by redefining the deferred
+    word 'fetch' (default '@').
+=
+def: buf>lst
+ctx: ~struct
+stack: list buffer --
+desc: =
+    Replace the contents of 'list' with the contents in 'buffer'.
+    Indirection may be handled by redefining the deferred word
+    'fetch' (default '@').
+=
+
+related: list lst ins ins$ -ins -ins$ del del$ num th end fnd fnd$ rmv itr prt lst>buf buf>lst srt

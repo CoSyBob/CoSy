@@ -1,0 +1,102 @@
+| vim: ft=reva
+|
+| os/process
+|
+| Encapsulates mechanisms to start external processes and communicate
+| with them using their stdin and stdout...
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file
+
+push~
+~
+context: ~process
+~process
+
+
+os [IF]
+" rss_process.so"  lib rss_process
+[ELSE]
+" rss_process.dll" lib rss_process
+[THEN]
+
+rss_process
+
+2 func: rss_process_create    as proc0
+3 func: rss_process_create    as proc1
+4 func: rss_process_create    as proc2
+5 func: rss_process_create    as proc3
+6 func: rss_process_create    as proc4
+
+2 func: rss_process_release   as release-process
+2 func: rss_process_start     as start-process
+2 func: rss_process_stop      as stop-process
+1 func: rss_process_getFromFd as get-from-fd
+1 func: rss_process_getToFd   as get-to-fd
+1 func: rss_process_closeFrom as close-from
+1 func: rss_process_closeTo   as close-to
+1 func: rss_process_isAlive   as is-alive
+1 func: rss_process_getId     as get-id
+3 func: rss_process_send      as send-to-process
+3 func: rss_process_receive   as receive-from-process
+
+0 constant RSS_PROCESS_NONE
+1 constant RSS_PROCESS_TO
+2 constant RSS_PROCESS_FROM
+3 constant RSS_PROCESS_ALL
+
+0 constant RSS_PROCESS_WAIT
+1 constant RSS_PROCESS_IMMEDIATELY
+
+: create-process0 ( a1 n1 -- )           zt 0 proc0 ;
+: create-process1 ( a1 n1 a2 n2 -- )     zt >r zt r> 0 proc1 ;
+: create-process2 ( a1 n1 ... a3 n3 -- ) zt >r zt >r zt r> r> 0 proc2 ;
+: create-process3 ( a1 n1 ... a4 n4 -- ) zt >r zt >r zt >r zt r> r> r> 0 proc3 ;
+: create-process4 ( a1 n1 ... a5 n5 -- ) zt >r zt >r zt >r zt >r zt r> r> r> r> 0 proc4 ;
+
+
+
+pop~
+
+|||
+def: create-process0
+stack: a n --
+ctx: ~process
+desc: @
+	Create a process by executing the program named (a,n), with no parameters.
+	Uses the external library "rss_process.dll" (or SO)
+@
+def: create-process1
+stack: a n a2 n2 --
+ctx: ~process
+desc: @
+	Create a process by executing the program named (a,n), with one parameter
+	(a2,n2).
+	Uses the external library "rss_process.dll" (or SO)
+@
+def: create-process2
+stack: a n a2 n2 a3 n3 --
+ctx: ~process
+desc: @
+	Create a process by executing the program named (a,n), with two parameters
+	(a2,n2), (a3,n3).
+	Uses the external library "rss_process.dll" (or SO)
+@
+def: create-process3
+stack: a n a2 n2 ... a4 n4 --
+ctx: ~process
+desc: @
+	Create a process by executing the program named (a,n), with three parameters
+	(a2,n2) ... (a4,n4).
+	Uses the external library "rss_process.dll" (or SO)
+@
+def: create-process4
+stack: a n a2 n2 ... a5 n5 --
+ctx: ~process
+desc: @
+	Create a process by executing the program named (a,n), with four parameters
+	(a2,n2) ... (a5,n5).
+	Uses the external library "rss_process.dll" (or SO)
+@
+
+related: create-process0 create-process1 create-process2 create-process3 create-process4

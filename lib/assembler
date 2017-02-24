@@ -1,0 +1,29 @@
+| 386 assembler, Reva syntax
+| vim: ft=reva :
+
+push~
+here | for size information
+context: ~asm
+
+~asm
+
+: op1 create 1, does> 1 here, ; 
+: op2 create 2, does> 2 here, ; 
+: op3 create 3, does> 3 here, ; 
+
+
+| one-byte opcodes
+$cc op1 int3 
+$90 op1 nop
+exit~
+
+~priv ~ 
+macro
+: asm{ ['] ~asm ''context ;
+: } exit~ ;
+forth
+exit~
+
+pop~
+
+here swap - ." library takes " . ." bytes" cr

@@ -1,0 +1,42 @@
+| vim: ft=reva :
+| GTK wrapper library
+
+push~
+~util
+os [IF]
+~
+context: ~gtk
+~sys
+~gtk 
+
+" libglib.so" lib glib
+" libgdk.so" lib gdk 
+" libgtk.so" lib gtk 
+
+| This function MUST be called before GTK can work.  
+: gtk_initialize glib drop gdk drop gtk drop ; gtk_initialize
+
+data: gtk_major_version as GTK_MAJOR
+data: gtk_minor_version as GTK_MINOR
+data: gtk_micro_version as GTK_MICRO
+
+2 func: gtk_init
+1 func: gtk_window_new
+1 func: gtk_widget_show
+0 func: gtk_main
+0 func: gtk_main_quit
+4 func: gtk_signal_connect
+4 func: gtk_signal_connect_object
+1 func: gtk_button_new_with_label
+2 func: gtk_container_add 
+
+0 constant GTK_WINDOW_TOPLEVEL
+
+' gtk_initialize onstartup | make sure a turnkey app calls this before doing anything
+
+
+[THEN]
+pop~
+
+|||
+

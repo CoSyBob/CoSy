@@ -1,0 +1,35 @@
+| vim: ft=reva :
+push~
+~sys ~util ~priv
+
+variable enum#
+variable 'enum
+: (enum) (create) enum# @ , enum# ++ 4 does> @ ;
+
+' word? defer@ constant oldword
+~
+
+: enum:
+	enum# !
+	['] (enum) is word? 
+	;
+
+: enum; oldword is word? ; 
+
+pop~
+
+|||
+def: enum:
+stack: n <name> --
+ctx: ~
+desc: =
+	Create a new 'enumeration' starting at "n".
+=
+def: enum;
+stack: n --
+ctx: ~
+desc: =
+	Terminates the enumeration started with "enum:"
+=
+
+related: enum: enum;

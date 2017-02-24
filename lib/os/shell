@@ -1,0 +1,104 @@
+| vim: ft=reva :
+| Launch an external program from Reva.
+| Exports: 
+|    shell ( a n -- result )
+|    !! ( <cmd> -- result) 
+
+push~ 
+~
+needs string/trim
+~strings
+~priv
+~util
+~
+~os
+
+variable shell_code
+os [IF]
+1 func: system 
+:: system ;
+[ELSE]
+create execpad 256 allot
+create si 18 cells allot
+	si 0 18 cells fill
+	18 cells si !
+create pi 4 cells allot
+k32 drop 
+10 func: CreateProcessA as (os_system)
+2 func: WaitForSingleObject 
+2 func: GetExitCodeProcess 
+:: 
+	" cmd /c " execpad place zcount execpad +place
+	0
+	execpad 1+ | lpCommandLine
+	0 0 0  | lpProcAtt lpThreadAtt bInherit
+	| dwCreation
+	$00000020 | NORMAL
+	| lpEnv
+	0
+	| lpCurDir
+	0
+	| lpStartup
+	si
+	| lpProcInfo
+	pi
+	(os_system)
+	if 
+		pi @ 10000 WaitForSingleObject -1 =if
+			drop
+			-1
+		else
+			pi @ here GetExitCodeProcess drop here @
+		then
+	else
+	  false
+	then
+;
+[THEN]
+: shell ( a n -- ) zt literal execute shell_code ! ;
+: revatemp "  > revatemporaryfile.$$$" ;
+os [IF]
+: shellident " uname" | drop through
+[ELSE]
+: shellident " msyscon" getenv nip 0if " msys" ;then " command" ;
+[THEN]
+: shell$ ( a n -- a n )
+	revatemp strcat >r dup r> shell free
+	revatemp 3 /string 2dup slurp
+	2swap delete ;
+: !! 10 parse trim shell ;
+
+pop~
+||| 
+
+def: shell
+stack: a n -- 
+ctx: ~os
+desc: =
+	Pass the string (a,n) to the system to execute as an external command.  The
+	os-dependent return code is put in "shell_code"
+=
+def: shell$
+stack: a n --  a n
+ctx: ~os
+desc: =
+	Pass the string (a,n) to the system to execute as an external command.  The
+	os-dependent return code is put in "shell_code", and the output from the
+	command is returned in an allocated string (use 'free' on the string data).
+=
+def: !!
+stack: <line> -- 
+ctx: ~os
+desc: =
+	Passes the entire line following it to the system to execute as an external
+	command.  The os-dependent return code is put in "shell_code"
+=
+def: shell_code
+stack:  -- a
+ctx: ~os
+desc: =
+	Variable containing the value of the os-dependent return code from "shell"
+	or "!!"
+=
+
+related: shell !! shell_code shell$

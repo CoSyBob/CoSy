@@ -1,0 +1,137 @@
+| vim: ft=reva :
+| Win32 Registry
+
+push~
+~strings ~
+[DEFINED] advapi32 not [IF] " advapi32" lib advapi32 [THEN]
+
+context: ~registry
+
+~priv
+1 func: RegCloseKey
+3 func: RegOpenKeyA
+3 func:  RegCreateKeyA
+2 func:  RegDeleteKeyA
+4 func:  RegQueryValueA
+6 func:  RegQueryValueExA
+5 func:  RegSetValueA
+6 func:  RegSetValueExA
+4 func:  RegEnumKeyA
+variable regtemp
+~registry
+| Registry constants:
+$80000000 constant HKCR	| root key
+$80000001 constant HKCU	| current user
+$80000002 constant HKLM	| local machine
+$80000003 constant HKUS	| users        
+0 constant REG_NONE
+1 constant REG_SZ
+2 constant REG_EXPAND_SZ
+3 constant REG_BINARY
+4 constant REG_DWORD
+variable regerr
+
+| wrappers around the silly Windows API
+: closekey ( hkey -- ) RegCloseKey regerr ! ;
+: openkey ( hkey a n -- hkey ) regtemp off zt regtemp RegOpenKeyA regerr !
+	regtemp @ ;
+: createkey ( hkey a n -- kkey ) regtemp off zt regtemp RegCreateKeyA regerr !
+	regtemp @ ;
+: deletekey ( hkey a n -- ) zt RegDeleteKeyA regerr ! ;
+: queryvalue ( hkey a n a1 n1 -- ) 0  | fall through...
+: queryvalueex ( hkey a n a1 n1 type^ -- )
+	>r regtemp ! >r zt		| hkey az ( r: type regtemp: n1 r: a1 )
+	0 r> r>					| hkey az 0 a1 type 
+	swap regtemp			| hkey az 0 type a1
+	RegQueryValueExA  regerr ! ;
+: setvalue ( hkey a n type a1 n1 -- ) 
+	>r 2swap zt -rot r>
+	RegSetValueA regerr ! ;
+: setvalueex ( hkey a n type a1 n1 -- )
+	>r 2swap zt 0 2swap r>
+	RegSetValueExA regerr !  ;
+
+: setvalue-sz ( value n key m hkey -- )
+	-rot createkey
+	dup 2swap
+	0L 2swap REG_SZ -rot
+	setvalue closekey
+	;
+: getvalue-sz ( key m hkey -- )
+	-rot openkey
+	dup >r
+	0L 0L queryvalue
+	r> closekey
+	;
+
+pop~
+||| 
+
+def: closekey
+ctx: ~registry
+stack: hkey --
+ver: 6.1.6
+desc: =
+	Close the registry handle
+=
+def: openkey
+ctx: ~registry
+stack: hkey a n -- hkey
+ver: 6.1.6
+desc: =
+	Open the subkey (a,n) of the handle "hkey", returning a handle to the
+	opened key.
+	The "root" handles are: "HKCR", "HKCU", "HKLM" and "HKUS"
+	The Windows error code is in the variable "regerr"
+=
+def: createkey
+ctx: ~registry
+stack: hkey a n -- hkey
+ver: 6.1.6
+desc: =
+	Create the subkey (a,n) of the handle "hkey", returning a handle to the
+	opened key.
+	The "root" handles are: "HKCR", "HKCU", "HKLM" and "HKUS"
+	The Windows error code is in the variable "regerr"
+=
+def: deletekey
+ctx: ~registry
+stack: hkey a n --
+ver: 6.1.6
+desc: =
+	Delete the subkey (a,n) of the handle "hkey".
+	The Windows error code is in the variable "regerr"
+=
+def: queryvalue
+ctx: ~registry
+stack: hkey a n a1 n1 --
+ver: 6.1.6
+desc: =
+	Retrieve the value of the key (a,n) from the handle hkey.
+	(a1,n1) is the buffer into which the value will be stored.
+=
+def: queryvalueex
+ctx: ~registry
+stack: hkey a n a1 n1 type^ --
+ver: 6.1.6
+desc: =
+	Same as "queryvalue", but a variable containing a specific type may be
+	passed in.
+=
+def: setvalue
+ctx: ~registry
+stack: hkey a n type a1 n1 --
+ver: 6.1.6
+desc: =
+	Set the value of the key (a,n) from the handle hkey, to the value (a1,n1) of
+	type "type"
+=
+def: setvalueex
+ctx: ~registry
+stack: hkey a n type a1 n1 --
+ver: 6.1.6
+desc: =
+	Essentially the same as "setvalue"
+=
+
+related: openkey createkey deletekey queryvalue queryvaluex setvalue setvalueex

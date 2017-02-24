@@ -1,0 +1,15 @@
+| vim: ft=reva :
+| Common sort code:
+
+| Comparator function: is the cell pointed to by 'a1' less than the one pointed
+| to by 'a2'?
+push~
+defer compare  ( a1 a2 -- flag ) ' < is compare
+pop~
+||| 
+def: compare
+stack: a1 a2 -- flag
+ctx: ~
+desc: @
+	Comparison routine for the various "sort" libraries.
+@

@@ -1,0 +1,42 @@
+| vim: ft=reva :
+| Simple implementation of a 'bubblesort'
+push~
+
+needs alg/sort-common
+
+| Exchange the cells pointed to by 'a1' and 'a2':
+~priv
+: exchange ( a1 a2 -- )
+	over @ | a1 a2 n1
+	swap xchg | a1 a2 n2
+	rot xchg drop ;
+
+~util
+: bsort ( a n -- )
+	0; 1- 0;
+	repeat
+		2dup | a n a n 
+		0 | number of exchanges
+		-rot 0 do
+			| a n x a 
+			dup @ over cell+ @  | a n x a a@ a'@
+			compare | a n x a
+			0if
+				dup dup cell+ in~ ~priv exchange 
+				swap 1+ swap
+			then
+			cell+ 
+		loop drop 
+		abs | 0 >
+	while | there are exchanges
+	2drop
+	;
+pop~
+||| 
+
+def: bsort
+stack: a n --
+ctx: ~util
+desc: =
+	Perform a bubble-sort on an integer array at "a" of "n" cells. 
+=

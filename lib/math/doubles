@@ -1,0 +1,187 @@
+| vim:  ft=reva :
+| implementation of double-cell words
+
+push~
+~util ~priv ~io ~doubles
+: doubles #8 * ;
+: s>d [ $04ee8399 , $d0890689 , ; | cdq; sub esi,4; mov [esi], eax; mov eax,edx
+: d+  inline{ 89 c1 ad 89 c2 ad 01 16 11 c8 } ;
+: d-  inline{ 89 c1 ad 89 c2 ad 29 16 19 c8 } ;
+: m+ s>d d+ ;
+: d= d- or not ;
+: dnegate [ $1ef7d0f7 , $ffd883 3, ;
+: dabs dup 0 <if dnegate then ;
+: d2/ inline{ D1 F8 D1 3E } ;
+: d2* inline{ D1 26 D1 D0 } ;
+| : d+! ( d a -- ) tuck cell+ +! +! ;
+: d+! inline{ 89 C3 AD 01 43 04 AD 01 03 AD } ;
+
+| mov ecx, eax
+| lodsd
+| mov edx, eax
+| xor eax, ecx
+| lodsd
+| jns .1
+| idiv ecx
+| test edx, edx
+| jz .2
+| add edx, ecx
+| dec eax
+| jmp .2
+| .1: 
+| idiv ecx
+| .2:
+| lea esi, [esi-4]
+| mov [esi], edx
+: fm/mod ( d n -- rem div ) 
+	[ $89ADC189 , $ADC831C2 , $F9F70B79 , $0774D285 , 
+	  $EB48CA01 , $8DF9F702 , $1689FC76 , ;
+: m* ( n1 n2 -- d1 ) [ $068bc389 , $0689ebf7 , $d089 2, ;
+: um* ( u1 u2 -- ud1 ) [ $068bc389 , $0689e3f7 , $d089 2, ;
+: udm* ( ud n -- ud1 )
+	| low high n
+	>r swap | high low (r:n)
+	r@ um* | high d1
+	rot | d1 high
+	r> um* drop | d1 high
+	+
+	;
+
+~priv
+: d# ( d1 -- d2 c )
+	base @
+	[ $31adc589 , $87f5f7d2 , $87f5f706 , $fc768d06 , $d0890689 , ]
+	>digit
+	;
+exit~
+: (d.) ( d -- a n )
+	dup -rot
+	dabs pad 255 + 
+	>r
+	repeat
+		d# r> swap over c! 1- >r
+		2dup or 
+	while
+	2drop
+	r>
+	swap 0 <if '- over c! 1- then
+	1+ 
+	dup pad 255 + swap - 1+
+	;
+: d. (d.) type space ;
+pop~
+|||
+def: doubles
+stack: n -- m
+ctx: ~doubles
+desc: @
+	Returns number of bytes required by "n" doubles.
+@
+def: s>d
+stack: n -- d
+ctx: ~doubles
+desc: @
+	Converts the single-cell value "n" to a double "d" by sign-extension.
+@
+def: d+
+stack: d1 d2 -- d3
+ctx: ~doubles
+desc: @
+	Adds the doubles "d1" and "d2" to create "d3".
+@
+def: d-
+stack: d1 d2 -- d3
+ctx: ~doubles
+desc: @
+	Subtracts "d2" from "d1" giving "d3"
+@
+def: m+
+stack: d n -- d2
+ctx: ~doubles
+desc: @
+	Adds the single "n" to the double "d" giving "d2"
+@
+def: d=
+stack: d1 d2 -- flag
+ctx: ~doubles
+desc: @
+	Compares the two doubles "d1" and "d2", leaving "true" in TOS if they are
+	equal, and "false" otherwise.
+@
+def: dnegate
+stack: d -- -d
+ctx: ~doubles
+desc: @
+	Flips the sign of "d", analagous to "negate"
+@
+def: dabs
+stack: d -- abs(d)
+ctx: ~doubles
+desc: @
+	Gives the absolute value of "d", analagous to "abs"
+@
+def: fm/mod
+stack: d n -- rem div
+ctx: ~doubles
+desc: @
+	Floored modulo of "d" (modulo "n")
+@
+def: m*
+stack: n1 n2 -- d
+ctx: ~doubles
+desc: @
+	Multiplies two singles "n1" and "n2", leaving the double result "d"
+@
+def: um*
+stack: u1 u2 -- ud
+ctx: ~doubles
+desc: @
+	Multiplies two unsigned singles "u1" and "u2", leaving the double unsigned
+	result "ud"
+@
+def: udm*
+stack: ud n -- ud1
+ctx: ~doubles
+desc: @
+	Like "um*" only multiplies the unsigned double "ud" by the unsigned "n"
+@
+def: (d.)
+stack: d -- a n
+ctx: ~doubles
+desc: @
+	Like "(.)".  Take a double, and convert it to a string.
+@
+def: d.
+stack: d -- 
+ctx: ~doubles
+desc: @
+	Like ".".  Take a double, and print it followed by a space.
+@
+
+def: d2/ 
+stack: d1 -- d2
+ctx: ~doubles 
+ver: 6.1.6
+desc: @
+	Divide the double "d1" by 2, giving "d2"
+@
+def: d2* 
+stack: d1 -- d2
+ctx: ~doubles 
+ver: 6.1.6
+desc: @
+	Multiply the double "d1" by 2, giving "d2"
+@
+
+def: d+! 
+stack: d a -- 
+ctx: ~doubles 
+ver: 6.1.13
+desc: @
+	Add the double 'd' to the double at the address 'a', same as "+!" but
+	double width.
+@
+
+
+related: d+ d- d= m+ doubles s>d dnegate dabs fm/mod m* um* udm* (d.) d. d+!
+related: +! d+!

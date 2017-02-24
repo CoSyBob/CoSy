@@ -1,0 +1,113 @@
+| vim: ft=reva :
+| rapi - Remote API (Windows CE devices)
+push~
+context: ~rapi
+
+~util ~strings ~io
+needs string/iconv
+~rapi
+" rapi.dll" lib rapi
+0 func: CeRapiInit
+1 func: CeRapiInitEx
+0 func: CeRapiUninit
+8 func: CeRapiInvoke
+2 func: CeGetTempPath
+| The following function fills in this struct:
+|     DWORD dwOSVersionInfoSize
+|     DWORD dwMajorVersion
+|     DWORD dwMinorVersion
+|     DWORD dwBuildNumber
+|     DWORD dwPlatformId (VER_PLATFORM...)
+|     WCHAR SzCSDVersion[128] (NUL-terminated Unicode
+5 cells 128 2 * + constant CEVEREXSIZE
+1 func: CeGetVersionEx
+| This one fills in:
+| typedef struct _SYSTEM_INFO {
+|   union {
+| +00  DWORD dwOemId;
+|   struct {
+| +00    WORD wProcessorArchitecture;
+| +02    WORD wReserved;
+|     };
+|   };
+| +04  DWORD dwPageSize;
+| +08  LPVOID lpMinimumApplicationAddress;
+| +12  LPVOID lpMaximumApplicationAddress;
+| +16  DWORD dwActiveProcessorMask;
+| +20  DWORD dwNumberOfProcessors;
+| +24  DWORD dwProcessorType;
+| +30  DWORD dwAllocationGranularity;
+| +34  WORD wProcessorLevel;
+| +36  WORD wProcessorRevision;
+| } SYSTEM_INFO, *LPSYSTEM_INFO;
+1 func: CeGetSystemInfo
+
+| typedef struct _MEMORYSTATUS { 
+| +00   DWORD dwLength; 
+| +04   DWORD dwMemoryLoad; 
+| +08   DWORD dwTotalPhys; 
+| +12  DWORD dwAvailPhys; 
+| +16  DWORD dwTotalPageFile; 
+| +20  DWORD dwAvailPageFile; 
+| +24  DWORD dwTotalVirtual; 
+| +30  DWORD dwAvailVirtual; 
+| } MEMORYSTATUS, *LPMEMORYSTATUS; 
+1 func: CeGlobalMemoryStatus
+
+| from 'shlobj.h'
+$10 constant CSIDL_DESKTOPDIRECTORY
+$5  constant CSIDL_PERSONAL
+3 func: CeGetSpecialFolderPath  | nFolder, nBuflen, lpwzBuf
+
+| wingdi.h:
+0 constant DRIVERVERSION
+4 constant HORZSIZE
+6 constant VERTSIZE
+24 constant NUMCOLORS
+1 func: CeGetDesktopDeviceCaps
+
+7 func: CeCreateFile
+5 func: CeWriteFile
+1 func: CeCloseHandle
+
+$C0000000 constant RW
+$80 constant NORMAL
+2 constant CREATE_ALWAYS
+
+: file>device ( a n a' n' -- )
+	utf>uni uzt dup RW 0 0 CREATE_ALWAYS NORMAL 0 CeCreateFile
+	swap free
+	dup -1 =if 2drop ioerr ! ;then >r
+	slurp r@ -rot | h a n
+	over >r
+	temp 0 CeWriteFile ioerr !
+	r> free
+	r> CeCloseHandle drop
+	;
+: device>file ( a n a' n' -- )
+	2swap	| a' n' a n
+	utf>uni uzt dup RW 0 0 CREATE_ALWAYS NORMAL 0 CeCreateFile
+	swap free
+	dup -1 =if ioerr ! ;then >r
+	slurp r@ -rot | h a n
+	over >r
+	temp 0 CeWriteFile ioerr !
+	r> free
+	r> CeCloseHandle drop
+	;
+pop~
+
+|||
+
+def: CeRapiInit
+ctx: ~rapi
+stack: -- n
+desc: -
+	Initializes Windows RAPI interface.  See MSDN for details
+-
+def: CeRapiInitEx
+ctx: ~rapi
+stack: a -- n
+desc: -
+	Initializes Windows RAPI interface.  See MSDN for details
+-

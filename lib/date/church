@@ -1,0 +1,73 @@
+| vim: ft=reva :
+| Implementation of Ecclesiastical calendar
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+push~
+needs date/julian
+~date
+|  *******************************************************************
+|  *     Ecclesiastical Calendars                                    *
+|  *******************************************************************
+: nicaean-rule-easter      ( j-year -- date )
+    dup >r                                      ( R: j-year)
+    19 mod 11 * 14 + 30 mod                 ( shifted-epact)
+    Apr 19 r> julian>fixed swap -       ( paschal-moon)
+    Sun weekday-after ;
+
+: easter                   ( greg-year -- date )
+    dup >r                                      ( R: greg-year)
+    100 / 1+                                      ( century)
+    r@ 19 mod 11 * 14 +             ( century shifted-epact)
+    over 3 * 4 / -
+    swap 8 * 5 + 25 / +                     ( shifted-epact)
+    30 mod
+    dup 0if  1+
+    else  dup 1 = 10 r@ 19 mod < and if  1+
+    then then                              ( adjusted-epact)
+    Apr 19 r> gregorian>fixed swap -    ( paschal-moon)
+    Sun weekday-after ;
+
+: pentecost  ( greg-year -- date ) easter 49 + ;
+: ash-wednesday ( greg-year -- date ) easter 46 -  ;
+: advent  ( year -- fixed-date ) Nov 30 rot gregorian>fixed Sun weekday-nearest ;
+: epiphany  ( year -- fixed-date ) 1- Dec 25 rot gregorian>fixed 12 + ;
+
+pop~
+||| 
+def: nicaean-rule-easter
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Easter in positive Julian year, according to the rule of the
+	 Council of Nicaea.
+@
+def: easter
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Easter in Gregorian year.
+@
+def: pentecost
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Pentecost in Gregorian year.
+@
+def: ash-wednesday
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Ash Wednesday in Gregorian year.
+@
+def: advent
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Advent in Gregorian year.
+@
+def: epiphany
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Fixed date of Epiphany in Gregorian year.
+@

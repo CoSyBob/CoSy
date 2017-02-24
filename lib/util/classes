@@ -1,0 +1,45 @@
+| vim: ft=reva :
+
+push~
+~priv ~util ~strings ~
+: xtof '' ?dup 0if 2drop 0 ;then >xt @ ;
+
+: class>name ( xt -- a n )
+	{ 
+		@ 2dup >xt @ 
+		=if nip >name count 0L then
+	} classes iterate 
+	if 0L then
+	;
+: classof: ''
+: classof  ( dict -- a n )
+	0;
+	>class @			| xt of class
+	class>name
+	;
+pop~
+|||
+
+def: xtof
+stack: <name> -- xt
+ctx: ~
+desc: =
+	Returns the XT of the word "<name>", or 0 if the word was not found
+=
+
+def: classof:
+stack: <name> -- a n
+ctx: ~
+desc: =
+	Returns a string which is the name of the class of the word "<name>"
+=
+
+def: classof
+stack: dict -- a n
+ctx: ~
+desc: =
+	Returns a string which is the name of the class of the word whose dictionary
+	entry was in TOS.
+=
+
+related: xtof classof: classof

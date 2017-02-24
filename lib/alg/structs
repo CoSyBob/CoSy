@@ -1,0 +1,139 @@
+| vim: ft=reva :
+| An implementation simple C-like structures
+push~
+~util ~io ~
+
+: struct:   ( "name" -- xx offset )
+    create 
+      here    ( leave the address of the following sizeof-comma )
+      0 dup , ( initial size is zero and left on the stack )
+    does>     ( has the address of the sizeof-comma )
+      create  ( make a variable )
+	  here >r
+      @ dup allot ( and make the variable that long )
+	  r> swap 0 fill
+;
+: (sizeof)    ( a n -- m )  find @ ;
+: (sallot)    ( a n -- a' ) find @ here swap allot ;
+: (sallocate) ( a n -- a' ) find @ allocate ;
+macro
+: sallot:    ( <name> -- a ) parsews swap literal, literal, p: (sallot) ;
+: sallocate: ( <name> -- a ) parsews swap literal, literal, p: (sallocate) ;
+: sizeof     ( <name> -- m ) parsews (sizeof)  cr in~ ~sys compiling? if literal, then ;
+forth
+
+: struct; ( xx offset -- ) swap !  ;
+
+: field: ( offset field_size "name" -- offset' )
+    create 
+      over , ( store the current end_offset )
+      +      ( increase the end_offset by the field_size )
+    does>
+      @ +    ( add the memorized offset of the field)
+	;
+: byte:  1       field: ;
+: short: 2       field: ;
+: cell: : long:  4       field: ;
+: bytes[]:  ( n -- ) field: ;
+: shorts[]: ( n -- ) 2* field: ;
+: longs[]:  ( n -- ) cells field: ;
+
+pop~
+|||
+def: struct:
+ctx: ~
+stack: <name> -- xx offset
+desc: =
+	Create a "struct", which is similar to the C construct.  One declares a
+	struct, then uses the various field creators.  
+=
+def: struct;
+ctx: ~
+stack: xx offset --
+desc: =
+	Terminates a "struct:"
+=
+def: sizeof
+ctx: ~
+stack: <name> --
+desc: =
+	Returns the number of bytes used by a "struct:" definition
+=
+def: field:
+ctx: ~
+stack: offset size <name> -- offset'
+desc: =
+	Declares a field named "<name>" in the most recent "struct:".  The field has
+	a size "size".  "offset" is carried over from the "struct:" declaration or
+	previous "field:" or related words.
+=
+def: byte:
+ctx: ~
+stack: offset <name> -- offset'
+desc: =
+	Declares a field one byte large
+=
+def: short:
+ctx: ~
+stack: offset <name> -- offset'
+desc: =
+	Declares a field two bytes large
+=
+def: long:
+ctx: ~
+stack: offset <name> -- offset'
+desc: =
+	Declares a field four bytes large
+=
+def: cell:
+ctx: ~
+stack: offset <name> -- offset'
+ver: 6.0.12
+desc: =
+	Declares a field one cell large
+=
+def: bytes[]:
+ctx: ~
+stack: offset n <name> -- offset'
+desc: =
+	Declares a field "n" bytes large
+=
+def: shorts[]:
+ctx: ~
+stack: offset n <name> -- offset'
+desc: =
+	Declares a field "n" shorts (2n bytes) large
+=
+def: longs[]:
+ctx: ~
+stack: offset n <name> -- offset'
+desc: =
+	Declares a field "n" longs (4n bytes) large
+=
+def: sallot:
+ctx: ~
+stack: <name> -- a
+ver: 6.0.12
+desc: =
+	Allows you to allocate the memory for a structure within a function.
+	Usually you will create a structure variable in interpreter mode like this:
+		mystruct myvar
+
+	When you want to create a structure variable within your own function, you
+	can do it like this:
+		: t
+		sallot: mystruct  | t will allocate memory for a structure of 'type' mystruct
+		5 over a !        | t will write the value 5 to the field 'a' of this new structure
+		;
+	And then maybe:
+		t a @ . | will print '5'
+=
+def: (sallot)
+ctx: ~
+stack: a n -- a'
+ver: 6.0.12
+desc: =
+	Similar to sallot: but reads the structure name from the stack.
+=
+
+related: struct: struct; sizeof field: byte: bytes[]: short: shorts[]: long: longs[]: cell: sallot: (sallot)

@@ -1,0 +1,77 @@
+| vim: ft=reva :
+
+| Allow use of fasm as a 486 assembler for Reva
+
+| The macro word asm{ does the following:-
+| 1. copies all the text between asm{ and } to a file, temp.asm
+| 2. invokes fasm (using shell lib) to assemble temp.asm
+| 3. Reads bytes from the resulting temp.bin file and puts them into the dictionary at here.
+| 4. deletes temp.asm and temp.bin file.
+
+| This way we get a fully automatic assembler function with all the versatility of fasm.
+| Simply include asm.f to use it. You will also need fasm.exe in your \reva directory
+| Written by 'gtinker' and modified by Ron
+
+push~
+~os ~io ~util ~strings
+needs os/shell
+~
+macro
+: asm{
+    | create temp.asm file and write out the assembler code
+    " temp.asm" creat >r 
+	" use32" r@ write
+	linefeed r@ write | lf
+	| read the input stream up to }
+    '} parse  
+	| write out the code:
+	r@ write
+	| close temp.asm
+	r> close      
+
+    " temp.bin" delete  | ensure there is no old temp.bin lying around
+
+    " fasm temp.asm>temp.err" shell shell_code @
+	if 
+		." Assembly failed during compilation of "
+		last @ >name count type ': emit cr
+		" temp.err" slurp 2dup type cr drop free
+	else
+		| drop  | assemble the code, generating new temp.bin
+
+		| open temp.bin:
+		" temp.bin" slurp
+
+		2dup | save the original ptr also: ptr size ptr size
+		0 do
+			count 1,
+		loop
+		2drop free
+	then
+
+    | delete the temp files
+    " temp.asm" delete
+    " temp.bin" delete
+    " temp.err" delete
+    ;
+
+forth
+pop~
+|||
+
+def: asm{ 
+ctx: ~
+stack: <asm>... }
+desc: =
+	Lets you "inline" assembly language code directly instead of
+	hard-coding opcodes and poking.  Requires that FASM be installed
+	and available on your system, and will slow down Reva a little
+	while compiling asm{ blocks.  
+
+	Example:
+		: incr asm{ inc eax } ;
+
+	Note: lines between "asm{" and "}" MUST be in valid FASM syntax,
+	one statement per line!
+	=
+

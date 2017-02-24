@@ -1,0 +1,57 @@
+| vim: ft=reva :
+| Port of Bill Cook's port of George Marsaglia's post to a statistics
+| newsgroup of a long-period random number generator, periodicity 2^123
+| approximately.
+|
+| Visible words are: seed4, seed4 and rand
+|   seed4 ( val1 val2 val3 val4  -- )
+|   seed4@ ( -- val1 val2 val3 val4 )
+|   rand  ( -- n )
+
+push~
+~priv
+| Using George's seed values:
+123456789 variable, x
+362436069 variable, y
+521288629 variable, z
+916191069 variable, w
+
+| : ishft ( k,n ** ishft ) dup if dup 0 >if << else negate >> then then ;
+| This optimization suggested by macoln:
+: ishft ( n n -- ishft) dup if dup 0 >if << ;then negate >> then ;
+: m ( k n ** m ) over swap ishft xor ;
+: rx x @ 69069 * 1327217885 + dup x ! ;
+: ry y @ 13 m -17 m 5 m dup y ! ;
+: rz z @ dup 65535 and 18000 * swap -16 ishft + dup z ! ;
+: rw w @ dup 65535 and 30903 * swap -16 ishft + dup w ! ;
+
+~
+: seed4 w ! z ! y ! x ! ;
+: seed4@ x @ y @ z @ w @ ;
+: rand rz 16 ishft rw + rx + ry + ;
+pop~
+||| 
+
+def: rand 
+stack: -- n 
+ctx: ~
+desc: =
+	Get the next random number
+=
+
+def: seed4@ 
+stack: -- a b c d
+ctx: ~
+desc: =
+	NOTE: was 'curseed4'
+	Get the four-cell seed
+=
+
+def: seed4 
+stack: a b c d --
+ctx: ~
+desc: =
+	Set the four-cell seed
+=
+
+related: rand seed4@ seed4

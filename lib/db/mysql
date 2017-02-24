@@ -1,0 +1,118 @@
+| MySQL wrapper
+| vim: ft=reva :
+
+push~
+needs db/common
+~db
+context: ~mysql
+~mysql
+os [IF] " libmysqlclient.so" [ELSE] " libmysql.dll" [THEN] lib mysql
+
+0 value my_oh_my
+0 vfunc: my_init
+1 func: mysql_init
+1 vfunc: mysql_close
+1 func: mysql_insert_rowid 
+0 func: mysql_get_client_version
+8 func: mysql_real_connect | MYSQL*mysql, char *host, char *user, char *pwd,
+					| char *db, uint port, char *sock, long client_flag
+1 func: mysql_get_server_info
+3 func: mysql_real_query | mysql, a , n
+1 func: mysql_store_result
+1 func: mysql_num_rows
+1 func: mysql_free_result
+1 func: mysql_fetch_row
+1 func: mysql_num_fields
+
+| private data areas
+create mysqlhost 50 allot
+create mysqluser 50 allot
+create mysqlpwd  50 allot
+variable mysqlport
+
+: my_startup
+	my_init 
+	0 mysql_init to my_oh_my
+	mysqlhost off
+	mysqluser off
+	mysqlpwd off
+	mysqlport off
+	;
+: my_shutdown my_oh_my mysql_close ;
+
+: mysql_sethost ( a n -- ) mysqlhost place ;
+: mysql_setuser ( a n -- ) mysqluser place ;
+: mysql_setpwd ( a n -- ) mysqlpwd place ;
+: mysql_setport ( n -- ) mysqlport ! ;
+
+| db
+: mysql_open ( a n -- handle )
+	zt >r
+	my_oh_my
+	mysqlhost count zt
+	mysqluser count zt
+	mysqlpwd count zt
+	r> 
+	mysqlport @ 0 0 
+    mysql_real_connect
+	;
+| store a stack of up to 20 results
+20 stack: sql_results
+20 stack: sql_rows
+
+| routine 'cb' gets called for each result
+variable sql_temp
+: mysql_version ( -- a n ) 
+	mysql_get_client_version 
+	100 /mod 100 /mod
+	(.) here place
+	'. here c+place
+	(.) here +place
+	'. here c+place
+	(.) here +place
+	here count
+	;
+: mysql_getcol$ ( n -- a n ) cells sql_rows peek + @ zcount ;
+: mysql_getcol# ( n -- n ) cells sql_rows peek + @ ;
+: mysql_fetch ( handle xt a n -- n ) 
+	rot sql_temp !							| h a n (cb->sql_temp)
+	2 pick >r							| h a n (r:h)
+	mysql_real_query   sql_result !		| 
+	0 sql_temp @ r> mysql_store_result	| 0 xt mysql-result
+	dup sql_results push				| 0 xt result
+	mysql_num_rows
+	sql_results peek mysql_num_fields swap 
+	0 ?do				| 0 xt num
+		sql_results peek mysql_fetch_row sql_rows push
+		| count xt 
+		over execute if
+			| done processing
+			leave
+		then
+		rot 1+ -rot
+		sql_rows pop drop
+	loop drop
+	sql_results pop mysql_free_result 2drop | xt 
+	;
+: mysql_lastid ( h -- n ) mysql_insert_rowid ;
+: mysql_exec ( h a n -- ) mysql_real_query sql_result !  ;
+' my_startup ~sys.onstartup
+' my_shutdown ~sys.onexit
+my_startup
+
+~db
+: mysql ( -- )
+	['] mysql_open is sql_open
+	['] mysql_close is sql_close
+	['] mysql_exec is sql_exec
+	['] mysql_version is sql_version
+	['] mysql_lastid is sql_lastid
+	['] mysql_fetch is sql_fetch
+	['] mysql_getcol$ is sql_getcol$
+	['] mysql_getcol# is sql_getcol#
+	;
+
+mysql
+pop~
+
+|||

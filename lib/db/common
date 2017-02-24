@@ -1,0 +1,221 @@
+| common functions for database APIs
+| vim: ft=reva :
+
+push~ 
+
+~strings ~util ~
+context: ~db
+~db
+| utility: convert " to "" inside string:
+4096 cell- constant #BUF
+create ("") #BUF cell+ allot
+: quote" ( a n -- a' n' )
+	0 ("") !	| ensure empty buffer
+	'" split if
+		repeat
+			("") +lplace
+			'" ("") c+lplace
+			'" ("") c+lplace
+			dup 0if false else '" split then
+		while
+	then
+	("") +lplace
+	("") lcount
+	;
+: quote' ( a n -- a' n' )
+	0 ("") !	| ensure empty buffer
+	39 split if
+		repeat
+			("") +lplace
+			39 ("") c+lplace
+			39 ("") c+lplace
+			dup 0if false else 39 split then
+		while
+	then
+	("") +lplace
+	("") lcount
+	;
+
+
+variable sql_result
+defer sql_open
+defer sql_close
+defer sql_fetch
+defer sql_exec
+defer sql_version
+defer sql_lastid
+defer sql_getcol$
+defer sql_getcol#
+
+: >>single ( a n - n ) >single 0if 2drop 0 then ; 
+~strings ~priv 
+create sql_temp 4096 allot
+: sql_oneshot 0 sql_getcol$ 4092 min sql_temp lplace true ;
+exit~ with~ ~priv
+: sql_begin ( h -- )  " BEGIN TRANSACTION" sql_exec ;
+: sql_commit ( h -- ) " COMMIT" sql_exec ;
+: sql_rollback ( h -- ) " ROLLBACK" sql_exec ;
+: (fetch) sql_temp off ['] sql_oneshot sql_fetch drop ;
+: sql_fetch# ( h a n -- m ) (fetch) sql_temp lcount >>single ;
+: sql_fetch$ ( h a n -- a n ) (fetch) sql_temp lcount ;
+pop~
+
+|||
+def: sql_begin
+ctx: ~db
+stack: db --
+ver: 6.1.8
+desc: =
+	Issues a "BEGIN TRANSACTION" to the database "db".
+=
+def: sql_rollback
+ctx: ~db
+stack: db --
+ver: 6.1.8
+desc: =
+	Issues a "ROLLBACK" to the database "db".
+=
+def: sql_commit
+ctx: ~db
+stack: db --
+ver: 6.1.8
+desc: =
+	Issues a "COMMIT" to the database "db".
+=
+
+def: quote'
+ctx: ~db
+stack: a n -- a' n'
+desc: =
+	Given a string, returns a new string where every occurrence of the
+	single-quote character "'" is replaced by two single-quotes, "''".
+=
+
+
+def: quote"
+ctx: ~db
+stack: a n -- a' n'
+desc: =
+	Given a string, returns a new string where every occurrence of the
+	dbl-quote character '"' is replaced by two dbl-quotes, '""'.
+=
+
+
+def: sql_fetch#
+ctx: ~db
+stack: handle a n -- m
+desc: =
+	Given a SQL string (a,n) and a database handle, returns the result of the
+	query as an integer.  This will only be useful for SQL like:
+
+		select sum(amount) from account 
+=
+
+
+def: sql_fetch$
+ctx: ~db
+stack: handle a n -- a' n'
+desc: =
+	Given a SQL string (a,n) and a database handle, returns the result of the
+	query as a string.  This will only be useful for SQL like:
+
+		select firstname from customer where custid=1234 
+=
+
+
+def: sql_fetch
+ctx: ~db
+stack: handle a n xt -- m
+desc: =
+	Executes the SQL string (a,n) on the database handle, calling "xt" (a normal
+	Reva word) for each row of the result.  Returns the number of rows
+	processed.  The "xt" has the stack diagram ( n -- flag ): "n" is the number
+	of columns in the result, and the return value is "false" to continue
+	processing and "true" to stop.  Inside the callback one may use
+	"sql_getcol$" and "sql_getcol#" to return the n'th column of the result.
+=
+
+
+def: sql_getcol#
+ctx: ~db
+stack: n -- m
+desc: =
+	Inside a callback (the "xt" passed to sql_fetch), get the value of column
+	"n" as a number "m"
+=
+
+
+def: >>single
+ctx: ~db
+stack: a n -- m
+desc: =
+	Convert the string (a,n) to the number it represents, or 0 if an error.
+=
+
+
+def: sql_getcol$
+ctx: ~db
+stack: n -- a n
+desc: =
+	Inside a callback (the "xt" passed to sql_fetch), get the value of column
+	"n" as a string (a,n)
+=
+
+
+def: sql_lastid
+ctx: ~db
+stack: handle -- rowid
+desc: =
+	Given a database handle, return the id of the last row entered.
+=
+
+
+def: sql_version
+ctx: ~db
+stack:  -- a n
+desc: =
+	String representing the version of SQLite loaded.
+=
+
+
+def: sql_exec
+ctx: ~db
+stack: handle a n --
+desc: =
+	Execute the SQL (a,n) on the database handle.
+=
+
+
+def: sqlite_exec_cb
+ctx: ~db
+stack:  handle a n cb --
+desc: =
+	Same as "sql_exec", but calls the "cb" (which must be a "cb:" callback, not
+	a regular Reva word) for each row in the result.
+=
+
+
+def: sql_close
+ctx: ~db
+stack:  handle --
+desc: =
+	Closes the database handle created with "sql_open"
+=
+
+
+def: sql_open
+ctx: ~db
+stack: a n -- handle
+desc: =
+	Opens the database named (a,n) and returns a handle to be used for accessing
+	the database.
+=
+
+
+def: sql_result
+ctx: ~db
+stack:  -- a
+desc: =
+	Variable containing the result of the most recent SQLite call
+=
+

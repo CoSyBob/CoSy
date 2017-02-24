@@ -1,0 +1,179 @@
+| vim: ft=reva
+|
+| Some file system utilities.
+| Especially pathname processing words...
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file
+
+push~
+needs string/misc
+~strings
+~os
+
+create fs-tmp 1025 allot
+
+
+| takes a pathname or a filename and returns the suffix, if any.
+| the suffix is returned incl. the ".".
+| ie:
+| /abc           =>
+| abc.txt        => .txt
+| C:\abc         =>
+| c:\abc\def.txt => .txt
+| .abc           => .abc
+| $HOME/.hello   => .hello
+| abc.           => .
+: get-suffix ( a n -- a' n' )
+  '. rsplit 0if 2drop 0L ;then
+  2drop -1 /string ;
+
+| returns true if the pathname (a, n) already has a
+| terminating path separator and false otherwise.
+: has-separator? ( a n -- flag )
+  dup 0if 2drop 0 ;then
+
+  1- +
+  c@
+  | ok, maybe better with case or scase or choice or whatever... ;)
+  dup      '\ =
+  swap dup '/ =
+  swap     ': =
+  or or
+;
+
+
+| adds a path separator, if and only if the pathname is
+| not empty and is not yet terminated by a path separator
+| The result string will be built in "fs-tmp"
+: add-separator ( a n -- a' n' )
+  dup 0if ;; then
+
+  2dup has-separator? if ;; then
+
+  fs-tmp lplace
+  pathsep fs-tmp c+lplace
+  fs-tmp lcount
+;
+
+
+| removes the terminating path separator, if any
+: rem-separator ( a n -- a' n' )
+  2dup has-separator? 0if ;; then
+  1-
+;
+
+| concatenates (a1,n1) and (a2,n2) using a proper file system delimiter...
+| For example: " abc" " hello.txt" results in
+| " abc/hello.txt" on unix and " abc\hello.txt" on windows...
+: add-path ( a1 n1 a2 n2 -- a n )
+  2swap 
+  add-separator 2drop
+  fs-tmp +lplace
+  fs-tmp lcount ;
+
+
+| returns
+| a1 n1 a2 n2   if  a2 > a4 or a2 = a4 and n4 = 0
+| a3 n3 a4 n4   otherwise
+: max' ( a1 n1 a2 n2 a3 n3 a4 n4 -- a1' n1' a2' n2' )
+  over    | a1 n1 a2 n2 a3 n3 a4 n4 a4
+  6 pick  | a1 n1 a2 n2 a3 n3 a4 n4 a4 a2
+  2dup
+  =if
+    2drop dup 0if 2drop 2drop ;then
+    >r >r >r >r 2drop 2drop r> r> r> r>
+  ;then
+
+  >if >r >r >r >r 2drop 2drop r> r> r> r> else 2drop 2drop then
+;
+
+
+| Similar to rsplit.
+| When c is not found (a2, n2) is (a1, 0)
+: file-split ( a n c -- a1 n1 a2 n2 )  rsplit 0if over 0 then 2swap ;
+
+| separates the directory and the filename part of a pathname
+| works identical on all platforms - ie. you can analyze unix
+| pathnames on windows and vice versa...
+|
+| examples:
+| /abc/hello.txt       => /abc         hello.txt
+| hello.txt            => .            hello.txt
+| ./hello.txt          => .            hello.txt
+| c:hello.txt          => c:           hello.txt
+| c:\abc\hello.txt     => c:\abc       hello.txt
+| \\srv\hello.txt      => \\srv\       hello.txt
+| c:\abc/def\hello.txt => c:\abc/def   hello.txt
+| /abc/def/            => /abc/def     (empty)
+| /abc/def             => /abc         def
+|
+| (a1, n1) : directory
+| (a2, n2) : basename
+: split-path ( a n -- a1 n1 a2 n2 )
+  fs-tmp lplace
+  fs-tmp lcount  '/  file-split
+  fs-tmp lcount  '\  file-split
+  fs-tmp lcount  ':  file-split
+
+  max'
+  max'
+;
+pop~
+
+0 [IF]
+" /abc/hello.txt"          split-path type ." ---" type cr
+" hello.txt"               split-path type ." ---" type cr
+" ./hello.txt"             split-path type ." ---" type cr
+" c:hello.txt"             split-path type ." ---" type cr
+" c:\\hello.txt"           split-path type ." ---" type cr
+" \\\\srv\\hello.txt"      split-path type ." ---" type cr
+" c:\\abc/def\\hello.txt"  split-path type ." ---" type cr
+" /abc/def/"               split-path type ." ---" type cr
+" /abc/def"                split-path type ." ---" type cr
+[THEN]
+
+||| 
+def: split-path
+ctx: ~os
+stack: a n -- a1 n1 a2 n2
+desc: @
+	Separates the directory and filename parts of the pathname (a,n).  It works
+	identically on all platforms - ie. you can analyze Unix pathnames on Windows
+	and vice versa.
+
+	Example: 
+		" /abc/hello.txt" split-path
+@
+
+def: add-path 
+ctx: ~os
+stack: a1 n1 a2 n2 -- a n 
+desc: @
+	Concatenates (a1,n1) and (a2,n2) using the proper file system delimiter.
+	For example: 
+		" abc" " hello.txt" 
+	results in:
+		" abc/hello.txt" on Unix 
+	and " abc\hello.txt" on Windows.
+@
+
+def: get-suffix
+stack: a n -- a' n'
+ctx: ~os
+desc: @
+	Takes a pathname or a filename and returns the suffix, if any.
+	The suffix returned includes the "."
+	For example:
+		/abc           =>
+		abc.txt        => .txt
+@
+def: has-separator?
+stack: a n -- flag
+ctx: ~os
+desc: @
+	Returns true if the pathname (a, n) already has a terminating path separator
+	and false otherwise.
+@
+
+related: has-separator? get-suffix add-path split-path

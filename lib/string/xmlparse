@@ -1,0 +1,16 @@
+| vim: ft=reva :
+| xmlparse - wrapper for expat parser
+
+push~
+context: ~xml
+~xml
+
+context: ~expat
+~expat
+os [IF] " libexpat.so" [ELSE] " libexpat.dll" [THEN] lib expat
+
+0 func: XML_ExpatVersion
+
+pop~
+
+

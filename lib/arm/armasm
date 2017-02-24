@@ -1,0 +1,82 @@
+| vim: ft=reva :
+
+| Allow use of fasmarm as an ARM assembler for Reva
+
+| The macro word armasm{ does the following:-
+| 1. copies all the text between armasm{ and } to a file, temp.asm
+| 2. invokes fasmarm (using shell lib) to assemble temp.asm
+| 3. Reads bytes from the resulting temp.bin file and puts them into the dictionary at here.
+| 4. deletes temp.asm and temp.bin file.
+
+| This way we get a fully automatic assembler function with all the versatility of fasm.
+| Enter 'needs armasm' in your code to use it. You will also need fasmarm.exe in your \reva directory
+| Written by 'gtinker' and modified by Ron
+
+| 13-Feb-08 Modified by Gtinker to use 'linfeed' to write eol to temp.asm. (originally used "10 1 r@ write"
+| which should never have worked.
+
+push~
+~os ~io ~util ~strings
+needs os/shell
+~
+macro
+: armasm{
+    | create temp.asm file and write out the assembler code
+    " temp.asm" creat >r 
+	" use32" r@ write
+	linefeed r@ write | lf
+	| read the input stream up to }
+    '} parse  
+	| write out the code:
+	r@ write
+	| close temp.asm
+	r> close      
+
+    " temp.bin" delete  | ensure there is no old temp.bin lying around
+
+    " fasmarm temp.asm>temp.err" shell shell_code @
+	if 
+		." Assembly failed during compilation of "
+		last @ >name count type ': emit cr
+		" temp.err" slurp 2dup type cr drop free
+	else
+		| drop  | assemble the code, generating new temp.bin
+
+		| open temp.bin:
+		" temp.bin" slurp
+
+		2dup | save the original ptr also: ptr size ptr size
+		0 do
+			count 1,
+		loop
+		2drop free
+	then
+
+    | delete the temp files
+    " temp.asm" delete
+    " temp.bin" delete
+    " temp.err" delete
+    ;
+
+forth
+pop~
+|||
+
+def: armasm{ 
+ctx: ~
+stack: <armasm>... }
+desc: =
+	Lets you "inline" ARM assembly language code directly instead of
+	hard-coding opcodes and poking.  Requires that FASMARM be installed
+	and available on your system, and will slow down Reva a little
+	while compiling armasm{ blocks.  
+
+	Example:
+		: incr armasm{ mov r0,0x34 } ;
+
+	Note: lines between "armasm{" and "}" MUST be in valid FASMARM syntax,
+	one statement per line!
+   Also: armasm{ produces arm compatible code only and is only useful for generating
+   code which is to be run on an arm based system.
+	=
+

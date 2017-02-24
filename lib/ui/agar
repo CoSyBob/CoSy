@@ -1,0 +1,21 @@
+| vim: ft=reva :
+| Interface to AGAR GUI library
+
+push~
+context: ~agar
+os [IF] " libag_core.so" [ELSE] " agar.dll" [THEN] lib agarcore 
+os [IF] " libag_gui.so" [ELSE] " agar.dll" [THEN] lib agar
+
+$040 constant AG_VIDEO_RESIZABLE 
+
+agarcore
+2 func: AG_InitCore		| zstr int
+agar
+4 func: AG_InitVideo	| x y depth flag
+1 func: AG_WindowNew	| type
+3 vfunc: AG_LabelNewStatic | win a zstr
+1 vfunc: AG_WindowShow	| win
+0 vfunc: AG_EventLoop_FixedFPS as AG_EventLoop
+
+
+pop~

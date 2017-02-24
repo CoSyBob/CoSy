@@ -1,0 +1,47 @@
+| vim: ft=reva :
+| Implementation of Islamic calendar
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+
+push~
+needs date/julian
+~priv ~doubles ~date
+
+|  *******************************************************************
+|  *     Islamic Calendar                                            *
+|  *******************************************************************
+
+~priv
+Jul 16 622 julian>fixed constant Islamic-Epoch
+exit~
+
+: islamic>fixed  ( month day year -- fixed )
+    >r swap              ( day month)( R: year)
+    1- 295 * 5 + 10 /_ +
+    r@ 1- 354 * +
+    r> 11 * 3 + 30 /_ +
+    Islamic-Epoch + 1- ;
+
+: fixed>islamic   ( fixed -- month day year )
+    dup Islamic-Epoch - 30 * 10646 + 10631 /_ >r ( R: year)
+    dup 29 - 1 1 r@ islamic>fixed - 2 * 59 /_mod swap if 1+ then
+    1+ 12 min   ( date month)
+    swap over 1 r@ islamic>fixed - 1+  ( month day)
+    r> ( month day year) ;
+pop~
+|||
+
+def: islamic>fixed
+stack: mm dd yyyy -- f
+ctx: ~date
+desc: @
+	Converts the Islamic date MM/DD/YYYY to a fixed date
+@
+def: fixed>islamic
+stack: f -- mm dd yyyy
+ctx: ~date
+desc: @
+	Converts the fixed date "f" to an Islamic date MM/DD/YYYY
+@
+
+related: fixed>islamic islamic>fixed

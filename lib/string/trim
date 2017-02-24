@@ -1,0 +1,49 @@
+| vim: ft=reva :
+| trim whitespace from text
+
+push~
+needs string/misc
+~strings
+: ltrim ( a n -- a' n' )
+	2dup 0do
+		| a n a
+		count ws? 0if leave then
+	loop
+	| a n a'
+	1- rot over swap -
+	rot swap - ;
+: rtrim 
+	2dup + over 0do
+		| a n a'
+		1- dup c@ ws? 0if leave then
+	loop
+	| a n a'
+	nip over - 1+
+	;
+: trim ltrim rtrim ;
+pop~
+
+||| 
+
+def: ltrim 
+stack: a n -- a' n' 
+ctx: ~strings
+desc: "
+	trim from the left
+"
+
+def: rtrim 
+stack: a n -- a' n' 
+ctx: ~strings
+desc: "
+	trim from the right
+"
+
+def: trim 
+stack: a n -- a' n' 
+ctx: ~strings
+desc: "
+	trim from both strings
+"
+
+related: ltrim rtrim trim

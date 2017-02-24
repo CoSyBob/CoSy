@@ -1,0 +1,230 @@
+| xml parser
+| vim: ft=reva: 
+
+push~
+
+needs string/regex
+
+context: ~xml
+
+~priv
+: c!++ ( a c -- a' ) over c! 1+ ;
+: pushxml ( a a' n -- a'' )
+	bounds do
+		i c@ c!++
+	loop
+	;
+" (?is)<([^<]+)>(.*?)</\\1>" regex: rx-xml-tag
+" <([^<]+) />" regex: rx-xml-emptytag
+
+~xml
+: escapechar-count ( a n -- )
+	0 -rot
+	bounds do
+		i c@ case
+			'< of 1+ endof
+			'> of 1+ endof
+			'& of 1+ endof
+			drop
+		endcase
+	loop
+	;
+: escape ( a n -- a' n' )
+	2dup escapechar-count
+	over + 1+
+	allocate dup >r		| a n a' r:a'
+	-rot bounds do
+		i c@ 
+		case
+			'< of " &lt;" pushxml endof
+			'> of " &gt;" pushxml endof
+			'& of " &amp;" pushxml endof
+			c!++
+		endcase
+	loop
+	r> swap over -
+	;
+
+: parse ( xt a n -- )
+	rot >r 2dup									
+	| a n a n r:xt
+	rx-xml-tag regex_find 0if 
+		2dup rx-xml-emptytag regex_find 0if
+			2drop 2drop rdrop 
+		;then
+		0L 1 regex_getmatch r@ execute
+		2drop 2drop rdrop
+	;then
+	| deal with this match
+	2 regex_getmatch 1 regex_getmatch r@ execute
+
+	| There is a <tag>value</tag> item.  Split the string into parts; pass this
+	| tag,value pair to the xt, and pass the tail to parse again
+	| a n a' n'
+	2dup r@ 2 regex_getmatch parse
+	| a n a' n' -- do the math to get the tail:
+	+ 2 pick -
+	strbreakat 2nip r> -rot parse
+	;
+
+[IFTEST]
+: xml quote * <?xml version="1.0" encoding="utf-8"?>
+<methodResponse>
+  <params>
+    <param>
+      <value>
+        <array>
+          <data>
+            <value>
+              <struct>
+                <member>
+                  <name>number</name>
+                  <value>
+                    <int>1005</int>
+                  </value>
+                </member>
+                <member>
+                  <name>lat</name>
+                  <value>
+                    <double>38.390202</double>
+                  </value>
+                </member>
+                <member>
+                  <name>street</name>
+                  <value>
+                    <string>Gravenstein</string>
+                  </value>
+                </member>
+                <member>
+                  <name>state</name>
+                  <value>
+                    <string>CA</string>
+                  </value>
+                </member>
+                <member>
+                  <name>zip</name>
+                  <value>
+                    <i4>95472</i4>
+                  </value>
+                </member>
+                <member>
+                  <name>city</name>
+                  <value>
+                    <string>Sebastopol</string>
+                  </value>
+                </member>
+                <member>
+                  <name>suffix</name>
+                  <value>
+                    <string />
+                  </value>
+                </member>
+                <member>
+                  <name>long</name>
+                  <value>
+                    <double>-122.816010</double>
+                  </value>
+                </member>
+                <member>
+                  <name>type</name>
+                  <value>
+                    <string>Hwy</string>
+                  </value>
+                </member>
+                <member>
+                  <name>prefix</name>
+                  <value>
+                    <string />
+                  </value>
+                </member>
+              </struct>
+            </value>
+          </data>
+        </array>
+      </value>
+    </param>
+  </params>
+</methodResponse>
+* ;
+
+: xml2 quote *
+<?xml version="1.0"?>
+<methodResponse>
+  <fault>
+    <value>
+      <struct>
+        <member>
+          <name>faultCode</name>
+          <value>
+            <int>3</int>
+          </value>
+        </member>
+        <member>
+          <name>faultString</name>
+          <value>
+            <string>Can't get the address of "methodCall" because the table doesn't have an object with that name.</string>
+          </value>
+        </member>
+      </struct>
+    </value>
+  </fault>
+</methodResponse>
+* ;
+
+:: type ." : " type cr ; value dumper
+: try dumper xml parse ;
+: try2 dumper xml2 parse ;
+
+: xsimple quote *
+<?xml version="1.0"?>
+<test>value</test>
+* ;
+: xsimple2 quote *
+<?xml version="1.0"?>
+<test>value</test>
+<joe>bob</joe>
+* ;
+
+: simple1 
+	2dup blab 2over blab
+	pad place scratch place ;
+test: parse simple XML 
+	['] simple1 xsimple parse
+	pad count " test" cmp 
+	scratch count " value" cmp 
+	or not
+	;
+test: parse simple XML2 
+	['] simple1 xsimple parse
+	pad count " joe" cmp 
+	scratch count " bob" cmp 
+	or not
+	scratch count blab
+	;
+[THEN]
+
+pop~
+
+|||
+
+
+def: escape
+stack: a n -- a n
+ctx: ~xml
+ver: 7.0.5
+desc: *
+	Allocates a new string, which is a copy of the one passed in - except all
+	"<" and "&" characters are converted to "&lt;" and "&amp;".
+*
+def: parse
+stack: xt a n --
+ctx: ~xml
+ver: 7.0.5
+desc: *
+	Regex-based parser of XML strings.  Parses (a,n) and calls "xt" for each
+	(key,value) pair found in the input.
+
+	The xt is called with a stack like ( value valueN key keyN -- )
+*
+
+related: escape parse

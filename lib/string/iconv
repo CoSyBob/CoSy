@@ -1,0 +1,131 @@
+| vim: ft=reva
+| libiconv wrapper
+push~
+~sys ~util ~strings
+os [IF] " libiconv.so" [ELSE] " libiconv2.dll" [THEN] lib libiconv
+
+2 func: libiconv_open as iconv_open  | ( z-to z-from -- desc )
+5 func: libiconv as  iconv | ( desc **in *inleft **out *outleft -- result )
+1 func: libiconv_close as iconv_close | ( desc -- result )
+data: _libiconv_version as iconv_ver
+
+~priv
+0 value touni
+0 value fromuni
+
+: iconv_init 
+	z" utf-8" z" ucs-2le" iconv_open to fromuni
+	z" ucs-2le" z" utf-8" iconv_open to touni
+	;
+
+2variable buf1
+2variable buf2
+create utfbuf 1 allot
+
+~strings
+: uzt over + 0 swap w! ;
+: strcvt ( a n cvt -- a' n' )
+	>r dup 2* 2* dup allocate swap | a n a' m
+	buf2 2! buf1 2! 
+	buf2 2@
+	r> buf1 dup cell+ buf2 dup cell+ iconv drop | a'
+	buf2 cell+ @ -	| a' n'
+	tuck cell+ resize swap  | allocate one cell more, so we can nul-terminated
+	2dup + off
+	;
+: utf>uni ( a n -- a' n' ) touni strcvt ;
+: uni>utf ( a n -- a' n' ) fromuni strcvt ;
+exit~
+' iconv_init  onstartup
+iconv_init
+pop~
+|||  | Help:
+def: libiconv
+stack: -- lib
+ctx: ~strings
+desc: -
+	Library handle to the "libiconv" library.
+-
+
+def: iconv_open
+stack: z-to z-from -- desk
+ctx: ~strings
+desc: -
+	Create a new "iconv" handle to be used for converting strings.
+-
+
+def: iconv_close
+stack: desc -- result
+ctx: ~strings
+desc: -
+	Close an open "iconv" handle created with "iconv_open"
+-
+
+def: iconv_ver
+stack:  -- version
+ctx: ~strings
+desc: -
+	Return the version of "libiconv" in use.
+-
+
+def: iconv
+stack: desc **in *inleft **out *outleft -- result
+ctx: ~strings
+desc: -
+	Interface to the raw "libiconv" conversion routine.  You probably want
+	"strcvt"
+-
+
+def: strcvt
+stack: a n cvt -- a' n'
+ctx: ~strings
+ver: 6.0.9
+desc: -
+	Converts the string (a,n) using the conversion token "cvt" created via
+	"icon_open".  The string is NUL terminated both for single and double byte
+	strings, but the NUL terminator is not counted in the string length.
+	
+	The returned string is "allocate"d so you have to "free" it
+-
+
+def: utf>uni
+ver: 6.0.9
+stack: a n -- a' n'
+ctx: ~strings
+desc: =
+	Converts the string (a,n) from utf-8 encoding to ucs-2le.  Resultant string
+	is NUL terminated as well.
+
+	The returned string is "allocate"d so you have to "free" it
+=
+
+def: uni>utf
+ver: 6.0.9
+stack: a n -- a' n'
+ctx: ~strings
+desc: =
+	Converts the string (a,n) from ucs-2 encoding to utf-8le.  Resultant string
+	is NUL terminated as well.
+
+	The returned string is "allocate"d so you have to "free" it
+=
+
+def: uzt
+ver: 6.0.12
+stack: a n -- a n
+ctx: ~strings
+desc: =
+	Same as "zt" but works for unicode strings (puts a 2-byte NUL)
+=
+
+def: string/iconv
+ctx: ~
+desc: =
+	This is a wrapper around the 'libiconv' character-set conversion
+	library.  You will need 'libiconv.so' on Linux, or the included
+	'libiconv2.dll' (in the 'bin' directory) to use this on Windows.
+	=
+
+related: uni>utf utf>uni strcvt iconv string/iconv uzt
+related: iconv iconv_open iconv_close iconv_ver libiconv string/iconv
+related: zt uzt

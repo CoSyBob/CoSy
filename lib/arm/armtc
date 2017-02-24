@@ -1,0 +1,1986 @@
+| ARM Target Compiler library
+| Author: G. Rimmer  Feb07
+| vim: ft=reva :
+
+| 13-Feb-08 Modified by gtinker to replace 'caseof' with 'of' to conform to reva7.0.5.
+
+alias: \ |
+with~ ~sys
+\ needs debugger
+needs arm/armasm
+
+
+\ ARM registers
+\ 16 registers R0 - R15 of which three are special purpose:  
+\ R15 - PC (program counter)
+\ R14 - LR (link register used to hold subroutine return address)
+\ R13 - SP (system stack pointer)
+\ R12 - Initially points to list of FFI Ordinals.
+\ The remainder can be used generally but the winapi uses R0, R1, R2, and R3 to
+\ receive and return parameters.
+\ We'll use:-
+\ R0 - TOS
+\ R7 - data SP (so [R7] is second stack item)
+\ R13 - return stack (the system stack)
+
+
+0 constant verbose?  \ the compiler will generate warnings etc. may aid debugging
+variable armstart \ this points to the reva dictionary where the arm code starts.
+variable armend   \ this points to the reva dictionary where the arm code ends
+variable armapp   \ xt of the arm application word
+
+\ Utility to make the armapp.exe file 
+
+0 value image 0 value imagesize
+
+\ find the marker in the image
+0 value marker
+: findmarker ( -- )
+   0 to marker
+   imagesize 4 / 0 do
+      image i cells + @    \ get next cell from image
+      $12345678 =if i cells to marker then
+   loop
+;
+
+
+\ combine the compiled arm code from the dictionary with the exe image and write the application file
+: makearmapp ( armapp armend -- )
+   armend ! armapp !
+\   armend @ armstart @ - cr ." appsize = " . cr
+
+   \ put a jump to the application into the start of the exe image
+   armapp @ armstart @ - 8 - 2 >>   \ calculate the branch offset
+   $EA000000 or        \ or in the branch opcode
+   armstart @ !        \ plug it in
+
+	libdir pad place
+	" arm/armimg.exe" pad +place
+   pad count slurp to imagesize to image  \ read the image file into a buffer
+
+\   image imagesize  dump   \ for inspection only
+   findmarker \ find the place to put our own code
+
+   \ patch the parameters in the armimg.exe file to reflect the size of the final image 
+   marker 8 +          
+   512 -            \ size of original exe image minus 1st two blocks (which are not text section?)
+   armend @ armstart @ -   \ size of arm code in dict
+   + image $180 + !  \ update size of .text section
+
+   marker 8 +              \ size of original exe image
+   armend @ armstart @ -   \ size of arm code in dict
+   +
+   1 - 512 / 1+ 512 *      \ rounded up size
+   512 -                   \ parameter requires 512 less
+   dup image $188 + !
+   image $9c + !           
+
+   marker 8 +          
+   512 -            \ size of original exe image minus 1st two blocks (which are not text section?)
+   armend @ armstart @ -   \ size of arm code in dict
+   + 1-  2048 / 1+ $1000 *
+   image $d0 + !  
+
+\   $00003000 image $d0 + !
+
+\   $45BBEE5C image $88 + ! \ this is a timestamp only
+\   $96D0 image $d8 + w!   \ doesn't seem needed
+
+   \ write the image up to one instruction past marker, out to the app file
+   image    \ source addr
+   marker 8 +    \ byte count
+   " armapp.exe" creat >r    \ create/open the file and get handle
+   r@ write          \ write the image up to marker +1 instruction
+
+   \ add arm code from dictionary
+   armstart @    \ source address of the code in dict
+   \ calc the final size and round up to the next 512byte boundary
+   marker 8 +              \ size of original exe image
+   armend @ armstart @ -   \ size of arm code in dict
+   +
+   1 - 512 / 1+ 512 * 
+   cr dup . ." bytes written to armapp.exe" cr
+   marker 8 + -   \ subtract bytes already written
+   r@ write          \ write the arm code to the file
+   r> close          \ close file
+\   " armapp.exe" slurp dump
+;
+
+$000116E0 constant armbase \ this is a magic number, found by experiment that exe images 
+\ get loaded into the arm memory at 0x00011000. This may change with different ppcs and os versions
+\ so it would be best if we can find a reliable way to calculate it. 
+\ It also changes whenever armimg.exe is changed so BEWARE!!!! We can probably calculate this at least.
+
+\ \\\\\\\\\\\\\\\\\\\\\\\ START OF ARM CONTEXT \\\\\\\\\\\\\\\\\\\\\\\\\
+context: ~arm
+~arm  \ put words used by the arm application into the ~arm context
+
+
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\ STRINGS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+: dostr \ code to put addr and count on tos
+   armasm{
+      str   r0,[r7, -4]!  ; \ push tos
+      add   r0,pc,string-$-8    ; \ get the string address
+      str   r0,[r7, -4]!  ; \ push tos
+      ldr   r0,[pc,count-$-8]    ; \ get the string count
+      b     nend            ; \ patch to branch past string                
+count dw 0
+string dw 0
+nend:
+   }
+;
+
+\ ascii strings - leaves addr and count on stack
+macro
+: " 
+   '" parse/   \ parse the string 
+
+   compiling? if
+      ['] dostr 16 here, \ compile in arm code to put addr and count on tos
+      dup  \ get the count
+      5 +  \ allow for the count and the null 
+      aligned \ form the aligned branch offset    
+      4 - 2 >>  $00FFFFFF and $EA000000 or , \ patch to branch past the string  
+      dup ,       \ put the count here
+      here,   \ put the string here 
+      0 1,     \ include a null
+      align
+   else "" then
+;
+
+: dropcount
+   armasm{
+      ldr   r0,[r7],+4
+   }
+;
+
+: z" p: "  ['] dropcount 1 cells here, ; 
+forth 
+
+
+\ now unicode strings - leaves addr and count on stack
+macro
+: u" 
+   '" parse/   \ parse the string 
+   ['] dostr 16 here, \ compile in arm code to put addr and count on tos
+   dup  \ get the count
+   2 *   \ double it to get bytes
+   6 +  \ allow for the count and the null 
+   aligned \ form the aligned branch offset    
+   4 - 2 >>  $00FFFFFF and $EA000000 or , \ patch to branch past the string  
+   dup ,       \ put the count here 
+   0 do dup i + c@ 2, loop drop  \ move the string to here as unicode chars
+   0 2,     \ include a null
+   align
+;
+
+: zu" p: u"  ['] dropcount 1 cells here, ; 
+forth 
+
+hide dostr hide dropcount
+
+\ align - this uses $0 instead of $90 to fill to next 4 byte boundary 
+: align 3 0 do here 3 and 0if leave then 0 1, loop ;  
+
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\ ARM CLASSES \\\\\\\\\\\\\\\\\\
+
+\ define 'a-forth class   
+: (pushlr)
+   armasm{ 
+      str lr,[sp,-4]!   ; \ push lr (stack the return addr)
+   } 
+;
+
+: (poplr)
+   armasm{
+      ldr lr,[sp],+4 ; \ get return addr from stack
+   }
+;
+
+: (ldrlrsp)
+   armasm{
+      ldr   lr,[sp]
+   }
+;
+
+: 'a-forth  ( xt -- )     \ make arm-forth class 
+   compiling? if
+      align
+      \ as an optimization, we could check the previous instruction and if it is
+      \ a pop lr, we could replace it with a ldr lr[sp] and skip the following push lr
+
+      ['] (poplr) @ here cell- @ =if   \ is prior instruction a pop lr
+         -4 allot \ ['] (ldrlrsp) @ ,    \ yes, backup and replace with ldr lr[sp]
+      else         
+         ['] (pushlr) @ ,   \ compile in a push lr to stack the return address
+      then
+      here - 8 - 2 >> 3,       \ compile in the 24 bit relative call address
+      $EB 1,              \ compile in the branch and link opcode ($EA is branch, $E1 is bx)
+      ['] (poplr) @ ,      \ compile in a pop lr to retreive the return address
+   else
+      \ an arm word has been invoked in interpret mode - use the reva version instead 
+      xt>name
+      verbose? if cr ." using reva version of: " 2dup type then exit~ eval ~arm
+   then
+; newclass  \ this adds 'a-forth to a table
+
+: a-forth ['] 'a-forth default_class ! ;  \ a word to make 'a-forth the current class
+
+\ define 'a-inline class   
+: 'a-inline  ( xt -- )     \ make arm-inline class 
+   compiling? if
+      align
+      \ copy the word (from xt) to here, stopping when we hit a bx lr (return) instruction 
+      repeat
+         dup @ ,    \ copy one cell to here
+         cell+                  \ point to next instruction
+         dup @ $E12FFF1E <>   \ look for bx lr instr
+      while 
+      drop
+   else
+      \ an arm word has been invoked in interpret mode - use the reva version instead 
+      xt>name
+      verbose? if cr ." using reva version of: " 2dup type then exit~ eval ~arm
+   then
+; newclass  \ this adds 'a-inline to a table
+
+: a-inline ['] 'a-inline default_class ! ;  \ a word to make 'a-inline the current class
+
+hide (pushlr) hide (poplr) hide (ldrlrsp)
+
+\ \\\\\\\\\\\\\\ CONSTANTS \\\\\\\\\\\\\\\\\\
+\ define 'a-cclass
+: (a-cclass)
+   armasm{ 
+      str   r0,[r7, -4]!  ; push r0
+      ldr   r0,[pc,const-$-8]    ; \ get the  const
+      b     cend                 ; \ branch past the constant
+const dw 0x11223344  ; \ reserve space for the constant  
+cend:
+   } 
+;
+
+: 'a-cclass  ( xt -- )     \ make arm constant class 
+   compiling? if
+      ['] (a-cclass) 12 here,    \ move 12 bytes from (a-cclass) to here 
+      @ ,   \ put the constant
+   else
+      verbose? if cr ." interpreting a constant" then @  \ just fetch it if interpreting
+   then
+; newclass  \ this adds 'a-cclass to a class table
+
+: constant ( n <name> -- )
+   default_class @
+   ['] 'a-cclass default_class !
+   header
+   default_class !
+   ,       \ put the constant into the dict
+;
+
+hide (a-cclass)
+
+\ \\\\\\\\\\\\\\ VALUE \\\\\\\\\\\\\\\\\\
+\ define 'a-valclass
+: (a-valclass)
+   armasm{ 
+      str   r0,[r7, -4]!  ; push r0
+      ldr   r0,[pc,value-$-8]    ; \ get the value's address
+      ldr   r0,[r0]              ; \ get the value
+      b     cend                 ; \ branch past the value's address
+value dw 0x11223344  ; \ reserve space for the value's address  
+cend:
+   } 
+;
+
+: 'a-valclass  ( xt -- )     \ make arm value class 
+   compiling? if
+      ['] (a-valclass) 16 here,    \ move 16 bytes from (a-valclass) to here 
+      armstart @ - armbase + 4 + ,  \ put the address of value
+   else
+      verbose? if cr ." interpreting a value" then   \ just leave address if interpreting
+   then
+; newclass  \ this adds 'a-valclass to a class table
+
+: value ( n <name> -- )
+   default_class @
+   ['] 'a-valclass default_class !
+   header
+   default_class !
+   ,       \ put the value into the dict
+;
+
+: (to)
+   armasm{ 
+      ldr   r1,[pc,const-$-8]    ; \ get the value's addr
+      str   r0,[r1]              ; \ store
+      ldr   r0,[r7],+4           ; \ pop stack 
+      b     cend                 ; \ branch past the addr
+const dw 0x11223344              ; \ reserve space for value's address  
+cend:
+   } 
+;
+
+: (+to)
+   armasm{ 
+      ldr   r1,[pc,const-$-8]    ; \ get the value's addr
+      ldr   r2,[r1]              ; \ fetch the value
+      add   r0,r0,r2                ; \ add the data
+      str   r0,[r1]              ; \ store
+      ldr   r0,[r7],+4           ; \ pop stack 
+      b     cend                 ; \ branch past the addr
+const dw 0x11223344              ; \ reserve space for value's address  
+cend:
+   } 
+;
+
+: (addr)
+   armasm{ 
+      str   r0,[r7,-4]!          ; \ push stack
+      ldr   r0,[pc,const-$-8]    ; \ get the value's addr
+      b     cend                 ; \ branch past the addr
+const dw 0x11223344              ; \ reserve space for value's address  
+cend:
+   } 
+;
+
+macro
+: to ( n <valuename> -- )  \ store word to value
+   ['] (to) 16 here,
+   ' armstart @ - armbase + 4 + ,    \ put value's address
+;
+
+: +to ( n <valuename> -- )  \ plus-store word to value
+   ['] (+to) 24 here,
+   ' armstart @ - armbase + 4 + ,    \ put value's address
+;
+
+: addr ( <valuename> -- a )   \ get value's address
+   ['] (addr) 12 here,
+   ' armstart @ - armbase + 4 + ,    \ put value's address
+;   
+forth
+
+hide (a-valclass) hide (to) hide (+to) hide (addr)
+
+\ \\\\\\\\\\\\\\ VARIABLE \\\\\\\\\\\\\\\\\\
+\ define 'a-variable class
+
+: (a-vclass)
+   armasm{ 
+      str   r0,[r7, -4]!         ; \ push r0
+      ldr   r0,[pc,const-$-8]    ; \ get the  address
+      b     cend                 ; \ branch past the address
+const dw 0xaabbccdd  ; \ reserve space for the variable's address  
+cend:
+   } 
+;
+
+: 'a-vclass  ( xt -- )     \ make arm variable class 
+   ['] (a-vclass) 12 here,    \ move 12 bytes from (a-vclass) to here 
+   armstart @ - armbase + 4 + ,              \ put the address of variable
+; newclass  \ this adds 'a-vclass to a class table
+
+
+: variable ( <name> -- )
+   default_class @
+   ['] 'a-vclass default_class !
+   header
+   default_class !
+   1 cells allot       \ allot space in the dict
+;
+
+: 2variable ( <name> -- )
+    default_class @
+   ['] 'a-vclass default_class !
+   header
+   default_class !
+   2 cells allot       \ allot space in the dict
+;
+hide (a-vclass)
+
+\ \\\\\\\\\\\\\\\\\\\\ CREATE  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\
+\ : create parsews : (create) align 0 , (header) ['] 'a-vclass last @ cell- ! ;
+
+: create ( <name> -- )
+   default_class @
+   ['] 'a-vclass default_class !
+   align 0 ,      \ make room for a ptr to doescode
+   header
+   default_class !
+;
+
+\ \\\\\\\\\\\\\\\\\\\\\ DOES> \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ first the 'does> class
+: (does>)
+   armasm{ 
+      b     st                 ; \ branch past the address
+const dw 0x778899aa  ; \ reserve space for the variable's address  
+st:   str   r0,[r7, -4]!         ; \ push tos
+      ldr   r0,[pc,const-$-8]    ; \ get the  address to tos
+      str lr,[sp,-4]!   ; \ push lr (stack the return addr)
+
+      mov r0,r0     ; \ gets overwritten with call to doescode ( by 'does> )
+
+      ldr lr,[sp],+4 ; \ pop lr (get return addr from stack)
+   } 
+;
+
+: 'does> ( xt -- )
+   \ assume compiling, compile in code which puts the address of the word on tos then calls doescode
+   ['] (does>) here 28 move    \ move 28 bytes from (does>) to here 
+   dup         \ tos = xt xt
+   4 allot     \ skip the 'b  st'  
+   armstart @ - armbase + 4 +            \ calc the arm address
+   ,           \ put it here
+   12 allot        \ skip to the bl opcode
+   
+   4 - @      \ get ptr to doescode 
+   aligned     \ ensure it's aligned
+   here - 8 - 2 >> $00FFFFFF and $EB000000 or , \ compile in the relative call address to doescode
+
+   4 allot     \ skip to end
+; newclass 
+
+: does>
+   ['] 'does> last @ 4 - !  \ change class to 'does>
+   r>    \ so we skip the does part (the @ in this case) and exit the calling word ( gconst in this case) 
+   lastxt 4 - !    \ set doesptr to point to doescode
+;
+
+hide (does>) hide 'does>
+
+\ \\\\\\\\\\\\\\\\\\ LITERALS \\\\\\\\\\\\\\\
+\ we need to replace the reva code for literal with arm code.
+\ This will normally be done when switching to the arm context, and then undone when switching back.
+\ The code should push r0, then load r0 with the literal value.
+\ literal is only called when compiling, so numbers entered in interpret mode will just be placed
+\ on the stack as normal.
+
+: (a-literal)
+   armasm{ 
+      str   r0,[r7, -4]!  ; push r0
+      ldr   r0,[pc,const-$-8]    ; \ get the literal
+      b     cend                 ; \ branch past the literal
+const dw 0x11223344  ; \ reserve space for the literal  
+cend:
+   } 
+;
+
+: a-literal  ( n -- )     
+   ['] (a-literal)  here 12 move    \ move 12 bytes from (a-literal) to here 
+   12 allot        \ bump here accordingly
+   ,   \ put the literal
+; 
+
+
+in~ ~ 2variable savlit
+\ replace the code at literal with code to jump to a-literal
+macro
+: armlit \ switch to force compilation of arm literals
+   ['] literal 2@ savlit 2!  \ save the reva literal code
+   $E9 ['] literal c!            \ replace with jump
+   ['] a-literal  ['] literal - 5 -      ['] literal 1 + !    \ to a-literal
+;   
+
+: revalit   \ switch to force compilation of reva literals 
+   savlit 2@ \ get reva literal code
+   ['] literal 2!   \ restore it into dict
+;
+forth
+hide a-literal hide savlit
+
+
+
+
+\ \\\\\\\\\\\\\\\\\\\ FLOW CONTROL \\\\\\\\\\\\\\\\\\\\\\\\\\
+\ do loop i j unloop leave repeat again while back eleave remains more skip ?do later 0do
+
+\ In a do loop the top of the return stack contains the remaining loop count. (countdown to 0)
+\ The second item contains the loop limit. So i must be calculated: i = limit - count
+\ do and loop are macro class words
+
+\ do compiles inline code that removes the top 2 stack items, pushes the loop limit onto the return
+\ stack, calculates the loop count and pushes it onto the return stack.
+\ loop compiles inline code that decrements the loop count and if>0 jumps back to just past do.
+
+macro
+
+: (do)
+   armasm{
+      ldr   r1,[r7],+4  ; \ get loop limit off stack
+      str   r1,[sp,-4]!   ; \ push loop limit onto return stack
+      subs   r0,r1,r0    ; \ calculate loop count
+      str   r0,[sp,-4]!   ; \ push loop count onto return stack
+      ldr   r0,[r7],+4  ; \ pop stack
+   }
+;
+
+: do
+   \ to accomodate leave, we need to tuck 0 into the return stack to indicate no more
+   \ leave statements to be patched in loop
+   0 >rr
+   ['] (do) 5 cells here, \ compile in the (do) code
+   here \  mark where loop jumps back
+;
+
+: ?do
+   \ to accomodate leave, we need to tuck 0 into the return stack to indicate no more
+   \ leave statements to be patched in loop
+   0 >rr
+   ['] (do) 5 cells here, \ compile in the (do) code
+   here \  mark where loop jumps back
+   here >rr \ tuck in marker 
+   $da000000 , \ compile in ble instr
+;
+
+: (0do)
+   armasm{
+      str   r0,[sp,-4]!   ; \ push loop limit onto return stack
+      str   r0,[sp,-4]!   ; \ push loop count onto return stack
+      ldr   r0,[r7],+4  ; \ pop stack
+   }
+;
+
+: 0do
+   \ to accomodate leave, we need to tuck 0 into the return stack to indicate no more
+   \ leave statements to be patched in loop
+   0 >rr
+   ['] (0do) 3 cells here, \ compile in the (0do) code
+   here \  mark where loop jumps back
+;
+
+
+: leave
+   here >rr       \ tuck the marker
+   $ea000000 ,    \ compile in a branch instr
+;
+
+: (loop)
+   armasm{
+      ldr   r1,[sp],+4 ; \ pop loop ctr from return stack
+      subs  r1,r1,1    ; \ decrement it and set condition codes
+      str   r1,[sp,-4]!   ; \ put it back onto return stack
+lll:  bgt   lll        ; \ loop if nonzero. Offset must be patched
+unloop:
+      ldr   r1,[sp],+8 ; \ pop loop params from return stack
+   }
+;
+
+:  loop
+   ['] (loop) 5 cells here, \ compile in the (loop) code
+   here 2 cells - >r   \ addr of the bne instruction
+   r@ - 8 - 2 >> $00ffffff and $ca000000 or  \ calculate the branch offset and assemble the bne instr  
+   r> ! \ 2drop \ !        \ patch in the bne instr
+   \ patch any leave statements to jump to unloop. This also handles ?do
+    repeat
+        rr> 0;    \ exit when we find zero on the return stack
+        here 4 - over - 8 - 2 >> $00ffffff and swap +!    
+    again
+;
+
+: (i)
+   armasm{
+      str   r0,[r7,-4]!    ; \ push tos
+      ldr   r1,[sp]      ; \ get loop ctr from return stack
+      ldr   r0,[sp,4]      ; \ get limit from return stack
+      sub   r0,r0,r1       ; \ tos = i = limit-count
+   }
+;
+
+: i ['] (i) 4 cells here, ; \ compile in the (i) code
+
+: (j)
+   armasm{
+      str   r0,[r7,-4]!    ; \ push tos
+      ldr   r1,[sp,8]      ; \ get loop ctr from return stack
+      ldr   r0,[sp,12]      ; \ get limit from return stack
+      sub   r0,r0,r1       ; \ tos = j = limit-count
+   }
+;
+
+: j ['] (j) 4 cells here, ; \ compile in the (i) code
+
+: unloop ['] (loop) 4 cells + here 1 cells move 1 cells allot ;  
+
+: (eleave)
+   armasm{
+      mov   r1,1
+      str   r1,[sp]      ; \ put new loop ctr onto return stack
+   }
+;
+
+: eleave ['] (eleave) 2 cells here, ;  \ compile in the (eleave) code       
+
+: (remains)
+   armasm{
+      str   r0,[r7,-4]!    ; \ push tos
+      ldr   r0,[sp]      ; \ get loop ctr from return stack
+      sub   r0,r0,1        ; \ one less
+   }
+
+: remains ['] (remains) 3 cells here, ;  \ compile in the (remains) code       
+
+: (more) \ add tos to loop ctr
+   armasm{
+      ldr   r1,[sp]      ; \ get loop ctr from return stack
+      add   r1,r0,r1      ; \ add to tos
+      str   r1,[sp]      ; \ put new loop ctr onto return stack
+      ldr   r0,[r7],+4  ; \ pop stack
+   }
+;      
+   
+: more ['] (more) 4 cells here, ;  \ compile in the (more) code       
+
+: (skip) \ increment the loop index by n (subtract n from loop ctr)
+   armasm{
+     ldr   r1,[sp]      ; \ get loop ctr from return stack
+     sub   r1,r1,r0      ; \ subtract tos
+     str   r1,[sp]      ; \ put new loop ctr onto return stack
+     ldr   r0,[r7],+4  ; \ pop stack
+   }
+;      
+: skip ['] (skip) 4 cells here, ;  \ compile in the (skip) code       
+
+hide (skip) hide (more) hide (remains) hide (eleave) hide (j) hide (i) hide (loop) hide (0do) hide (do)
+
+\ CONDITIONALS  -  if 0if <if <>if =if >if else then ;then 0;
+
+: (if)
+   armasm{
+      teq   r0,0        ; \ test tos
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: beq   ll         ; \ conditional branch
+   }
+;
+: if  \ remove and test tos. If nonzero continue execution, if zero jump to next else or then.
+   ['] (if) 3 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the beq instruction to be patched (by else or then)
+;
+
+: (0if)
+   armasm{
+      teq   r0,0        ; \ test tos
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: bne   ll         ; \ conditional branch
+   }
+;
+: 0if  \ remove and test tos. If zero continue execution, if zero jump to next else or then.
+   ['] (0if) 3 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the bne instruction to be patched (by else or then)
+;
+
+: (<if)
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, r1=second top item
+      subs  r0,r1,r0    ; \ subtract the two top stack items
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: bge   ll         ; \ conditional branch
+   }
+;
+: <if  
+   ['] (<if) 4 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the ble instruction to be patched (by else or then)
+;
+
+: (>if)
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, r1=second top item
+      subs  r0,r1,r0    ; \ subtract the two top stack items
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: ble   ll         ; \ conditional branch
+   }
+;
+: >if  
+   ['] (>if) 4 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the ble instruction to be patched (by else or then)
+;
+
+: (=if)
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, r1=second top item
+      subs  r0,r1,r0    ; \ subtract the two top stack items
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: bne   ll         ; \ conditional branch
+   }
+;
+: =if  
+   ['] (=if) 4 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the ble instruction to be patched (by else or then)
+;
+
+: (<>if)
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, r1=second top item
+      subs  r0,r1,r0    ; \ subtract the two top stack items
+      ldr   r0,[r7],+4  ; \ pop stack
+   ll: beq   ll         ; \ conditional branch
+   }
+;
+: <>if  
+   ['] (<>if) 4 cells here,  \ compile in the if code
+   here cell-              \ stack the address of the ble instruction to be patched (by else or then)
+;
+
+: (else)
+   armasm{
+   ll: b    ll
+}
+
+: else   \ patch the branch offset at the previous if to here
+   ['] (else) 1 cells here,   \ put in an unconditional branch to then
+   dup @ >r \ get the branch instruction at the previous if 
+   dup here swap - 8 - 2 >> $00ffffff and \ calculate the offset
+   r> $ff000000 and or    \ or it into the branch instr   
+   swap !      \ plug it back in
+   here cell-  \ stack the address of the branch instruction to be patched (by then)
+;
+: then   \ patch the branch offset at the previous if (or else) to here
+   dup @ >r \ get the branch instruction 
+   dup here swap - 8 - 2 >> $00ffffff and \ calculate the offset
+   r> $ff000000 and or    \ or it into the branch instr   
+   swap !      \ plug it back in
+;
+
+: (ret)
+   armasm{
+      bx    lr    ; \ return
+   }
+;
+
+: ;then   \ compile in a return, patch the branch offset at the previous if (or else) to here
+   ['] (ret) @ ,   \ compile in a return (bx lr) instruction
+   dup @ >r \ get the branch instruction 
+   dup here swap - 8 - 2 >> $00ffffff and \ calculate the offset
+   r> $ff000000 and or    \ or it into the branch instr   
+   swap !      \ plug it back in
+;   
+
+: (0;)
+   armasm{
+      teq   r0,0        ; \ test tos
+      ldreq   r0,[r7],+4  ; \ pop stack if zero
+      bxeq   lr         ; \ exit if zero
+   }
+;
+
+: 0;     \ pop stack and exit if tos is 0, otherwise continue without popping stack
+   ['] (0;) 3 cells here,
+;  
+
+hide (0;) hide (else) hide (<>if) hide (=if) hide (>if) hide (<if) hide (0if) hide (if)
+
+\ case caseof endof endcase   $caseof rangeof
+\ (caseof) tests top two stack items and jumps if not equal to just past endof
+: (caseof) ( n m -- n |  )    \ leaves switch value or nothing
+    armasm{
+      mov   r1,r0       ; \ save m
+      ldr   r0,[r7],+4  ; \ pop stack to get n (switch value)
+      teq   r0,r1       ; \ compare the two
+  ll: bne   ll          ; \ branch if not equal to next endof (to be patched by endof)
+      ldr   r0,[r7],+4  ; \ pop n off the stack
+     }
+;
+
+: case ( -- m )
+    0 ;         \ a marker on the stack to tell endcase when to stop patching jumps
+
+: of  ( -- a )  \ leaves address of jump to be patched
+    ['] (caseof) 5 cells here,  \ compile in caseof code
+    here 2 cells -    \ stack the jump address for endof to patch
+    ;
+
+: endof ( a -- )    \ address of jump to be patched
+    0 ,    \ space for a branch which endcase will patch to a jump to endcase
+    dup here swap - 8 - 2 >> $00ffffff and $1A000000 or  \ offset ored with bne opcode
+    swap !   \ patch the jump in the previous 'caseof' to here
+    here cell-        \ stack the jmp address for endcase to patch
+    ;
+
+: (drop)
+   armasm{
+      ldr   r0,[r7],+4  ; \ pop stack
+   }
+;
+   
+: endcase  ( m a a a.. -- ) \ marker and addresses to patch
+    \ in the default (fall-through) case the switch value needs to be dropped
+\   ['] (drop) 1 cells here,  \ compile in a drop instr (no!!! not in Ron's version, so let's conform)
+    repeat
+         in~ ~ 0; \ exit when marker is encountered
+        dup here swap - 8 - 2 >> $00ffffff and $EA000000 or  swap !  \ patch endof jump to jump to here
+    again
+;
+
+hide (caseof) hide (drop)
+
+\ repeat while again
+
+: repeat 
+   here 
+;
+
+: again
+   here - 8 - 2 >> $00ffffff and \ calculate the offset
+   $EA000000 or , \ or with branch opcode and put here
+;   
+
+: (while)
+   armasm{
+      teq   r0,0        ; \ test tos
+      ldr   r0,[r7],+4  ; \ pop stack
+   }
+;
+
+: while
+   ['] (while) 2 cells here,  \ compile in code to test and pop stack
+   here - 8 - 2 >> $00ffffff and \ calculate the offset
+   $1A000000 or , \ or with bne opcode and put here
+;
+
+
+forth                 
+hide (while)
+
+\ \\\\\\\\\\\\\\\\\\\\\\\\ CALLBACKS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+\ Second attempt - We make a callback by wrapping the supplied word (xt) in a word which:-
+\ 1. pushes r0 - r3 onto the system stack (on top of any params that are already there)
+\ 2. saves lr,r12,r11 on the system stack
+\ 3. reserves space for a new data stack and points r7 to it
+\ 4. executes the supplied xt
+\ 5. restores lr,r12,r11
+\ 6. pops the system stack 4 cells (but not to r0, just bump the sp by 4 cells)  
+\ Include a word  cb-param  which gets the nth saved param from the system stack and pushes it to tos
+
+\ It is the caller's (windows in this case) job to clean up the stack so we just have to ensure
+\ that the system stack is unchanged when we return.
+
+: (armcb)
+   armasm{
+mstk  dw    0              ; \ top of new stack
+xt    dw    0              ; \ supplied xt
+      str   r3,[sp,-4]!   
+      str   r2,[sp,-4]!   
+      str   r1,[sp,-4]!   
+      str   r0,[sp,-4]!    ; \ put the registered parameters on the system stack (on top of any other
+                           ; \ params that are already there)
+
+      str   lr,[sp,-4]!    ; \ push lr
+      str   r12,[sp,-4]!   ; \ push r12
+
+     ; \ we should save (and restore) any other registers that forth words might use
+     ; \ so that when this callback returns (to windows) the registers will have been preserved.
+     ; \ eg /mod uses up to register r9, so if /mod is used in the callback it will corrupt
+     ; \ those registers for windows, unless we save/restore them here.
+
+      add r7,pc,mstk-$-8  ; \ set up new data sp 
+
+      mov   lr,pc       ; \ save return addr
+      ldr   pc,[pc,xt-$-8] ; \ call the supplied xt (the callback word)
+
+      ldr   r12,[sp],+4     ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+
+      add   sp,sp,16       ; \ unstack r0 r1 r2 r3
+      bx    lr             ; \ return
+   }
+;
+
+: cb: ( xt stacksize <name> -- )
+   cells allot    \ make some data stack space 
+   0 ,            \ init recursion counter
+   armstart @ - armbase + 4 + ,       \ put the supplied (relocated) xt
+   header         \ make the new callback word
+   ['] (armcb) 2 cells +  13 cells here,  \ compile in (armcb) code 
+;
+
+hide (armcb)
+\ Arm version of [']
+macro
+: ['] ' armstart @ - armbase + 4 + p: literal  ;
+forth
+
+
+\ \\\\\\\\\\\\\\\\\\\\ ARM VERSION OF ';' and ';;' \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+macro
+
+: ;; \ exit the current word immediately
+   in~ ~ ['] (ret) @ ,   \ compile in a return (bx lr) instruction
+;
+
+: ;
+   in~ ~ ['] (ret) @ ,   \ compile in a return (bx lr) instruction
+   0 state !      \ turn off compilation
+in~ ~  ;          \ use reva version of ; to complete definition of arm version of ;
+forth   
+hide (ret)
+\ !!!!!!!!!!!! NOTE !!!!!!!!!!!!!!!
+\ Now that we have redefined ; all new definitions must be for the arm application until we switch
+\ out of the ~arm context.
+
+
+
+\ This is where we rewrite the forth vocabulary in arm code
+
+\ note that inlined words do not need to go into the arm exe space. They get compiled inline 
+\ into the final executable, so their definitions can reside in the reva dictionary space.
+a-inline
+
+: pick
+   armasm{
+      ldr   r0,[r7,r0,lsl 2]  
+   }
+;
+ 
+: put
+   armasm{
+      ldr   r1,[r7],+4
+      str   r1,[r7,r0,lsl 2]  
+      ldr   r0,[r7],+4
+   }
+;
+
+: tuck
+   armasm{
+      swp   r0,r0,[r7]
+      str   r0,[r7, -4]!  ; \ push r0
+      ldr   r0,[r7,+4]
+   }
+;
+
+: over
+   armasm{
+      str   r0,[r7, -4]!  ; \ push r0
+      ldr   r0,[r7,+4]
+   }
+;
+
+: 2over  ( a b c d -- a b c d a b )
+   armasm{
+      str   r0,[r7, -4]!  ; \ push d
+      ldr   r0,[r7,+8]     ; \ get b
+      ldr   r1,[r7,+12]    ; \ get a
+      str   r1,[r7, -4]!  ; \ push a
+   }
+;
+
+: rot
+   armasm{
+      add   r1,r7,4
+      swp   r0,r0,[r7]
+      swp   r0,r0,[r1]
+   }
+;
+
+: -rot
+   armasm{
+      add   r1,r7,4
+      swp   r0,r0,[r1]
+      swp   r0,r0,[r7]
+   }
+;
+
+: dup ( a -- a a )    
+   armasm{
+      str   r0,[r7, -4]!  ; push r0
+   }
+;
+
+: 2dup ( a b -- a b a b )
+   armasm{
+      ldr   r1,[r7]     ; \ get a
+      str   r0,[r7, -4]!  ; \ push b
+      str   r1,[r7, -4]! ; \ push a 
+   }
+;
+
+: drop
+   armasm{
+      ldr   r0,[r7],+4
+   }
+;
+
+: 2drop
+   armasm{
+      ldr   r0,[r7],+4
+      ldr   r0,[r7],+4
+   }
+;
+
+: nip
+   armasm{
+      ldr   r1,[r7],+4
+   }
+;
+
+: 2nip   ( a b c d -- c d )
+   armasm{
+      ldr   r1,[r7],+8  ; \ get c
+      str   r1,[r7]     ; \ move it
+   }
+;
+
+\ return stack ops
+: >r
+   armasm{
+      str   r0,[sp,-4]!    ; \ tos to system stack (return stack)
+      ldr   r0,[r7],+4     ; \ pop parameter stack
+   }
+;
+
+
+: r>
+   armasm{
+      str   r0,[r7,-4]!    ; \ push parameter stack
+      ldr   r0,[sp],+4     ; \ pop system stack
+   }
+;
+
+
+: r@
+   armasm{
+      str   r0,[r7,-4]!    ; \ push parameter stack
+      ldr   r0,[sp]     ; \ get cell at system stack
+   }
+;
+
+: rpick  \ fetch the nth parameter off the system stack
+   armasm{
+   ;   add   r0,r0,1  ; \ compensate for the return addr of the calling word
+      ldr   r0,[sp,r0,lsl 2]
+   }
+;
+
+: rdrop
+   armasm{
+      ldr   r1,[sp],+4     ; \ pop system stack
+   }
+;
+
+
+\ : 0 \ arm version of '0'
+\    armasm{
+\       str   r0,[r7, -4]!  ; push r0
+\      mov   r0,0
+\   }
+\ ;     
+   
+\ : 1 \ arm version of '1'
+\   armasm{
+\      str   r0,[r7, -4]!  ; push r0
+\      mov   r0,1
+\   }
+\ ;    
+
+\ : 2 \ arm version of '2'
+\   armasm{
+\      str   r0,[r7, -4]!  ; push r0
+\      mov   r0,2
+\   }
+\ ;      
+
+: + 
+   armasm{
+      ldr   r1,[r7],+4
+      add   r0,r0,r1
+   }
+;
+
+: or 
+   armasm{
+      ldr   r1,[r7],+4
+      orr   r0,r0,r1
+   }
+;
+
+: xor 
+   armasm{
+      ldr   r1,[r7],+4
+      eor   r0,r0,r1
+   }
+;
+
+: and 
+   armasm{
+      ldr   r1,[r7],+4
+      and   r0,r0,r1
+   }
+;
+
+: not 
+   armasm{
+      cmp   r0,1
+      sbc   r0,r0,r0
+   }
+;
+
+: invert 
+   armasm{
+      mvn   r0,r0
+   }
+;
+
+: negate 
+   armasm{
+      rsb   r0,r0,0        
+   }
+;
+
+: cells 
+   armasm{
+      mov   r0,r0,lsl 2        
+   }
+;
+
+: cell+ 
+   armasm{
+      add   r0,r0,4        
+   }
+;
+
+: cell- 
+   armasm{
+      sub   r0,r0,4        
+   }
+;
+
+
+: false 
+   armasm{
+      str   r0,[r7, -4]!  ; \ push r0
+      mov   r0,0
+   }
+;   
+
+: true 
+   armasm{
+      str   r0,[r7, -4]!  ; \ push r0
+      mov   r0,0xffffffff
+   }
+;   
+
+: - 
+   armasm{
+      ldr   r1,[r7],+4
+      sub   r0,r1,r0
+   }
+;
+
+: @ ( a -- n )  \ fetch the word at a
+   armasm{
+      ldr   r0,[r0]  ; \ get the data at addr
+   }
+;
+
+: 2@ ( a -- d )  \ fetch the double word at a
+   armasm{
+      ldr   r1,[r0]     ; \ get the data at addr
+      str   r1,[r7,-4]! ; \ push it
+      ldr   r0,[r0,+4]  ; \ get second word
+   }
+;
+
+: c@ ( a -- n )  \ fetch the word at a
+   armasm{
+      ldrb   r0,[r0]  ; \ get the data at addr
+   }
+;
+
+: w@ ( a -- n )  \ fetch the word at a
+   armasm{
+      ldrh   r0,[r0]  ; \ get the data at addr
+   }
+;
+
+: ! ( n a -- )  \ store word to a
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack to get data
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack again
+   }
+;
+
+: 2! ( d a -- )  \ store double word to a
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack to get second word
+      str   r1,[r0,+4]     ; \ store
+      ldr   r1,[r7],+4  ; \ pop stack to get first word
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack again
+   }
+;
+
+: +! ( n a -- )  \ add n to contents of a
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack to get data
+      ldr   r2,[r0]     ; \ get cell
+      add   r1,r1,r2    ; \ add data to cell
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack again
+   }
+;
+
+: ++ ( a -- )  \ add 1 to contents of a
+   armasm{
+      ldr   r1,[r0]     ; \ get cell
+      add   r1,r1,1    ; \ add 1 to cell
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack 
+   }
+;
+
+: -- ( a -- )  \ subtract 1 from contents of a
+   armasm{
+      ldr   r1,[r0]     ; \ get cell
+      sub   r1,r1,1    ; \ subtract 1 to cell
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack 
+   }
+;
+
+: = ( n m  -- f )  \ test n m for equality
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, get n 
+      subs  r0,r0,r1    ; \ compare
+      movne r0,0        ; \ false
+      moveq r0,-1       ; \ true    
+   }
+;
+
+: <> ( n m  -- f )  \ test n m for inequality
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, get n 
+      subs  r0,r0,r1    ; \ compare
+      movne r0,-1        ; \ true
+   }
+;
+
+: < ( n m  -- f )  \ test n < m 
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, get n 
+      subs  r0,r1,r0    ; \ sub m from n
+      movlt r0,-1        ; \ true
+      movge r0,0        ; \ false
+   }
+;
+
+: > ( n m  -- f )  \ test n > m 
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, get n 
+      subs  r0,r1,r0    ; \ sub m from n
+      movgt r0,-1        ; \ true
+      movle r0,0        ; \ false
+   }
+;
+
+: u< ( n m  -- f )  \ test n < m 
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack, get n 
+      subs  r0,r0,r1    ; \ sub n from m
+      movhi r0,-1        ; \ true
+      movls r0,0        ; \ false
+   }
+;
+
+: on ( a -- )  \ set cell at a to -1
+   armasm{
+      mov   r1,$ffffffff    ; \ subtract 1 to cell
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack 
+   }
+;
+
+: off ( a -- )  \ set cell at a to 0
+   armasm{
+      mov   r1,0    ; \ subtract 1 to cell
+      str   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack 
+   }
+;
+
+: c! ( n a -- )  \ store byte to a
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack to get data
+      strb   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack again
+   }
+;
+
+: w! ( n a -- )  \ store byte to a
+   armasm{
+      ldr   r1,[r7],+4  ; \ pop stack to get data
+      strh   r1,[r0]     ; \ store
+      ldr   r0,[r7],+4  ; \ pop stack again
+   }
+;
+
+: swap ( a b -- b a )
+   armasm{
+      swp   r0,r0,[r7]
+   }
+;
+
+: 2swap ( a b c d -- c d a b )
+   armasm{
+      ldr   r1,[r7],+4        ; \ get c
+      swp   r0,r0,[r7]     ; \ swap b d
+      ldr   r2,[r7,+4]        ; \ get a
+      str   r2,[r7,-4]!         ; \ store a
+      str   r1,[r7,+8]         ; \ store c
+   }
+;
+
+: abs ( n -- n )
+   armasm{
+      movs   r0,r0       ; \ test r0
+      rsblt  r0,r0,0     ; \ make positive       
+   }
+;     
+
+: 2/
+   armasm{
+      mov   r0,r0,asr 1
+   }
+;
+
+: 2*
+   armasm{
+      mov   r0,r0,lsl 1
+   }
+;
+
+: 1+
+   armasm{
+      add   r0,r0,1
+   }
+;
+
+: 1-
+   armasm{
+      sub   r0,r0,1
+   }
+;
+
+: >> ( a n -- a' )
+   armasm{
+      ldr   r1,[r7],+4  ; \ get value to be shifted 
+      mov   r0,r1,lsr r0
+   }
+;
+
+: << ( a n -- a' )
+   armasm{
+      ldr   r1,[r7],+4  ; \ get value to be shifted 
+      mov   r0,r1,lsl r0
+   }
+;
+
+: * ( a b -- r )
+   armasm{
+      ldr   r1,[r7],+4  
+      mul   r0,r1,r0
+   }
+;
+ 
+
+
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\ START OF ARM CODE IN REVA DICTIONARY \\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+align
+here armstart !  \ mark the start of the arm code in the dict
+
+armlit   \ switch to arm literal mode. This patches literal with new code that compiles
+         \ literals for arm. Reverse the patch with revalit
+
+
+\ make room for the branch to application instruction. (patched in at end of arm application code)
+1 cells allot 
+
+
+a-forth  \ use the arm forth class
+
+: cb-param  \ fetch the nth parameter off the system stack
+   armasm{
+      add   r0,r0,3
+      ldr   r0,[sp,r0,lsl 2]
+   }
+;
+
+: >rr r> r> rot >r >r >r ;
+: rr> r> r> r> -rot >r >r ;
+
+: /mod  ( a b -- r q )  \ divide a by b signed
+   armasm{
+      mov   r6,0        ; \ r6 is quotient
+      mov   r5,1        ; \ r5 is result multiplier
+
+      ; \ test sign of both parameters
+      movs   r8,r0       ; \ r0 = b, r8 preserve sign of b
+      rsblt  r0,r0,0     ; \ make positive       
+      ldr   r1,[r7]     ; \ r1 = a 
+      movs  r9,r1       ; \ r9 preserve sign of a
+      rsblt r1,r1,0     ; \ make positive
+
+      clz   r2,r0       ; \ r2 = blz ( b leading zeros)
+l0:   clz   r3,r1       ; \ r3 = alz ( a leading zeroes)
+      subs   r4,r2,r3    ; \ blz - alz  get difference in leading zeroes as shift amount
+      blt   l3          ; \ a has more leading zeroes, which means it's smaller than b, so exit
+
+      cmp   r1,r0,lsl r4    ; \ compare shifted b with a
+      sublt r4,r4,1           ; \ it's too big so reduce shift amount
+      teq   r4,0
+      blt   l3                  ; \ shift amout has underflowed, so exit
+      sub   r1,r1,r0,lsl r4    ; \ subtract shifted b from a
+      add   r6,r6,r5,lsl r4    ; \ accumulate result
+      b     l0
+
+      ; \ fix up sign of results
+l3:   ands   r9,r9,0x80000000
+      bne    l4
+      ands   r8,r8,0x80000000
+      rsblt  r6,r6,0      
+      b     l5
+
+l4:   rsb  r1,r1,0    ; \ negate remainder
+      ands   r8,r8,0x80000000
+      rsbge  r6,r6,0      
+   
+l5:   mov   r0,r6       ; \ quotient
+      str   r1,[r7]     ; \ remainder
+   }
+;   
+
+: / /mod nip ;
+
+: mod /mod drop ;
+
+: */mod ( a b c -- r q )  \ (a*b)/c
+   armasm{
+      ldr   r1,[r7],+4     ; \ r1 = b,  r0 = c
+      ldr   r2,[r7]     ; \ r2 = a
+
+      ; \ determine the sign of the result
+      eor   r8,r2,r1    ; \ bit 31 0f r8 is the sign of the remainder
+      eor   r9,r8,r0    ; \ bit 31 of r9 is the sign of the result
+
+      ; \ now make each parameter positive
+      movs   r0,r0       ; \ test r0
+      rsblt  r0,r0,0     ; \ make positive       
+      movs   r1,r1       ; \ test r1
+      rsblt  r1,r1,0     ; \ make positive       
+      movs   r2,r2       ; \ test r2
+      rsblt  r2,r2,0     ; \ make positive       
+
+      smull  r3,r4,r1,r2   ; \ multiply a by b to get 64bit intermediate into r3,r4 
+      
+      mov   r2,0           ; \ r2 = quotient (guess)
+      mov   r1,0x40000000   ; \  r1 = starting value for generating guess
+
+l1:   orr   r2,r2,r1       ; \ or shifted value into quotient (as a guess)
+      smull r5,r6,r2,r0    ; \ multiply guess by c
+      subs  r5,r3,r5    ; \ subtract r5,r6
+      sbcs  r6,r4,r6    ; \ from r3,r4       
+      eorlt r2,r2,r1    ; \ if result is negative, unset the bit in guess    
+      movs  r1,r1,lsr 1    ; \ shift the value
+      bne   l1             ; \ exit after all bits tried
+
+l2:   mov   r0,r2       ; \ final guess is quotient
+      movs  r9,r9       ; \ check sign requirement for quotient
+      rsblt r0,r0,0     ; \ make negative       
+      movs  r8,r8       ; \ check sign requirement for remainder
+      rsblt r3,r3,0     ; \ make negative
+      str   r3,[r7]     ; \ remainder to stack
+  }
+; 
+
+: */ */mod nip ;
+
+
+: fill   ( a c b -- )   \ fill memory at a with c copies of byte b
+   armasm{
+      ldr   r1,[r7],+4  ; \ r1 = byte count   
+      ldr   r2,[r7],+4  ; \ r2 = addr
+      movs  r1,r1
+      beq   l2          ; \ count is zero on entry
+l1:   strb  r0,[r2],+1  ; \ write a byte and increment addr
+      subs  r1,r1,1        ; \ decrement count
+      bne   l1
+l2:   ldr   r0,[r7],+4  ; \ pop stack to r0   
+   }
+;
+   
+
+\ The FFI calling function. This unpacks parameters off the data stack and puts the first four
+\ into registers and the remainder onto the system stack. Then it calls the FFI function at ProcAddr,
+\ and finally, it cleans up the system stack .
+\ Second attempt. Always put 12 params (dummy and real) on the system stack. Then we can clean-up
+\ easily and we don't have to save the parameter count.
+: ncall  ( pn .. p0 ProcAddr paramcount -- r )  
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+   ;   str   r12,[sp,-4]!      ; \ push r12
+
+      sub   sp,sp,48          ; \ 12 dummy params to system stack
+
+      ldr   r12,[r7],+4       ; \ get ProcAddr
+      movs  r0,r0             ; \ test param count
+      beq   callf             ; \ no parameters
+      subs  r0,r0,1         ; \ dec param count
+      beq   onep
+      subs  r0,r0,1         ; \ dec param count
+      beq   twop
+      subs  r0,r0,1         ; \ dec param count
+      beq   thrp
+      subs  r0,r0,1         ; \ dec param count
+      beq   foup
+
+lots: ldr   r4,[r7],+4        ; \ pop fifth and higher params off data stack
+      subs  r0,r0,1         ; \ dec param count
+      str   r4,[sp,r0,lsl 2]       ; \ put param onto system stack
+      bne   lots
+
+foup: ldr   r3,[r7],+4        ; \ pop fourth stacked param to r3
+thrp: ldr   r2,[r7],+4        ; \ pop third stacked param to r2
+twop: ldr   r1,[r7],+4        ; \ pop second stacked param to r1
+onep: ldr   r0,[r7],+4        ; \ pop first stacked param to r0
+
+callf:
+      mov   lr,pc
+      mov   pc,r12            ; \ call ProcAddr
+
+      add   sp,sp,48          ; \ clean up system stack
+   ;   ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                          ; \ r0 will contain the result (or garbage if no result)
+;
+
+\ make a defining word to define FFI funcs
+forth   
+in~ ~ : func:
+   create
+   revalit 0 armlit  \  all this just to get 0 on tos in reva talk 
+   ,      \ space for ProcAddr (of eg MessageBeep) to be patched in at execution time 
+   ,              \ put the no. of parameters (supplied when word is defined)
+   does> dup @ swap 4 + @  ncall \ fetch the ProcAddr and param count then call it
+;  
+a-forth   
+ 
+hide ncall
+
+: op>r12 \ get ordinals ptr to r12
+   armbase       
+   armasm{
+      ldr   r12,[r0,-4]    ; \ get saved ordinals ptr
+      ldr   r0,[r7],+4     ; \ pop stack
+   }
+;
+
+variable ffilib
+: LoadLibrary ( addr -- libhandle )
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,8]       ; \ call LoadLibrary
+   ;   ldr   r12,[sp],+4     ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       ; \ r0 (tos) now has handle to library
+ \  ffilib !
+; 
+
+: GetProcAddr  ( addr -- func )  \ addr is a zstring identifying the name of the function
+      ffilib @     \ libhandle, must be valid for function being accessed
+      op>r12
+   armasm{
+      ldr   r1,[r7],+4     ; \ pop stack, addr of proc name to r1
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,12]       ; \ call GetProcAddr
+   ;   ldr   r12,[sp],+4     ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       ; \ r0 (tos) now has address of function
+; 
+
+: ms  ( n --  )  
+      op>r12   \ get ordinals ptr to r12
+   armasm{
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+
+      mov   lr,pc
+      ldr   pc,[r12,52]       ; \ call Sleep
+
+      ldr   r0,[r7],+4     ; \ pop stack
+   ;   ldr   r12,[sp],+4    ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       
+; 
+
+: ms@  (  -- n )  
+      op>r12
+   armasm{
+      str   r0,[r7,-4]!    ; \ push r0
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,56]       ; \ call GetTickCount
+   ;   ldr   r12,[sp],+4    ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       ; \ r0 (tos) now has milliseconds
+; 
+
+: allocate  ( n -- a )  
+      op>r12
+   armasm{
+      mov   r1,r0          ; \ size to r1
+      mov   r0,0           ; \ flags to r0
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,16]       ; \ call LocalAlloc
+   ;   ldr   r12,[sp],+4    ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       
+;
+
+: free  ( n -- )  
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!    ; \ push lr
+   ;   str   r12,[sp,-4]!    ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,28]       ; \ call LocalFree
+      ldr   r0,[r7],+4     ; \ pop stack
+   ;   ldr   r12,[sp],+4    ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+   }                       
+;
+
+\ File I/O words
+\ creat, open/r, open/rw, read, write, close, seek, tell
+\ Needs error handling (ioerr) added and the following words:-
+\ delete, fsize, ioerr, mtime, rename, stat
+: creat  ( a n -- fileid )  
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+   ;   str   r12,[sp,-4]!      ; \ push r12
+
+      mov   r4,0              ; \ hTemplateFile=0 (ignored)
+      str   r4,[sp,-4]!       ; \ push param 7
+      mov   r4,0x80           ; \ 0x80 = FILE_ATTRIBUTE_NORMAL
+      str   r4,[sp,-4]!       ; \ push param 6
+      mov   r4,2              ; \ 2 = CREATE_ALWAYS
+      str   r4,[sp,-4]!       ; \ push param 5
+      mov   r3,0              ; \ security attributes=0    
+      mov   r2,1              ; \ 1 = FILE_SHARE_READ
+      mov   r1,0xC0000000     ; \ 0x80000000 = GENERIC_READ, 0x40000000 = GENERIC_WRITE
+      ldr   r0,[r7],+4        ; \ pop stack, get addr of filename to r0
+
+      mov   lr,pc
+      ldr   pc,[r12,40]       ; \ call CreateFileW
+      add   sp,sp,12          ; \ clean up system stack
+   ;   ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: open/r  ( a n -- fileid )  
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+   ;   str   r12,[sp,-4]!      ; \ push r12
+
+      mov   r4,0              ; \ hTemplateFile=0 (ignored)
+      str   r4,[sp,-4]!       ; \ push param 7
+      mov   r4,0x80           ; \ 0x80 = FILE_ATTRIBUTE_NORMAL
+      str   r4,[sp,-4]!       ; \ push param 6
+      mov   r4,3              ; \ 3 = OPEN_EXISTING
+      str   r4,[sp,-4]!       ; \ push param 5
+      mov   r3,0              ; \ security attributes=0    
+      mov   r2,1              ; \ 1 = FILE_SHARE_READ
+      mov   r1,0x80000000     ; \ 0x80000000 = GENERIC_READ
+      ldr   r0,[r7],+4        ; \ pop stack, get addr of filename to r0
+
+      mov   lr,pc
+      ldr   pc,[r12,40]       ; \ call CreateFileW
+      add   sp,sp,12          ; \ clean up system stack
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: open/rw  ( a n -- fileid )  
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+
+      mov   r4,0              ; \ hTemplateFile=0 (ignored)
+      str   r4,[sp,-4]!       ; \ push param 7
+      mov   r4,0x80           ; \ 0x80 = FILE_ATTRIBUTE_NORMAL
+      str   r4,[sp,-4]!       ; \ push param 6
+      mov   r4,3              ; \ 3 = OPEN_EXISTING
+      str   r4,[sp,-4]!       ; \ push param 5
+      mov   r3,0              ; \ security attributes=0    
+      mov   r2,1              ; \ 1 = FILE_SHARE_READ
+      mov   r1,0xC0000000     ; \ 0x80000000 = GENERIC_READ, 0x40000000 = GENERIC_WRITE
+      ldr   r0,[r7],+4        ; \ pop stack, get addr of filename to r0
+
+      mov   lr,pc
+      ldr   pc,[r12,40]       ; \ call CreateFileW
+      add   sp,sp,12          ; \ clean up system stack
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: close  ( fileid -- )  
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+      mov   lr,pc
+      ldr   pc,[r12,60]       ; \ call CloseHandle
+      ldr   r0,[r7],+4        ; \ pop stack
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+
+: read   ( a n fileid -- n2 )
+       op>r12
+  armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+
+      mov   r4,0              ; \ lpOverlapped
+      str   r4,[sp,-4]!       ; \ push param 5
+      ldr   r2,[r7],+4        ; \ pop stack, get no of bytes to read > r2
+      ldr   r1,[r7]           ; \ get addr of buffer > r1
+      mov   r3,r7             ; \ ptr to no of bytes actually read (second to tos)    
+
+      mov   lr,pc
+      ldr   pc,[r12,36]       ; \ call ReadFile
+      add   sp,sp,4           ; \ clean up system stack
+      ldr   r0,[r7],+4        ; \ pop stack to get no of bytes read
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: write   ( a n fileid -- )
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+
+      mov   r4,0              ; \ lpOverlapped
+      str   r4,[sp,-4]!       ; \ push param 5
+      ldr   r2,[r7],+4        ; \ pop stack, get no of bytes to read > r2
+      ldr   r1,[r7]           ; \ get addr of buffer > r1
+      mov   r3,r7             ; \ ptr to no of bytes actually read (second to tos)    
+
+      mov   lr,pc
+      ldr   pc,[r12,32]       ; \ call WriteFile
+      add   sp,sp,4           ; \ clean up system stack
+      ldr   r0,[r7],+4        ; \ pop stack to get no of bytes read
+      ldr   r0,[r7],+4        ; \ pop stack again (byte count discarded)
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: seek   ( n fileid -- )
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+
+      ldr   r1,[r7],+4        ; \ pop stack, get no of bytes to move
+      mov   r2,0              ; \ distance to move high (unused)
+      mov   r3,0              ; \ FILE_BEGIN
+
+      mov   lr,pc
+      ldr   pc,[r12,64]       ; \ call SetFilePointer
+
+      ldr   r0,[r7],+4        ; \ pop stack 
+
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: tell   ( fileid -- n )
+      op>r12
+   armasm{
+      str   lr,[sp,-4]!       ; \ push lr
+    ;  str   r12,[sp,-4]!      ; \ push r12
+   
+      mov   r1,0              ; \ move 0 bytes
+      mov   r2,0              ; \ distance to move high (unused)
+      mov   r3,1              ; \ FILE_CURRENT
+
+      mov   lr,pc
+      ldr   pc,[r12,64]       ; \ call SetFilePointer
+    ;  ldr   r12,[sp],+4       ; \ pop r12
+      ldr   lr,[sp],+4        ; \ pop lr
+   }                       
+;
+
+: move  ( src dst n -- )
+   armasm{
+      ldr   r1,[r7],+4        ; \ pop dst 
+      ldr   r2,[r7],+4        ; \ pop src
+      movs  r0,r0
+      beq   l1                ; \ count = 0
+      
+l2:   ldrb  r3,[r2],1
+      strb  r3,[r1],1         ; \ move a byte
+      subs  r0,r0,1
+      bne   l2
+  
+l1:   ldr   r0,[r7],+4        ; \ pop stack  
+   }
+;
+
+: cmp ( a1 n1 a2 n2 -- f ) \ compare two strings
+   \ first, exit with -1 if n1<n2 or +1 if n1>n2 respectively
+   \ if n1==n2 exit with the difference between the first nonmatching chars
+   \ if n1==n2 and all chars match, exit with 0
+   armasm{                    ; \ r0=n2
+      ldr   r1,[r7],+4        ; \ r1=a2 
+      ldr   r2,[r7],+4        ; \ r2=n1 
+      ldr   r3,[r7],+4        ; \ r3=a1
+      subs  r4,r0,r2          ; \ compare the counts
+      movlt r0,1              ; \ n1>n2
+      movgt r0,-1             ; \ n1<n2
+      bne   l1
+      ; \ strings are same len, so compare them
+   l2: 
+      ldrb  r4,[r3],+1
+      ldrb  r5,[r1],+1
+      subs  r0,r4,r5
+      bne   l1
+      subs  r2,r2,1        ; \ dec cnt
+      bne   l2             ; \ loop till zero
+l1:
+   }
+;
+
+: cmpi ( a1 n1 a2 n2 -- f ) \ compare two strings, ignoring case
+   armasm{                    ; \ r0=n2
+      ldr   r1,[r7],+4        ; \ r1=a2 
+      ldr   r2,[r7],+4        ; \ r2=n1 
+      ldr   r3,[r7],+4        ; \ r3=a1
+      subs  r4,r0,r2          ; \ compare the counts
+      movlt r0,1              ; \ n1>n2
+      movgt r0,-1             ; \ n1<n2
+      bne   l1
+      ; \ strings are same len, so compare them
+   l2: 
+      ldrb  r4,[r3],+1  ; \ get a char from str 1
+      orr   r4,r4,0x20  ; \ force the shift bit (very crude!!! should first check it's alpha)
+      ldrb  r5,[r1],+1  ; \ get a char from str2
+      orr   r5,r5,0x20  ; \ force the shift bit
+      subs  r0,r4,r5    ; \ compare
+      bne   l1          ; \ exit if different
+      subs  r2,r2,1        ; \ dec cnt
+      bne   l2             ; \ loop till zero
+l1:
+   }
+;
+
+\ higher level words
+variable base
+create strbuf 33 allot
+: (.) ( n -- a n )  \ convert number to string 
+   0 strbuf 32 + c!  \ nul at end
+   32 0 do
+      base @ /mod swap $30 + strbuf 31 i - + c!
+      dup 0if drop strbuf 31 i - + i 1+ leave then
+   loop
+;
+hide strbuf
+
+
+
+ 
+\ Debug aid - a messagebox to display the top 5 stack items
+: mbox
+      op>r12
+   armasm{
+      b  st
+
+dstring du '12345678',13,'22222222',13,'33333333',13,'44444444',13,'55555555',0
+      align 4
+Caption du      'ARM small PE',0
+      align 4
+
+eight:
+        mov     r4,8            ; loop ctr
+loop1:
+        and     r5,r2,0x0f     ; get the low 4 bits
+        add     r5,r5,0x30      ; convert to ascii
+
+        cmp     r5,0x39
+        ble     ll1
+        add     r5,r5,0x7
+ll1:
+        strh     r5,[r1]         ; put it into the dstring buffer
+        sub     r1,r1,2         ; point to next char
+        mov     r2,r2,lsr 4     ; shift to next digit
+        sub     r4,r4,1         ; loop ctr
+        teq     r4,0
+        bne     loop1
+        sub     r1,r1,2         ; backup past cr
+        bx      lr    
+
+st:     str   r0,[sp,-4]!    ; \ push tos
+        str   lr,[sp,-4]!    ; \ push lr
+        str   r12,[sp,-4]!    ; \ push r12
+
+        add     r1,pc,dstring-$-8
+        add     r1,r1,86                   ;r1 points to end of dstring
+        ldr     r2,[r7,12]
+        bl      eight                   ; subroutine to convert to string of 8 digits
+        ldr     r2,[r7,8]                 ; get next stack item
+        bl      eight
+        ldr     r2,[r7,4]
+        bl      eight
+        ldr     r2,[r7]
+        bl      eight
+        mov     r2,r0                   ; r2 is number to be converted
+        bl      eight
+
+      add     r1,pc,dstring-$-8
+      add     r2,pc,Caption-$-8       ; \ the caption
+      mov     r3,0                    ; \ style (MB_OK)
+      mov     r0,0                    ; \ window owner (NULL)
+
+      mov   lr,pc          ; \ so we return from message box
+      ldr   pc,[r12]         ; \ r12 is MessageBoxW ptr
+      ldr   r12,[sp],+4     ; \ pop r12
+      ldr   lr,[sp],+4     ; \ pop lr
+      ldr   r0,[sp],+4     ; \ pop tos
+  }
+;
+
+hide op>r12
+
+revalit forth exit~  \ switch to the normal reva environment
+
+\ the arm application code must follow directly from here so that the image in the dictionary
+\ is contiguous
+
+

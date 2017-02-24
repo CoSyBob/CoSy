@@ -1,0 +1,38 @@
+| Console application framework
+| vim: ft=reva :
+
+push~
+~
+context: ~app
+~util
+~sys
+~app
+
+
+| Setup and teardown:
+defer setup
+defer teardown
+
+| Main entrypoint:
+defer main
+' main defer@ value (main)
+
+| Main exitpoint:
+defer goodbye
+
+
+~
+: save ( <name> -- )
+	['] main defer@ dup (main) =if
+		." You did not override the 'main' word!" cr
+		." Not saving anything..." cr
+		bye
+	then
+	is appstart
+	['] setup defer@ onstartup
+	['] teardown defer@ onexit
+	parsews makeexename 2dup (save)
+	." Saved app as: " type cr bye
+	;
+
+pop~

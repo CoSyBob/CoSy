@@ -1,0 +1,203 @@
+| threading support
+| vim: ft=reva :
+
+push~
+
+needs callbacks
+~priv
+
+| TCB - thread control block:
+|    +00  - OS handle of thread
+|    +04  - stack allocated (Reva, not OS)
+|    +08  - xt 
+|    +12  - thread parameters
+
+os [IF]
+" libpthread.so.0" lib pthread
+4 func: pthread_create
+2 func: pthread_kill
+2 func: pthread_join
+1 vfunc: pthread_exit
+2 func: pthread_mutex_init | *mutex, NULL
+1 func: pthread_mutex_destroy
+1 func: pthread_mutex_lock
+1 func: pthread_mutex_unlock
+| linux
+[ELSE]
+| windows
+k32 drop
+6 func: CreateThread	| lpsec, stacksize, lpstart, lpparm, dwcreate, lpthreaid
+2 func: TerminateThread | hthread, exitcode
+1 vfunc: ExitThread
+2 func: WaitForSingleObject
+3 func: CreateMutexA
+1 func: ReleaseMutex
+[THEN]
+with~ ~os
+
+| This is the thread dispatcher, which converts the native thread callback into
+| a Reva-capable callback:
+
+:: ( param -- )
+	| param is 'TCB'
+	0 cb-param dup 3cell+ @ swap
+	dup cell+ @ swap
+	2cell+ @
+
+	| ( param sp xt -- ) >spexec
+	inline{ 89 C3 AD 50 AD 50 AD 58 5E FF E3 }
+	; 4 cb: (thread)
+
+: tcb-allocate ( xt param stacksize -- tcb ) 
+	4 cells allocate >r
+	cells allocate r@ cell+ !
+	r@ 3cell+ !
+	r@ 2cell+ !
+	r> dup off
+	;
+
+~os
+: freethread ( tcb -- ) dup cell+ @ free free ;
+os [IF]
+: thread ( xt param stacksize -- handle )
+	tcb-allocate >r
+	r@ 0 ['] (thread) r@ pthread_create
+	r> ;
+
+: killthread ( tcb -- ) @ 2 pthread_kill drop ;
+: exitthread ( n -- ) pthread_exit ;
+: waitthread ( tcb -- ) @ 0 pthread_join drop ;
+
+: mutex ( a -- ) 24 allocate dup 0 pthread_mutex_init drop swap ! ;
+: lockmutex ( a -- ) @ pthread_mutex_lock drop ;
+: unlockmutex ( a -- ) @ pthread_mutex_unlock drop ;
+: closemutex ( a -- ) dup >r  @ pthread_mutex_destroy 
+	r> swap 0if @ free then drop ;
+[ELSE]
+
+: thread ( xt params stacksize -- tcb )
+	tcb-allocate >r
+	0 0 ['] (thread) r@ 0 ( create flags ) r@ CreateThread 
+	r@ ! r> ;
+
+: killthread ( tcb -- ) dup @ 0 TerminateThread drop freethread ;
+: exitthread ( n -- ) ExitThread ;
+: waitthread ( tcb -- ) @ -1 WaitForSingleObject drop ;
+
+: mutex ( a -- ) 0 true 0 CreateMutexA swap ! ;
+: lockmutex ( mtx -- ) @ -1 WaitForSingleObject drop ;
+: unlockmutex ( mtx -- ) @ ReleaseMutex drop ;
+: closemutex ( a -- ) @ CloseHandle drop ;
+
+[THEN]
+
+[IFTEST]
+variable x
+
+test: threads working?
+	10022 dup
+	{ x ! } over 10 thread >r
+	r@ waitthread
+	r> freethread
+	x @ =
+	;
+[THEN]
+
+pop~
+
+|||
+def: thread
+stack: xt param stacksize -- handle
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Creates a new 'thread', which is a "lightweight process"
+
+	The "stacksize" is the number of cells you want the thread to have when it
+	runs.  "param" is an arbitrary, user-defined parameter, which will be on TOS
+	when the thread starts running.  
+	
+	The "xt" is a normal word, whose stack diagram is ( param -- ).  If it ends,
+	the thread is terminated.  Otherwise, it can cause it's own destruction by
+	using the "exitthread" word.
+
+	The "handle" should be treated as an opaque structure, and should not be
+	manipulated directly.
+
+	On Windows uses the native threading facilities; on Linux uses
+	'pthreads.so.0'
+
+	See the "threads.f" example for practical usage.
+*
+
+def: killthread
+stack: handle --
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Terminates a thread whose handle is given.  On Linux, this passes a "SIGINT"
+	to the thread.
+*
+
+def: exitthread
+stack: n --
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Used from within a thread, causes it to terminate, passing the 'n' as a
+	result code
+*
+
+def: waitthread
+stack: handle --
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Waits for the thread whose handle is given, to terminate.  Will potentially
+	wait forever.
+*
+
+def: freethread
+stack: handle --
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Frees the memory associated with the thread.  Do not do this unless the
+	thread has terminated!
+*
+
+def: mutex
+stack: a --
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Creates a new mutex and stores it's handle and any other information needed
+	at the address 'a'
+*
+
+def: lockmutex
+stack: a -- 
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Lock the mutex at 'a'.  Will wait until it becomes available.  Remember to
+	use 'unlockmutex' or other threads will be unable to lock the mutex.
+*
+
+def: unlockmutex
+stack: a -- 
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Unlock the mutex at 'a'.  Must be done after a 'lockmutex'
+*
+
+def: closemutex
+stack: a -- 
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Closes the mutex at 'a' and releases any resources it used to the OS.
+*
+
+related: thread killthread exitthread waitthread freethread mutex lockmutex unlockmutex closemutex

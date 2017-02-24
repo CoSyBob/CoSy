@@ -1,0 +1,94 @@
+| vim: ft=reva :
+| library for converting units (integer only)
+
+| Store value as small metric (mm,mm2,mm3)
+0 value linear
+0 value area
+0 value volume 
+
+: in 254 10 */ to linear ;
+: in2 64516 100 */ to area ;
+: ft 12 * in ;
+: ft2 144 * in2 ;
+: m 1000 * to linear ;
+: m2 1000000 * to area ;
+: cm 10 * to linear ;
+: cm2 100 * to area ;
+
+: >m linear 1000 / ;
+: >m2 area 1000000 / ;
+: >cm2 area 100 / ;
+
+: >ft2 area 92903 / ;
+: >in linear 10 254 */ ;
+: >ft >in 12 / ;
+
+: c>f 9 5 */ 32 + ;
+: f>c 32 - 5 9 */ ;
+
+: l 1000 * to volume ;
+: cc to volume ;
+: gal 37854 10 */ to volume ;
+
+: >l volume 1000 / ;
+: in3 16387 1000 */ to volume ;
+: >in3 volume 1000 16387 */ ;
+: >gal volume 10 37854 */ ;
+
+|||
+
+def: in
+ctx: ~
+stack: n --
+desc: =
+	Linear inches
+=
+
+def: in2
+ctx: ~
+stack: n --
+desc: =
+	Square inches
+=
+
+def: ft
+ctx: ~
+stack: n --
+desc: =
+	Feet
+=
+
+def: ft2
+ctx: ~
+stack: n --
+desc: =
+	Square feet
+=
+
+def: m
+ctx: ~
+stack: n --
+desc: =
+	Meters
+=
+
+def: m2
+ctx: ~
+stack: n --
+desc: =
+	Square meters
+=
+
+def: cm
+ctx: ~
+stack: n --
+desc: =
+	Centimeters
+=
+
+def: cm2
+ctx: ~
+stack: n --
+desc: =
+	Square centimeters
+=
