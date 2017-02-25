@@ -1,0 +1,184 @@
+| testing helper library
+| vim: ft=reva :
+
+: TESTING ;
+push~
+context: ~test
+~test
+0 value verbose
+1000 constant MAX-TESTS
+variable silent
+variable number
+variable failures
+variable execs
+variable NUMBER-OF-TESTS
+MAX-TESTS cells allocate constant tests
+tests value test^
+
+: mute silent on ;
+: talk silent off ;
+:: silent @ if drop ;then chain emit ; is emit
+:: silent @ if 2drop ;then chain type ; is type
+
+: test>xt ( ix -- xt )
+	cells tests + @ ;
+: test>desc ( ix -- a n )
+	cells tests + @
+	cell- @ count ;
+| Bail-out:
+:: talk ." Exception: " .x ." executing test #" number ? 
+	number @ test>desc type cr
+	bye ; is exception
+
+~ 
+: blab ( a n -- )
+	~test.talk
+	type cr
+	~test.mute
+	;
+| Every 'test' is declared using this word, and will automatically get run
+| It should return "true" if it succeeded, "false" if it failed.
+| The context it runs in is the default "reva" one
+: test: ( <description> ... -- true|false )
+	here
+	10 parse asciiz,		| compile the comment just before the test code
+	align ,				| beginning of the string
+	| create a headless lump of code:	
+	0L (header) 
+	lastxt test^ !
+	4 +to test^
+
+	NUMBER-OF-TESTS ++
+	NUMBER-OF-TESTS MAX-TESTS =if
+		." Need to increase MAX-TESTS" cr bye
+	then
+	| start compiling
+	p: ]
+	;
+
+~test
+: dotests ( index -- )
+	dup number !
+	test>xt
+	push~
+		execs ++
+		reva >r reset r>
+		verbose if
+			number @ test>desc type cr
+		then
+		mute catch talk ?dup if 
+			." Caught thrown exception: " . cr
+		then
+		0if failures ++ 
+			." FAIL: " number @ test>desc type cr
+		then
+	pop~
+	;	
+
+~
+variable (stime)
+create estr 256 allot
+: start-time ms@ (stime) ! ;
+: elapsed ms@ >r 
+	~test.number @  ~test.test>desc
+	246 min estr place
+	" : " estr +place
+	r> (stime) @ - (.) estr +place
+	"  ms" estr +place
+	estr count
+	;
+: test
+	~test
+	NUMBER-OF-TESTS @ 0if ." No tests have been created." cr ;then
+
+	." Beginning test suite" cr
+	ms@ >r
+	NUMBER-OF-TESTS @ 0do i dotests loop
+	ms@ r> - 
+	cr
+	." Finished test suite in " . ."  msec" cr
+	." Executed " execs @ (.) type '/ emit NUMBER-OF-TESTS @ . ." tests" 
+	failures @ ?dup if ." , with " . ." failures" then 
+	cr
+
+	| bye
+	;
+
+pop~
+
+
+|||
+
+def: test:
+stack: <name>...; -- flag
+ctx: ~
+desc: *
+	This word introduces a unit-test.  The rest of the line on which 'test:'
+	appears is the name of the test, which will be displayed if there is an
+	error.  If tests are defined inside a library or other file, then they
+	should be enclosed in a "IFTEST" block:
+
+	Example:
+		
+		[IFTEST]
+		~test
+		test: unit test #1
+			dup / 1 = ;
+
+		...
+
+		test
+		[THEN]
+		
+	The test is an anonymous word, and is terminated with ";".  It should return
+	true or false (true means success). 
+*
+
+def: test
+stack: --
+ctx: ~
+desc: *
+	This runs all tests which have been defined, and displays the results
+	(including timing and totals).
+*
+
+def: blab
+stack: a n --
+ctx: ~
+desc: *
+	Since normal I/O is superceded for the duration of tests, printing notices
+	etc. is done with this word.  It's a version of 'type' which works inside a
+	test.
+*
+def: start-time
+stack: --
+ctx: ~
+desc: *
+	Place this in your test to start an elapsed-timer for this test.  Use
+	with 'elapsed'.
+*
+def: verbose
+stack: --
+ctx: ~test
+desc: *
+	Set this to 'true' in order to make the test suite report the name of each
+	test as it is performed.
+*
+def: elapsed
+stack: -- a n
+ctx: ~
+desc: *
+	Used in conjunction with 'start-time'.  Produces a string showing the
+	elapsed milliseconds since 'start-time'.
+
+	Example:
+
+		test: very important
+			start-time
+			...
+			elapsed blab ;
+			
+	This will print "very important: nnn ms"
+*
+
+related: test test: blab [IFTEST] start-time elapsed verbose

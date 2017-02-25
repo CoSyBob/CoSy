@@ -1,0 +1,224 @@
+| primitive debugging support vim: ft=reva :
+
+push~ 
+needs util/disasm
+~io ~strings ~util ~priv ~
+
+~debug
+~debug-priv
+create (.xt) 266 allot
+variable xtnear
+variable xtnotfound
+exit~
+
+with~ ~debug-priv
+: xt>near  ( xt -- a n )
+	xtnear off
+	xtnotfound on
+    {
+       @    | xt context 
+	   {
+			cell-
+			2dup
+			>xt @ 
+			| xt dict xt xt1 
+			2dup =if
+				2drop
+				xtnear !
+				xtnotfound off
+				false
+			else
+				>if
+					| xt dict 
+					xtnear @ 0if xtnear ! else
+						dup >xt @ xtnear @ >xt @ >if
+							xtnear !
+						else drop then
+					then
+				else
+					drop
+				then
+				true
+			then
+	   } swap iterate 
+	   xtnotfound @
+    } all-contexts iterate drop
+	xtnear @ ?dup if >name count else 0L then
+    ;
+
+| : hi ." hi!" cr ;
+: .xt 
+	dup >r				| xt r:xt
+	xt>near				| a n r:xt
+	dup 0if 2drop 0L r@ .cell then
+		
+	(.xt) place
+	| is the address identical, or offset from it?
+	r@ xtnear @ 
+	dup 0if 2drop else
+	>xt 
+	@ -
+	| hi
+	?dup if
+		"  + " (.xt) +place
+		(.) (.xt) +place
+		"  ; " (.xt) +place
+		base @ 
+			hex r@ (.) (.xt) +place
+		base !
+	then
+	(.xt) count
+
+	mytype then rdrop
+	;
+' .xt is .addr
+
+: seedeferred
+	." deferred word" cr
+	>xt @ 2 disasm
+	;
+: const_or_val dup >xt @ ? ;
+: seeconstant ." constant: " const_or_val ;
+: seevalue ." value: "  const_or_val ;
+
+: ((see)) ( xt -- ) -1 disasm ; | @ dup xt>size disassemble ;
+: seevar ." variable: " dup >xt @ dup .x ."  -> " @ .x cr ; | 20150924.1532 . added dup to fix decrement of stack on variables |   
+
+: seedoes ." does>:" cr >xt @ 
+	dup ." data area:" cr 16 dump
+	." code area:" cr
+	cell- @ ((see)) ;
+make (see)
+	~sys.find-dict
+	?dup 0if 
+		dup 0if 2drop lastaddr @ -1 disasm drop
+		else
+			mytype '? myemit cr 
+		then
+	;then
+	dup >class @
+	case
+		['] 'defer of seedeferred endof
+		['] 'constant of seeconstant endof
+		['] 'value of seevalue endof
+		['] 'variable of seevar endof
+		['] 'does of seedoes endof
+		drop >xt @ 
+		((see))
+	endcase
+	drop cr 
+	;
+
+: .rs
+	5 0do 
+		dup @ 
+		dup 0if 2drop unloop ;then
+		dup ." ==> " .x xt>near type cr
+		cell+
+	loop drop
+	;
+
+needs os/exception
+with~ ~except
+
+variable ESI
+variable EAX
+variable EIP
+variable ESP
+
+create breakpoints 
+	16 cells allot
+	breakpoints 16 cells 0 fill
+create bp-inst 16 allot
+variable bp#
+
+: xt>bp# ( xt -- n|-1)
+	16 0do
+		breakpoints i cells + @
+		over =if
+			drop i unloop ;;
+		then
+	loop
+	drop -1
+	;
+
+| debugger commands
+: jmpto inline{ 89 C3 AD 50 AD 89 C6 58 FF E3 } ;
+: r ESI @ EAX @ ESP @ @ exit~ ~debug.jmpto ;
+: q | quit 
+	rdrop ESP @ r> ;
+: .b 16 0do breakpoints i cells + @ ?dup if
+		." #" i . .x cr
+	then loop ;
+: bd ( n -- )
+	cells breakpoints + 0 swap xchg
+	." Removed breakpoint at " .x cr
+	;
+: b ( xt -- ) | break at xt
+	| find an unused breakpoint:
+	-1
+	16 0do
+		breakpoints i cells + @ 
+		0if drop i leave then
+	loop
+	dup -1 =if 
+		." Cannot set breakpoint at " .x cr
+	else
+		| xt n
+		2dup bp-inst +	| xt array
+		swap $cc swap xchg swap c!
+
+		." Breakpoint #" dup . ." at " over .x cr
+		cells breakpoints + !
+	then
+	;
+
+with~ ~sys
+: printexception 
+	case
+		SIGSEGV of ." SIGSEGV " endof
+		SIGFPE of ." SIGFPE " endof
+		SIGILL of ." SIGILL " endof
+		SIGTRAP of ." SIGTRAP " endof
+		SIGHUP of ." SIGHUP " endof
+		SIGQUIT of ." SIGQUIT " endof
+		SIGABRT of ." SIGABRT " endof
+		SIGBUS of ." SIGBUS " endof
+		SIGKILL of ." SIGKILL " endof
+		SIGPIPE of ." SIGPIPE " endof
+		SIGALRM of ." SIGALRM " endof
+		SIGTERM of ." SIGTERM " endof
+		.x
+	endcase
+	;
+:: ( EDI ESI EBX EDX ECX EAX EBP ESP EIP except_code  -- continueip|0 )
+	bp# on
+	dup SIGTRAP =if
+		| see if the EIP is our bp?
+		over xt>bp# dup bp# !
+		-1 <>if
+			." Hit breakpoint #" bp# @ . cr
+			| undo breakpoint:
+			| EIP exc 
+			over bp# @ bp-inst + c@ swap c!
+		then
+	then
+	." EDI      ESI      EBX      EDX      ECX      EAX      EBP      ESP      EIP"
+	over EIP !
+	2 pick ESP !
+	4 pick EAX !
+	8 pick ESI !
+	cr
+	9 0do remains 1+ pick .x loop
+	cr
+	." Exception " dup printexception ." in: " over xt>near type cr
+	2 pick .rs
+	over ((see))
+	['] interp
+	; is exception
+
+::
+	cr ." Break" cr
+	reset interp
+	; is ctrl-c
+pop~

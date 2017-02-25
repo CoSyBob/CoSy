@@ -1,0 +1,109 @@
+| ANS compatibility layer (incomplete!)
+| vim: ft=reva :
+
+push~
+~util ~strings ~io ~
+
+context: ~ans ~ans
+
+| trap compile error for trailing '.' on numbers:
+with~ ~sys with~ ~doubles
+::
+	| is last char a '.'?
+	2dup + 1- c@ '. =if
+		2dup + 1- 'L swap c!
+		>double if 3 else 
+			2dup + 1- '. swap c!
+			chain word? then
+	else
+		chain word? 
+	then
+	; is word?
+
+| CORE: ! # #> #S ' (  * */  */MOD +  +!  +LOOP , - .
+
+alias: \ |
+alias: HEX hex
+alias: DECIMAL decimal
+alias: BINARY binary
+alias: OCTAL octal
+alias: IF if
+alias: THEN then
+alias: ELSE else
+
+: IMMEDIATE ['] 'macro last @ >class ! ;
+alias: POSTPONE p:
+: CHAR parsews drop c@ ;    
+macro
+: [CHAR] CHAR literal, ;
+: EXIT rdrop rdrop ;
+: RECURSE last @ cell+ @ compile ;
+: BEGIN here 0 ;
+: WHILE 
+	| test TOS and jump forward to after 'REPEAT' if zero
+	| or eax, eax
+	| jz REPEAT
+	| put address to jump to on stack
+	$840fc009 , $000003e0 ,
+	here cell- 
+	;
+: REPEAT 
+	| take care of 'while' clause
+	?dup if
+		here over - 1 + swap !
+		drop
+	then
+	back 
+	$ad 1,	| lodsd (drop)
+	;
+forth
+: 2R@ r> r> r> 2dup >r >r swap rot >r ;
+: ENVIRONMENT? 2drop false ;
+alias: INCLUDED (include)
+alias: COMPARE cmp
+alias: RSHIFT >>
+alias: LSHIFT <<
+alias: WORD parsews
+alias: NONAME: ::
+alias: C, 1, 
+\ constants
+: BL 32 ;
+\ values
+alias: S" "
+: CHARS ; ' 1+ alias CHAR+
+: .( ') parse type ; 
+: 0= 0 = ;
+: 0< 0 < ;
+: 0> 0 > ;
+: U.R .r ;
+: <> = not ;
+: WITHIN 1+ between ;
+| Finds a word - regardless of its case
+: findic ( a n -- dict | a n 0 )
+  last @ 00; drop
+  {
+    cell- >r 2dup r@   | a n a n dict   r: dict
+    >name count | a n a n a' n'
+    cmpi
+    r> swap | a n dict cmp-result
+    0if
+      >r 2drop r> 0 false
+    else
+      drop true
+    then
+  }
+  last
+  iterate
+
+  dup 0if drop else 0 then
+;
+
+: ignorecase " ' findic setfind~ ~ans " eval ;
+pop~
+
+|||
+def: ansi
+ctx: ~ans
+desc: = 
+	see ~ans 
+=
