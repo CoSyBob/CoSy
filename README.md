@@ -1,4 +1,7 @@
 # CoSy
- Commit.0
-CoSy Living Log
+CoSy Live Log .
+
 See http://CoSy.com
+
+Download .zip .  Unzip into  x:\4thCoSy  directory . 
+Click CoSy.bat
