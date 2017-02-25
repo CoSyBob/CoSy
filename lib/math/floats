@@ -1,0 +1,769 @@
+| vim: ft=reva :
+| floating-point math library
+push~
+context: ~floats
+
+~io ~strings ~util
+
+needs math/doubles
+needs string/justify
+~doubles
+~floats
+#10 constant b/float
+: floats b/float * ;
+: fldcw inline{ 50 d9 2c 24 58 } drop ;
+: fstcw dup inline{ 50 9b d9 3c 24 58 } ;
+: (round) fstcw %001111111111 and or fldcw ;
+: round.trunc %110000000000 (round) ;
+: round.even  %000000000000 (round) ;
+: round.down  %010000000000 (round) ;
+: round.up    %100000000000 (round) ;
+| initialize to: truncate, high precision, no interrupts
+: finit ( -- ) inline{ 9b db e3 } %0000111100111111 fldcw ;
+: fcompp inline{ de d9 } ;inline
+: fstsw dup inline{ 9b df e0 } ;inline 
+: fxam ( -- ) inline{ d9 e5 } ;inline
+: fneg? fxam fstsw %1000000000 and ; 
+: f+ ( f:a f:b -- f:a+b ) inline{ de c1 } ;inline 
+: f- ( f:a f:b -- f:a-b ) inline{ de e9 } ;inline
+: f* ( f:a f:b -- f:a*b ) inline{ de c9 } ;inline
+: f/ ( f:a f:b -- f:a/b ) inline{ de f9 } ;inline
+: fswap ( f:a f:b -- f:b f:a ) inline{ d9 c9 } ;inline 
+: fsin ( f:a -- f:sin[a]) inline{ d9 fe } ;inline
+: fcos ( f:a -- f:cos[a]) inline{ d9 ff } ;inline
+: ftan ( f:a -- f:tan[a]) inline{ d9 f2 } ;inline
+: fnegate ( f:a -- f:-a ) inline{ d9 e0 } ;inline
+: f0 ( -- f:0.0 ) inline{ d9 ee }  ;inline
+: f1 ( -- f:0.0 ) inline{ d9 e8 }  ;inline
+: fatan2 ( f: y f: x -- f:atan[y/x]) inline{ d9 f3 } ;inline
+: fatan ( f: a -- f:atan[a]) f1 fatan2 ;inline
+: fsqrt ( f: a -- f:sqr[a] ) inline{ d9 fa } ;inline
+: fpi ( -- f:0.0 ) inline{ d9 eb }  ;inline
+: fdup ( f:a -- f:a f:a ) inline{ d9 c0 } ;inline
+: fover ( f:a f:b -- f:a f:b f:a ) inline{ d9 c1 } ;inline
+: fdrop ( f:a f:b -- f:a )  inline{ dd d8 } ;inline 
+| : fnip fswap fdrop ;
+: fnip inline{ dd d9 } ; 	|  fstp st1  -- thanks, Bob!
+: fabs ( f:a -- f:a ) inline{ d9 e1 } ;inline 
+: frot ( f:a f:b f:c -- f:b f:c f:a ) inline{ d9 c9 d9 ca } ;inline
+: f*/ ( f:a f:b f:c -- f:[a*b]/c ) frot frot f* fswap f/ ;
+| asin(x) = atan(x/sqrt(1 - sqr(x))
+: fasin ( f: a -- f:asin[a])
+	fdup	| a a
+	fdup f* | a a^2
+	fnegate f1 f+ | a (1-x^2)
+	fsqrt f/
+	fatan ;
+| acos(x) = atan(sqrt(1 - sqr(x))/x)
+: facos
+	fdup	| a a
+	fdup f*	| a a^2
+	fnegate f1 f+ | a 1-a^2
+	fsqrt fswap f/
+	fatan ;
+forth
+: s>f ( n -- f:a ) inline{ 50 db 04 24 58 } drop ;
+: d>f inline{ 50 ff 36 df 2c 24 5b 5b } 2drop ;
+: f! ( addr f:a -- ) inline{ db 38 }  drop ;
+: f@ ( addr -- f:a ) inline{ db 28 } drop ;
+: f!4 ( addr4 f:a -- ) inline{ d9 18 } drop ;
+: f@4 ( addr4 -- f:a ) inline{ d9 00 } drop ;
+: f!8 ( addr8 f:a -- ) inline{ dd 18 } drop ;
+: f@8 ( addr8 -- f:a ) inline{ dd 00 }  drop ;
+: f>32 inline{ 8d 76 fc d9 1e 87 06 } ;  | Put 32 bit IEEE of TOFS on integer stack
+: f>64 inline{ 8d 76 f8 dd 1e 87 46 04 } ; | Put 64 bit IEEE of TOFS on integer stack
+: (fcmp) fcompp fstsw $4500 and ;
+: f= ( f:a f:b -- flag ) (fcmp) $4000 =  ;
+: f> ( f:a f:b -- flag ) (fcmp) $0100 =  ;
+: f< ( f:a f:b -- flag ) (fcmp) not ;
+: ffloor fstcw round.down inline{ d9 fc } fldcw ;
+: fint fstcw round.trunc inline{ d9 fc } fldcw ;
+: ffrac ( f:a -- f:a ) fabs fdup fint f- ;
+: f>s ( f:a -- n ) ffloor dup inline{ 50 db 1c 24 58 }  ;
+: f>d ( f:a -- d ) ffloor 2dup inline{ 50 50 df 3c 24 8f 06 58 }  ;
+: frac>dec ( num den -- f:x ) swap s>f s>f f/ ;
+| new, 7.0.5:
+: 1/f  inline{ d9 e8 de f1 } ;inline	| fld1 fdivrp
+: f/2 inline{ D9 E8 D8 C0 D9 C9 DE F1 } ; | fld1; fadd st,st; fxch; fdivrp
+: fcosec	| ( F: f -- cosec(f) )
+  fsin 1/f  ;
+: fsec		| F: f -- sec(f)
+  fcos 1/f  ;
+: fcotan	| f: f -- cot(f)
+  ftan 1/f  ;
+: fln 	| F: f -- ln(f) | Floating point log base e.  | fldln2; fxch; fyl2x
+	inline{ D9 ED D9 C9 D9 F1 } ;
+: f2^
+	inline{ D9 C0 D9 FC DC E9 D9 C9 D9 F0 D9 E8 DE C1 D9 FD DD D9 } ;
+: f^  | f: y x -- x^y
+	inline{ D9 F1 } f2^ ;
+
+: fexp inline{ D9 EA DE C9 } f2^ ;	| FLDL2E FMULP ... 
+: fsinh         | F: f -- sinh(f) | (e^x - 1/e^x)/2
+  fexp  fdup 1/f f-  f/2  ;
+
+: fcosh         | F: f -- cosh(f) | (e^x + 1/e^x)/2
+  fexp  fdup 1/f f+  f/2  ;
+
+: ftanh         | F: f -- tanh(f) | (e^x - 1/e^x)/(e^x + 1/e^x)
+  fdup 1/f  fover fover f-
+  frot frot f+  f/ ;
+
+: fasinh        | F: f -- asinh(f) | ln(f+sqrt(1+f*f))
+  fdup
+  fdup f*  f1 f+  fsqrt
+  f+  fln  ;
+
+: facosh        | F: f -- acosh(f) | ln(f+sqrt(f*f-1))
+  fdup
+  fdup f*  f1 f-  fsqrt
+  f+  fln  ;
+
+: fatanh        | F: f -- atanh(f) ; ln((1+f)/(1-f))/2
+  f1 fover f+  f1 frot f-  f/
+  fln  f/2  ;
+
+'. variable, fp-decimal-char
+
+: f10 #10 s>f ;
+: f*10 f10 f* ;
+: f/10 f10 f/ ;
+: 10^n
+	dup abs f1 
+	0 ?do f*10 loop 
+	0 <if f1 fswap f/ then ;
+
+
+variable fisneg
+: >int ( a n -- f:x true | false )
+	f0								| initialize the accumulator to zero
+	over c@ '- = dup fisneg !		| if it starts with a '-', it's negative
+	if 1 /string then			| if negative, ignore the leading minus
+	0 ?do							| process the string one char at a time
+		count						| a' c
+		digit> dup -1 =if			| a' n n
+			2drop fdrop false 	| bad character; return "no go"
+			unloop
+		;then
+		base @ s>f f* s>f f+		| multiply and add in
+	loop drop
+	fisneg @ if fnegate then true ;
+: (exp) dup 0if 2drop true ;then 
+	>single if 10^n f* true ;then 2drop false ;
+: (frac) ( a n -- f:x flag )
+	fneg? -rot
+	dup -rot >int 
+	if negate 10^n f*
+	else 3drop false ;then 
+	if f- else f+ then true ;
+
+2variable ((f))
+: failfloat ((f)) 2@ false rdrop ;
+: >float ( a n -- f:x flag )
+	2dup ((f)) 2!	| save original string for failure case
+	fp-decimal-char @ split 00;	| decimal separator is *required*
+	drop
+	| right-side m left-side n
+	>int 
+		0if 2drop failfloat then
+	| right-side m int
+	dup if
+		'e split ?dup 0if 'E split then 
+		| exp a frac b -1
+		| or
+		| frac b 0
+		if 2swap else 0 0 then 2swap	| save exponent part for later
+		| exp n frac m
+		(frac) 0if drop fdrop failfloat then
+		(exp) 0if failfloat then
+	else
+		2drop
+	then
+	true
+	;
+: dofval
+	| return address is the 10-byte float; get it and patch to return 10 bytes
+	| later:
+	r> dup b/float + >r
+	f@	| put the value in the FPU TOS
+	;
+: f, here f! b/float allot ; 
+: (fval)
+	| compile a call to 'dofval'
+	['] dofval compile
+	| keep track of our place and reserve 10 bytes:
+	f,
+|	here b/float allot
+	| put the FPU TOS into our space
+|	f!
+	;
+macro
+: f parsews >float 0if type ."  is not a float!" ;then in~ ~sys compiling? if (fval) then ;
+forth
+| override the 'words?' word:
+~sys
+:: >float if ~sys.compiling? if (fval) then 4 ;then chain word? ;
+	is word? 
+exit~
+: fvariable create b/float allot ;
+: fconstant create f, does> f@ ;
+
+| controls how many decimal places are shown. -1 means 'all significant'
+| NOTE: -1 doesn't work just yet ...
+5 variable, sigdig
+
+| output words
+create (fpad) 100 allot
+| convert float to string, fixed pt w/ n places right of decimal
+: (f.) ( f:r -- ) ( n -- a n )
+	(fpad) off
+	fneg? if fabs '- (fpad) c+place then
+
+	fdup f>d dabs (d.) (fpad) +place 
+	'. (fpad) c+place
+	ffrac dup 10^n f*
+	f>d (d.) rot 0pad (fpad) +place
+	(fpad) count
+	;
+
+: f.r ( f:a -- ) ( n u -- ) >r (f.) r> rjust ;
+: f. ( f:a -- ) sigdig @  0 f.r space ;
+: rad>deg 180. f* fpi f/ ;
+: deg>rad fpi f* 180. f/ ;
+: f? ( a -- ) f@ f. ;
+finit
+' finit ~sys.onstartup
+hide (fpad)
+hide dofval
+pop~
+
+|||
+
+def: b/float
+ctx: ~floats
+stack: -- n
+desc: @
+	Constant returning the number of bytes per float.
+@
+def: floats
+ctx: ~floats
+stack: n -- n
+desc: @
+	Converts the TOS to the number of bytes required to store that many floats
+@
+def: fldcw
+ctx: ~floats
+stack: n -- 
+desc: @
+	Loads the FPU control word.  See the x87 documents from Intel or AMD for
+	details.
+@
+def: fstcw
+ctx: ~floats
+stack: -- n
+desc: @
+	Retrieves the FPU control word.  See the x87 documents from Intel or AMD for
+	details.
+@
+def: round.trunc
+ctx: ~floats
+stack: -- 
+desc: @
+	Changes the FPU rounding mode to "truncate"
+@
+def: round.even
+ctx: ~floats
+stack: -- 
+desc: @
+	Changes the FPU rounding mode to "even"
+@
+def: round.down
+ctx: ~floats
+stack: -- 
+desc: @
+	Changes the FPU rounding mode to "down"
+@
+def: round.up
+ctx: ~floats
+stack: -- 
+desc: @
+	Changes the FPU rounding mode to "up"
+@
+def: finit
+ctx: ~floats
+stack: -- 
+desc: @
+	Initializes the FPU to a known state
+@
+def: fcompp
+ctx: ~floats
+stack: -- f \ float: f1 f2 -- 
+desc: @
+	Compares the two fp values f1 and f2, popping them off the FP stack and
+	putting the result of the comparision in TOS
+@
+def: fstsw
+ctx: ~floats
+stack: -- n 
+desc: @
+	Retrieves the FPU status word
+@
+def: fxam
+ctx: ~floats
+stack: -- 
+desc: @
+	Examines the value in FTOS, and modifies the FPU status word appropriately.
+@
+def: fneg?
+ctx: ~floats
+stack: -- f
+desc: @
+	Sets TOS to indicate whether or not FTOS is negative.
+@
+def: f+
+ctx: ~floats
+stack: float: a b  -- a+b
+desc: @
+	Sets FTOS to the sum of the top two values.
+@
+def: f-
+ctx: ~floats
+stack: float: a b  -- a-b
+desc: @
+	Sets FTOS to the difference of the top two values.
+@
+def: f*
+ctx: ~floats
+stack: float: a b  -- a*b
+desc: @
+	Sets FTOS to the product of the top two values.
+@
+def: f/
+ctx: ~floats
+stack: float: a b  -- a/b
+desc: @
+	Sets FTOS to the quotient of the top two values.
+@
+def: fswap
+ctx: ~floats
+stack: float: a b  -- b a
+desc: @
+	Swaps the top two items in the FP stack
+@
+def: fsin
+ctx: ~floats
+stack: float: a  -- sin(a)
+desc: @
+	Replaces FTOS with its sine
+@
+def: fcos
+ctx: ~floats
+stack: float: a  -- cos(a)
+desc: @
+	Replaces FTOS with its cosine
+@
+def: ftan
+ctx: ~floats
+stack: float: a  -- tan(a)
+desc: @
+	Replaces FTOS with its tangent
+@
+def: fnegate
+ctx: ~floats
+stack: float: a  -- -a
+desc: @
+	Replaces FTOS with its negation 
+@
+def: f0
+ctx: ~floats
+stack: float:  -- 0
+desc: @
+	Puts 0.0 in FTOS
+@
+def: f1
+ctx: ~floats
+stack: float:  -- 1
+desc: @
+	Puts 1.0 in FTOS
+@
+def: fatan
+ctx: ~floats
+stack: float:  a -- atan(a)
+desc: @
+	Replaces FTOS with its arctangent 
+@
+def: fatan2
+ctx: ~floats
+stack: float:  y x -- atan(y/x)
+desc: @
+	Computes the arctangent of the ratio of the top two values on FP stack.
+@
+def: fsqrt
+ctx: ~floats
+stack: float:  a -- sqrt(a)
+desc: @
+	Replaces FTOS with its square root 
+@
+def: fpi
+ctx: ~floats
+stack: float:  -- pi
+desc: @
+	Puts the constant "pi" in FTOS
+@
+def: fdup
+ctx: ~floats
+stack: float:  a -- a a
+desc: @
+	Duplicates FTOS
+@
+def: fdrop
+ctx: ~floats
+stack: float:  a b -- a
+desc: @
+	Drops FTOS
+@
+def: fabs
+ctx: ~floats
+stack: float:  a -- |a|
+desc: @
+	Replaces FTOS with its absolute-value
+@
+def: frot
+ctx: ~floats
+stack: float:  a b c -- b c a
+desc: @
+	Same as "rot" but for the FP stack
+@
+def: fasin
+ctx: ~floats
+stack: float:  a -- asin(a)
+desc: @
+	Replaces FTOS with its arcsine
+@
+def: facos
+ctx: ~floats
+stack: float:  a -- acos(a)
+desc: @
+	Replaces FTOS with its arccosine
+@
+def: s>f
+ctx: ~floats
+stack: n --  | float:  -- n
+desc: @
+	Puts the single-cell value "n" from TOS into FTOS
+@
+def: d>f
+ctx: ~floats
+stack: d --  | float:  -- d
+desc: @
+	Puts the double-cell value "d" from TOS into FTOS
+@
+def: f!
+ctx: ~floats
+stack: a --  | float: x --
+desc: @
+	Removes FTOS and puts it in the fvariable "a"
+@
+def: f@
+ctx: ~floats
+stack: a --  | float: -- x
+desc: @
+	Puts the FP value from fvariable "a" into FTOS
+@
+def: f!4
+ctx: ~floats
+stack: a --  | float: x --
+desc: @
+	Removes FTOS and puts it in the (cell sized) variable "a"
+@
+def: f@4
+ctx: ~floats
+stack: a --  | float: -- x
+desc: @
+	Puts the FP value from (cell sized) variable "a" into FTOS
+@
+def: f!8
+ctx: ~floats
+stack: a --  | float: x --
+desc: @
+	Removes FTOS and puts it in the (double-cell sized) 2variable "a"
+@
+def: f@8
+ctx: ~floats
+stack: a --  | float: -- x
+desc: @
+	Puts the FP value from (double-cell sized) 2variable "a" into FTOS
+@
+def: f>32
+ctx: ~floats
+stack: -- x  | float: x --
+desc: @
+	Removes FTOS as 32-bit IEEE FP value and puts into TOS
+@
+def: f>64
+ctx: ~floats
+stack: -- x  | float: x --
+desc: @
+	Removes FTOS as 64-bit IEEE FP value and puts into TOS
+@
+def: f=
+ctx: ~floats
+stack: -- f \ float: a b --
+desc: @
+	Compares the top two items in FP stack and pops them; puts -1 on TOS if
+	equal, zero otherwise.
+@
+def: ffloor
+ctx: ~floats
+stack: float: a -- floor(a)
+desc: @
+	Replaces FTOS with floor(FTOS), which is the integer closest to "a" but less
+	than or equal to it.
+	Example: 
+		fpi ffloor f.
+	will print "3.00000" but
+		fpi fnegate ffloor f.
+	will print "-4.00000"
+@
+def: ffrac
+ctx: ~floats
+stack: float: a -- frac(a)
+desc: @
+	Replaces FTOS with frac(a), which is the fractional portion of "a".
+	Example: 
+		fpi ffrac f.
+	will print "0.14159"
+@
+def: fint
+ctx: ~floats
+stack: float: a -- int(a)
+desc: @
+	Replaces FTOS with int(a), which is the integer portion of "a".
+	Example: 
+		fpi fint f.
+	will print "3.00000", and 
+		fpi fnegate fint f.
+	will print "-3.00000"
+@
+def: f>s
+ctx: ~floats
+stack: -- n \ float: a -- 
+desc: @
+	Pop FTOS and put it on TOS as a single-cell integer
+@
+def: f>d
+ctx: ~floats
+stack: -- d \ float: a -- 
+desc: @
+	Pop FTOS and put it on TOS as a double-cell integer
+@
+def: frac>dec
+ctx: ~floats
+stack: num den -- \ float: -- x
+ver: 6.1.8
+desc: @
+	Divide "num" by "den" and put the fraction on FTOS
+@
+def: fp-decimal-char
+ctx: ~floats
+stack: -- a
+desc: @
+	Character used to indicate the "decimal point".  That is, digits to the
+	right of this character represent the fractional portion of the number.
+	Currently only used for input.
+@
+def: f*10
+ctx: ~floats
+stack: float: a -- a*10.0
+desc: @
+	Multiply FTOS by ten
+@
+def: f/10
+ctx: ~floats
+stack: float: a -- a/10.0
+desc: @
+	Divide FTOS by ten
+@
+def: 10^n
+ctx: ~floats
+stack: float: a -- 10^a
+desc: @
+	Replace FTOS with ten raised to the "a" power
+@
+def: >float
+ctx: ~floats
+stack: a n -- flag \ float: -- a | 
+desc: @
+	Convert string (a,n) to a FP value if possible.  If successful, FP value is
+	in FTOS and -1 is in TOS.  If it fails, FTOS is unaffected and 0 is on TOS
+@
+def: f,
+ctx: ~floats
+stack: float: a -- 
+desc: @
+	Put the FP value in FTOS into an fvariable located at "here", and pop the FP
+	value from the FP stack.
+@
+def: f
+ctx: ~floats
+stack: <name> -- \ float: -- a
+desc: @
+	Parse the number following into FTOS
+@
+def: fvariable
+ctx: ~floats
+stack: <name> -- 
+desc: @
+	Allocates space for a 10-byte IEEE FP value
+@
+def: fconstant
+ctx: ~floats
+stack: <name> -- \ float: a --
+desc: @
+	Allocates space for a 10-byte IEEE FP value and initializes it from FTOS.
+	That value will be put in FTOS whenever <name> is invoked.
+@
+def: sigdig
+ctx: ~floats
+stack: -- a
+desc: @
+	Number of significant digits (to right of decimal) displayed by "f."
+@
+def: (f.)
+ctx: ~floats
+stack: m -- n a \ float: a --
+desc: @
+	Print FTOS into a string with "m" significant digits
+@
+def: f.r
+ctx: ~floats
+stack: m u -- \ float: a --
+desc: @
+	Print FTOS in a field "u" wide using "m" significant digits
+@
+def: f.
+ctx: ~floats
+stack: float: a --
+desc: @
+	Print FTOS using "sigdig" significant digits.
+@
+
+| new 7.0.5
+def: 1/f
+ver: 7.0.5
+ctx: ~floats
+stack: float: a -- 1/a
+desc: @
+	Replaces FTOS with its reciprocal 
+@
+def: f/2
+ver: 7.0.5
+ctx: ~floats
+stack: float: a -- a/2
+desc: @
+	Replaces FTOS with its half
+@
+
+def: fcosec
+ver: 7.0.5
+ctx: ~floats
+ctx: ~floats
+stack: float: a -- cosecant(a)
+desc: @
+	Replaces FTOS with cosecant 
+@
+
+
+def: fsec
+ver: 7.0.5
+ctx: ~floats
+stack: float: a -- seceant(a)
+desc: @
+	Replaces FTOS with secant 
+@
+
+def: fcotan
+ctx: ~floats
+ver: 7.0.5
+stack: float: a -- cotan(a)
+desc: @
+	Replaces FTOS with cotangent 
+@
+
+def: fln
+ctx: ~floats
+ver: 7.0.5
+stack: float: a -- ln(a)
+desc: @
+	Replaces FTOS with its natural logarithm 
+@
+def: fexp
+ver: 7.0.5
+ctx: ~floats
+stack: float: a -- e^a   
+desc: @
+	Replaces FTOS with e raised to the a 
+@
+def: f2^
+ver: 7.0.5
+ctx: ~floats
+stack: float: a -- 2^a
+desc: @
+	Replaces FTOS with 2 raised to the a 
+@
+def: f^
+ver: 7.0.5
+ctx: ~floats
+stack: float: b a -- a^b
+desc: @
+	Replaces FTOS with a raised to the b 
+@
+
+def: fsinh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  sinh(a) | (e^a - 1/e^a)/2
+desc: @
+	Replaces FTOS with hyberbolic sine . 
+@
+
+def: fcosh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  cosh(a) | (e^a + 1/e^a)/2
+desc: @
+	Replaces FTOS with hyberbolic cosine . 
+@
+
+def: ftanh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  tanh(a) | (e^a - 1/e^a)/(e^a + 1/e^a)
+desc: @
+	Replaces FTOS with hyberbolic tangent . 
+@
+
+def: fasinh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  asinh(a) | ln(a+sqrt(1+a*a))
+desc: @
+	Replaces FTOS with hyberbolic arcsine . 
+@
+
+def: facosh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  acosh(a) | ln(a+sqrt((a*a)-1))
+desc: @
+	Replaces FTOS with hyberbolic arccosine . 
+@
+
+def: fatanh
+ver: 7.0.5
+ctx: ~floats
+stack: float: a --  atanh(a) ; ln((1+a)/(1-a))/2
+desc: @
+	Replaces FTOS with hyberbolic arctangent . 
+@
+

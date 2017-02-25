@@ -1,0 +1,56 @@
+| vim: ft=reva :
+| rc4 cipher suite for Reva
+| based on implementation by Helmar and Charles
+push~
+~util
+~priv
+| tools:
+: FF& $FF and ;                 | n -- "n%256"
+: c+ + FF& ;                    | n1 n2 -- "(n1 + n2)%256"
+: r1 r> r> r@ swap >r swap >r ;  | -- n || Get second return stack entry.
+: cc>n 8 << or ;                | n1 n2 -- n3 || Pack two bytes into word value.
+: n>cc dup FF& swap 8 >> ;      | n3 -- n1 n2 || Unpack word into two bytes.
+macro : ;ret $c3 1, ; forth	| forbids tail-recursion
+
+| implementation
+create rc4sbox 256 allot
+variable rc4state
+: rc4isb 0 repeat 2dup rc4sbox + c! 1 c+ 0; again ;
+: @rc4sb rc4sbox + c@ ;
+: rc4sb>r r> swap @rc4sb >r >r ;
+: r>rc4sb r> swap rc4sbox + r> swap c! >r ;
+: >rc4sb< 2dup 2dup rc4sb>r rc4sb>r r>rc4sb r>rc4sb ;ret
+: rc4sb+ tuck @rc4sb c+ ; | a b -- b a'
+::  | rc4setup: ( addr cnt -- ) || Setup sbox for RC4 cipher.
+ rc4isb 0 rc4state ! >r >r 0 0 repeat    dup r1 mod r@ + c@ >r
+   rc4sb+ r> c+ swap >rc4sb<
+ 1 c+ dup 0if rdrop rdrop 2drop ;; then again ;
+: rc4sc         | -- ch || Return stream char and update state.
+ rc4state @ n>cc 1 c+ rc4sb+ >rc4sb<
+ 2dup @rc4sb swap @rc4sb c+ @rc4sb >r
+ swap cc>n rc4state ! r> ;
+:: | rc4: ( addr cnt -- ) || Encrypt string at addr.
+ repeat dup 0if 2drop ;; then 1- swap
+   rc4sc over c@ xor over c! 1+ swap 
+ again ;
+~ alias rc4 alias rc4setup
+pop~
+|||
+
+def: rc4
+ctx: ~
+stack: a n --
+desc: +
+	Encrypt the string (a,n) using the RC4 symmetric encryption algorithm.
+	The encryption is performed in-place, e.g. the string is overwritten.
+	Requires that "rc4setup" be performed first to set the password.
++
+def: rc4setup
+ctx: ~
+stack: a n --
+desc: "
+	Sets up the RC4 encryption engine to encrypt any following strings with the
+	password (a,n).
+"
+
+related: rc4 rc4setup

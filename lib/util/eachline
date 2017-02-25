@@ -1,0 +1,29 @@
+| vim: ft=reva :
+| iterate over a 'chunk' of text (like a file) and execute 'xt' on each
+| line.  Removes leading and trailing whitespace from line before executing.
+| the xt must consume the line given it!
+push~
+needs string/trim
+~strings 
+
+: eachline ( a n xt -- ) 
+		>r
+		rtrim
+		10 split
+		0if trim r> execute ;then
+		trim r@ execute 
+		r>
+	eachline
+	;
+pop~
+|||
+def: eachline
+stack: a n xt -- 
+ctx: ~strings
+desc: @
+	 Iterates over the string (a,n), calling "xt" with each line as input.  A
+	 line is defined as any sequence of characters terminated by a character
+	 ASCII "10".
+
+	 The "xt" called must consume the (a,n) passed to it.
+@

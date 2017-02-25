@@ -1,0 +1,189 @@
+| vim: ft=reva :
+| os/dir - directory read functions
+
+push~
+~util ~io ~strings ~priv
+
+create ((dir)) 256 allot
+create fn 256 allot
+
+~os
+: fullname ( a n )
+	((dir)) count 2dup fn place
+	1- + c@ '/ <>if
+		'/ fn c+place
+	then
+	fn +place
+	fn count
+	;
+
+os [IF] | linux
+~priv
+&040000 constant S_IFDIR
+&170000 constant S_IFMT
+create dir-name 256 allot
+libc drop
+1 func: opendir ( char* name )
+	as os_opendir
+1 func: closedir ( DIR* dir )
+	as os_closedir
+1 func: readdir ( DIR* dir -- dirent * )
+	as os_readdir
+exit~
+: isdir? ( a n -- flag ) stat S_IFMT and S_IFDIR = ;
+: closedir os_closedir drop ;
+: readdir ( dir -- dir? a n | 0  )
+	os_readdir 00;
+	11 + 
+	zcount dir-name place 
+	dir-name count 
+	2dup fullname isdir? -rot
+	;
+: opendir ( a n -- 0 | dir? a n h ) 
+	zt os_opendir 00; | h
+	dup readdir		  | h 0 | h dir? a n
+	?dup 0if drop 0 ;then
+	| h dir? a n
+	>r rot | dir? a h r:n
+	r> swap | dir? a n h
+	;
+: mkdir ( a n -- ) zt &777 swap 2 39 syscall ioerr ! ; | 39 buf mode --> 0=ok,-1=err
+: rmdir ( a n -- ) zt 1 40 syscall ioerr ! ; | 40
+[ELSE] | windows
+~priv
+k32 drop
+2 func: FindFirstFileA
+2 func: FindNextFileA
+1 func: FindClose
+1 func: RemoveDirectoryA
+2 func: CreateDirectoryA
+$10 constant S_IFDIR
+
+create find_data 11 cells 265 + 14 + allot
+( 
+  DWORD dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD nFileSizeHigh;
+  DWORD nFileSizeLow;
+  DWORD dwReserved0;
+  DWORD dwReserved1;
+  TCHAR cFileName[MAX_PATH];
+  TCHAR cAlternateFileName[14];
+)
+: dir> ( -- dir? a n )
+	find_data @ S_IFDIR and not not
+	find_data 11 cells + zcount 
+	;
+exit~
+
+: isdir? ( a n -- flag ) stat S_IFDIR and not not  ;
+
+: opendir ( a n -- 0 | dir? a n h ) | 0 return is invalid
+	dirbuf place " /*.*" dirbuf +place
+	dirbuf 1+ find_data FindFirstFileA 1+ 00; 1- 
+	>r dir> r>
+	;
+: closedir ( h -- ) FindClose drop ;
+: readdir ( h -- a n dir? | 0 ) find_data FindNextFileA 00; drop dir> ;
+: mkdir ( a n -- ) zt 0 CreateDirectoryA ioerr ! ;
+: rmdir ( a n -- ) zt RemoveDirectoryA ioerr ! ;
+
+[THEN]
+
+~priv
+variable (xf) 
+variable (xd)
+exit~
+
+: dir ( xtfile xtdir a n -- )
+	2swap (xd) ! (xf) !
+	| fall-through...
+: (dir) ( a n -- )
+	2dup ((dir)) place
+	opendir 0;
+	>r
+	repeat
+		rot if (xd) else (xf) then @execute
+		r@ readdir ?dup
+	while
+	r> closedir
+	;
+
+| convert all \ to /
+: unixslash ( a n -- a n )
+	2dup 0do
+		count '\ =if
+			'/ over 1- c!
+		then
+	loop drop
+	;
+~priv
+variable ((xd)) 
+create (rdir) 256 allot
+exit~
+:: ( a n -- )
+	| do the user's requested action:
+	2dup ((xd)) @execute
+
+	| if dir name ends with '.' it's one of the "special" entries:
+	2dup + 1- c@ '. =if 2drop ;then
+
+	(rdir) c@ -rot		| orig-len a n
+	(rdir) count 1- + c@ '/ <>if
+		'/ (rdir) c+place
+	then
+	(rdir) +place
+	(rdir) count (dir)
+	(rdir) c!
+	(rdir) count ((dir)) place
+	;
+: rdir ( xtfile xtdir a n -- )
+	unixslash
+	(rdir) place ((xd)) ! (xf) !
+	literal (xd) !
+	(rdir) count (dir)
+	;
+
+pop~
+|||
+
+def: dir
+ctx: ~os
+ver: 6.0.9
+stack: xtfile xtdir a n --
+desc: =
+	Iterate over the directory (a,n), calling the "xtfile" for each file and
+	"xtdir" for each directory encountered.  The passed-in xts must consume the
+	(a,n) passed to them.
+=
+
+def: rdir
+ctx: ~os
+ver: 6.0.9
+stack: xtfile xtdir a n --
+desc: =
+	Same as "dir", except that it recurses over all subdirectories.
+=
+
+def: unixslash
+ctx: ~os
+stack: a n -- a n
+ver: 6.0.9
+desc: =
+	Replace all "\" characters with "/". 
+=
+
+def: fullname
+ctx: ~os
+ver: 6.0.9
+stack: a n -- a n
+desc: =
+	Called from within "dir" or "rdir" and passed the filename passed to the
+	callbacks, returns the "full" file name.  That is, the path all the way to
+	the file, plus the file name, is returned.
+=
+
+related: dir rdir fullname
+||| help!

@@ -1,0 +1,92 @@
+#!/bin/bash
+
+REVACORE=bin/revacore
+REVACOREW=bin/revacore.exe
+REVA=bin/reva
+REVAW=bin/reva.exe
+RC=i386-mingw32msvc-windres
+WINE=wine
+ALL=0
+DOCS=0
+TEST=0
+
+
+if [ "$1" == "-h" ]
+then
+	cat <<EOF
+Syntax is:
+	build [clean] [all] [docs]
+EOF
+	exit
+fi
+
+if [ "$1" == "clean" ]
+then
+	rm $REVACORE $REVA $REVACOREW $REVAW
+	shift
+	exit
+fi
+
+if [ "$1" == "all" ]
+then
+	ALL=1
+	shift
+fi
+if [ "$1" == "test" ]
+then
+	TEST=1
+	shift
+fi
+
+if [ "$1" == "docs" ]
+then
+	DOCS=1
+	shift
+fi
+
+if [ src/revacore.asm -nt $REVACORE ] || [ src/corelin.asm -nt $REVACORE ]
+then
+	echo Building Reva-Linux CORE
+	( cd src && fasm corelin.asm linux.o > asm.err )
+	gcc -o $REVACORE -ldl -s -nostartfiles src/linux.o 
+	strip $REVACORE
+fi
+
+if [ "1" == $ALL ]
+then
+	if [ src/revacore.asm -nt $REVACOREW ] || [ src/corewin.asm -nt $REVACOREW ]
+	then
+		echo Building Reva-Windows CORE
+		(cd src && fasm corewin.asm ../$REVACOREW  >> asm.err )
+	fi
+fi
+
+if [ src/reva.f -nt $REVA ] || [ $REVACORE -nt $REVA ]
+then
+	echo Building Reva-Linux
+	$REVACORE src/reva.f 
+	if [ "1" == $ALL ]
+	then
+		if [ src/reva.f -nt $REVAW ]
+		then
+			echo Building Reva-Windows 
+			cd src
+			$RC reva.rc reva.res
+			cd ..
+			$WINE $REVACORE.exe src/reva.f >> asm.err 
+		fi
+	fi
+fi
+
+if [ "1" == $DOCS ]
+then
+	echo Building help database
+	$REVA bin/genhelp.f
+	
+fi
+if [ "1" == $TEST ]
+then
+	echo Testing...
+	$REVA bin/test.f
+	
+fi

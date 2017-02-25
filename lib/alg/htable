@@ -1,0 +1,362 @@
+| vim: ft=reva
+|
+| allocated hash table, by macoln
+
+push~
+
+needs alg/array
+needs alg/list
+
+~struct
+
+defer hash1
+defer hash2
+defer $hash1
+defer $hash2
+defer hash>new
+
+variable tbl
+2variable data
+
+alias: (htable) (darray)
+
+| good ol' math
+| : ?invert  dup 0 < 0; drop invert ;
+
+: prime? ( n -- t)
+       dup 1- 2 do
+         dup i mod 0if
+           not unloop
+         ;then
+       loop ;
+
+: nextprime ( n -- next-prime)
+       1+ dup
+       prime? if;
+       nextprime ;
+
+: 2^n ( n -- mod power)
+       0 -1 rot
+       : (2^n)
+              0; 2 /mod >r
+              rot + swap 1+
+              r> (2^n) ;
+
+: bestprime ( n -- prime)
+       dup 2^n drop
+       3 8 between
+       over prime?
+       and if;
+       nextprime
+       bestprime ;
+
+
+| hash functions
+: nfnvhash  (.) fnvhash ;
+
+: nfnvhash2 ( n -- hash)
+       2166136261 xor 16777619 *
+       dup 13 << +
+       dup 7 >> xor
+       dup 3 << +
+       dup 17 >> xor
+       dup 5 << + ;
+
+: fnvhash2 ( a-str u -- hash)
+       0 -rot
+       bounds do
+         i c@ nfnvhash2 +
+       loop ;
+
+' nfnvhash is hash1
+' nfnvhash2 is hash2
+' fnvhash is $hash1
+' fnvhash2 is $hash2
+
+: modindex ( hash -- offset)
+       size mod abs cells + ;
+| : 2^index ( hash -- offset)
+|        32 size 2^n nip - >> cells + ;
+
+: lookup ( key -- key bucket)
+       tbl @ over hash1 modindex ( key bucket)         | if the first hashed
+       in? 0; 2drop ( key)                             | bucket is occupied,
+       tbl @ over hash2 modindex ;                     | try a second.
+: lookup$ ( a-str u -- a-str u bucket)
+       2dup tbl @ -rot ( a u tbl a u)
+       $hash1 modindex ( a u bucket)
+       in? 0; 2drop
+       2dup tbl @ -rot
+       $hash2 modindex ;
+
+: fnd+ ( data -- data-ptrs... | 0)
+       temp off
+       all do
+         dup data ! i (fnd)
+         dup 0if
+           drop
+         else
+           temp ++
+         then
+         cellskip
+         data @  | because more than one address may be returned
+       loop
+       drop
+       temp @ 0if false then ;
+
+: fnd$+ ( a u -- data-ptrs... | 0)
+       temp off
+       all do
+         2dup data 2! i (fnd$)
+         dup 0if
+           drop
+         else
+           temp ++
+         then
+         data 2@
+         cellskip
+       loop
+       drop
+       temp @ 0if false then ;
+
+: del&nul ( bucket...bucket xt --)
+       over @ >r execute
+       @ dup r> <>if ?nul+ ;then
+       drop ;
+
+: rmvkeys ( --)
+       { dup - bestprime } is newsize
+       all do
+         i dup ['] (rmv) del&nul
+         cellskip
+       loop
+       tbl ?shrink ;
+
+
+| re-hash data after an index resize
+: (rehash) ( bucket --)
+       dup (num) 0drop; drop
+       dup hash>new
+       (rehash) ;
+
+: hashgrow ( a-new a-oldlast a-oldfirst --)
+       rot drop do
+         i (rehash)
+         cellskip
+       loop ;
+
+: hashshrink ( a-old a-newlast a-newfirst --)
+       do
+         dup (rehash)
+         cell+
+         cellskip
+       loop
+       drop ;
+
+
+| print tools
+: bucketlength
+      0 all do
+        i (num) +
+        cellskip
+      loop ;
+: occupied
+      0 all do
+        i (num) if 1+ then
+        cellskip
+      loop ;
+
+
+: htablemode
+   { tbl @ (all) } is all
+   { tbl @ (size) } is size
+   { tbl @ >nuls } is nuls
+   { rmvkeys tbl @ free } is rmv
+   { 0 all do i (num) + cellskip loop } is num
+   { $on lookup$ (fnd$) $off } is fnd$
+   { { 2dup (fnd) not } is in? lookup (fnd) } is fnd
+   { all do dup i iterate cellskip loop drop } is itr
+
+   { ['] hashgrow is movedata
+      { (pop) ins } is hash>new
+      { +25% bestprime } is newsize
+      lookup dup @ ?nul- (ins) tbl ?grow } is ins
+
+   { ['] hashgrow is movedata
+      { (pop$) ins$ } is hash>new
+      { +25% bestprime } is newsize
+      lookup$ dup @ ?nul- (ins$) tbl ?grow } is ins$
+
+   { ['] hashshrink is movedata
+      { (pop) ins } is hash>new
+      { 2dup (fnd) not } is in?
+      { -25% bestprime } is newsize
+      lookup 2dup ['] (del) del&nul
+      lookup 2dup ['] (del) del&nul drop
+      tbl ?shrink } is del
+
+   { ['] hashshrink is movedata
+      { (pop$) ins$ } is hash>new
+      { -25% bestprime } is newsize
+      $on
+      lookup$ 3dup ['] (del$) del&nul
+      lookup$ 3dup ['] (del$) del&nul 2drop
+      tbl ?shrink
+      $off } is del$
+
+   { all do ." >" i (prt) cr cellskip loop
+      num . ." keys in "
+      occupied (.) type ." /"
+      size . ." buckets" cr } is prt ;
+
+: htable ( size <name> --)
+       create
+         null off
+         tbl swap here (htable) ,
+       does>
+         @ tbl ! htablemode ;
+
+to~ ~priv (rehash)
+
+pop~
+
+
+|||
+def: htable
+ctx: ~struct
+stack: n <name> --
+desc: =
+    Create an OS allocated hash table (double hashed and externally
+    chained) with an estimate of the number of entries 'n'. You may
+    then specify hash functions for integers and/or strings, or ac-
+    cept the defaults. For example (where keys are strings):
+
+       ok> needs alg/htable
+       ok> ~struct ~myapp
+       ok> 500 htable mytable
+       ok> :: fnvhash ; is $hash1
+       ok> :: my$hash ; is $hash2
+
+    For convenience, declaring
+
+       ok> mytable
+
+    sets it as the active data structure, so words like 'fnd' and
+    'rmvkeys' automatically know to operate on it.
+=
+def: (htable)
+ctx: ~struct
+stack: n xt -- a
+desc: =
+    Used to implement 'htable', but is necessary if you wish to al-
+    locate it within a turnkey. For example (where keys are integers):
+
+       500 htable mytable
+
+       : turnkey-table ( --)
+            500 ['] mytable (htable) ['] mytable !
+            { myhash } is hash1
+            { (.) fnvhash } is hash2 ;
+
+       save myapp.exe
+=
+def: tbl
+ctx: ~struct
+stack: -- a
+desc: =
+    Variable holding the address of the active hash table.
+=
+def: bestprime
+ctx: ~struct
+stack: n -- n-prime
+desc: =
+    Find a prime greater than 'n' that isn't too close to a
+    power of 2. Useful in determining a hash table's optimal
+    distribution size.
+=
+def: nfnvhash
+ctx: ~struct
+stack: int -- hash
+desc: =
+    Hash an integer through the FNV-1a algorithm.
+=
+def: nfnvhash2
+ctx: ~struct
+stack: int -- hash
+desc: =
+    Hash an integer through a modified FNV algorithm.
+=
+def: fnvhash2
+ctx: ~struct
+stack: a-str u -- hash
+desc: =
+    Hash a string through a modified FNV algorithm.
+=
+def: modindex
+ctx: ~struct
+stack: hash -- offset
+desc: =
+    Modulo the active table's size to obtain the index.
+=
+def: ^2index
+ctx: ~struct
+stack: hash -- offset
+desc: =
+    Obtain the index where the active table's size is a power of two.
+=
+def: hash1
+ctx: ~struct
+stack: -- a-hash
+desc: =
+    Return the address of the active table's first integer hash function.
+=
+def: hash2
+ctx: ~struct
+stack: -- a-hash
+desc: =
+    Return the address of the active table's second integer hash function.
+=
+def: $hash1
+ctx: ~struct
+stack: -- a-hash
+desc: =
+    Return the address of the active table's first string hash function.
+=
+def: $hash2
+ctx: ~struct
+stack: -- a-hash
+desc: =
+    Return the address of the active table's second string hash function.
+=
+def: lookup
+ctx: ~struct
+stack: key -- key bucket
+desc: =
+    Return the bucket address to which 'key' is hashed.
+=
+def: lookup$
+ctx: ~struct
+stack: a-str u -- a-str u bucket
+desc: =
+    Return the bucket address to which the string is hashed.
+=
+def: rmvkeys
+ctx: ~struct
+stack: --
+desc: =
+    In the active hash table, drop and free all keys in all buckets
+    from allocated memory.
+=
+def: fnd+
+ctx: ~struct
+stack: data -- data-ptr... | false
+desc: =
+    Like 'fnd', but searches the entire active hash table.
+=
+def: fnd$+
+ctx: ~struct
+stack: a u -- data-ptr... | false
+desc: =
+    A 'fnd+' for strings.
+=
+related: bestprime del del$ all fnd fnd$ fnvhash fnvhash2 hash1 hash2 $hash1 $hash2 htable (htable) ins ins$ itr lookup lookup$ num nfnvhash nfnvhash2 print prt prt$ rmvkeys size rmv tbl

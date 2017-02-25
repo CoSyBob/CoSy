@@ -1,0 +1,75 @@
+| vim: ft=reva:
+| I/O Port access words
+
+: outd inline{ 89 C2 AD EF AD } ; 
+: outw inline{ 89 C2 AD 66 EF AD } ; 
+: outb inline{ 89 C2 AD EE AD } ; 
+: ind inline{ 89 C2 ED } ; 
+: inw inline{ 89 C2 66 ED } ; 
+: inb inline{ 89 C2 EC } ; 
+
+|||
+
+def: outd
+stack: value port --
+ctx: ~
+ver: 6.1.4
+desc: =
+	Output 32-bit "value" to CPU I/O port "port".
+=
+def: outw
+stack: value port --
+ctx: ~
+ver: 6.1.4
+desc: =
+	Output 16-bit "value" to CPU I/O port "port".
+=
+def: outb
+stack: value port --
+ctx: ~
+ver: 6.1.4
+desc: =
+	Output 8-bit "value" to CPU I/O port "port".
+=
+def: ind
+stack: port -- value
+ctx: ~
+ver: 6.1.4
+desc: =
+	Read 32-bit "value" from CPU I/O port "port".
+=
+def: inw
+stack: port -- value
+ctx: ~
+ver: 6.1.4
+desc: =
+	Read 16-bit "value" from CPU I/O port "port".
+=
+def: inb
+stack: port -- value
+ctx: ~
+ver: 6.1.4
+desc: =
+	Read 8-bit "value" from CPU I/O port "port".
+=
+
+def: ioports
+ctx: meta
+stack:
+ver: 6.1.4
+desc: =
+	Accessing the CPU I/O ports on Windows and Linux is usually only permitted
+	to privileged programs.  If you try to use the related words here without
+	having acquired permissions for your application, you will probably get a
+	crash with some sort of privileged instruction exception.
+
+	Windows users can take advantage of a program called "porttalk":
+
+		http://www.beyondlogic.org/porttalk/porttalk.htm
+
+	Linux users will want to look at the IO Port Programming HOWTO:
+
+		http://tldp.org/HOWTO/IO-Port-Programming.html
+=
+
+related: ioports inb inw ind outb outw outd 

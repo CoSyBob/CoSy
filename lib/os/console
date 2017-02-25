@@ -1,0 +1,350 @@
+| vim: ft=reva :
+| Console I/O words
+
+push~
+~strings ~util ~os
+
+context: ~curses
+~curses
+
+os [IF] " libncurses.so" [ELSE] " pdcurses.dll" [THEN] lib curses
+1 vfunc: addch          | char
+1 vfunc: attron
+1 vfunc: attroff
+0 vfunc: clear
+2 vfunc: color_set
+   data: COLORS
+   data: COLS
+1 vfunc: curs_set		| int
+0 vfunc: endwin
+3 vfunc: init_pair		| int
+0  func: initscr	    | WINDOW *
+2 vfunc: keypad
+   data: LINES
+2 vfunc: move
+3 vfunc: mvaddch        | x y char
+3 vfunc: mvprintw
+4  func: newwin			| WINDOW *
+2 vfunc: nodelay
+0 vfunc: noecho
+1 vfunc: printw			| (char*)
+0 vfunc: raw
+0 vfunc: refresh
+2 vfunc: resize_term
+1 vfunc: scrl
+1 vfunc: scroll
+2 vfunc: scrollok
+2 vfunc: setscrreg
+0 vfunc: standend
+0 vfunc: start_color
+   data: stdscr
+1  func: wgetch			| int
+2 vfunc: wprintw		| (window*,char*)
+0	func: curses_version
+
+
+| attribute and color structs
+        0 constant A_NORMAL
+$00800000 constant A_BOLD
+$00200000 constant A_REVERSE
+$00100000 constant A_UNDERLINE
+$00400000 constant A_BLINK
+$00080000 constant A_INVISIBLE
+
+| take over the standard IO words:
+: emit2  addch ;
+: type2  zt printw ;
+: ekey2  stdscr wgetch ;
+variable keystroke
+: dobs keystroke @ 0; keystroke -- drop ~sys.tp -- 8 emit space 8 emit ;
+: key2
+    ekey2
+    case
+       3 of ctrl-c endof
+       127 of dobs endof | fix for Linux console
+       8 of dobs endof
+       13 of 10 dup emit keystroke off ;; endof
+       258 of 1 scrl endof
+       259 of -1 scrl endof
+       dup emit keystroke ++ ;; | return to caller, not a special key
+	endcase
+   refresh key2 ;
+: key?2  stdscr true nodelay ekey2 -1 <> stdscr false nodelay ;
+
+5 constant #VECTORS
+create io-vectors
+	' emit ,
+	' type ,
+	' ekey , 
+	' key ,
+    ' key? ,
+
+create new-vectors
+	' emit2 ,
+	' type2 ,
+	' ekey2 ,
+	' key2 ,
+    ' key?2 ,
+
+create old-vectors #VECTORS cells allot
+: unhook-io
+	#VECTORS 0do
+		i cells old-vectors + @
+		i cells io-vectors + @ ~priv.(is)
+	loop
+	;
+: hook-io
+	#VECTORS 0do
+		i cells io-vectors + @ defer@
+		i cells old-vectors + !
+	loop 
+	#VECTORS 0do
+		i cells new-vectors + @ 
+		i cells io-vectors + @ ~priv.(is)
+	loop 
+	;
+
+exit~
+with~ ~curses
+os [IF] | Linux uses "ncurses"
+1 constant black 
+2 constant red 
+3 constant green 
+4 constant yellow 
+5 constant blue 
+6 constant magenta 
+7 constant cyan 
+8 constant white
+[ELSE]
+1 constant black 
+2 constant blue 
+3 constant green 
+4 constant cyan 
+5 constant red 
+6 constant magenta 
+7 constant yellow 
+8 constant white
+[THEN]
+2variable (fg-bg) 
+
+: init-colors
+	0
+	COLORS 0do
+		COLORS 0do
+		1+ dup i j       | init every possible 
+		init_pair        | color combination
+		loop
+	loop drop ;
+
+: init-console
+	| initialize curses library: 
+	initscr
+    noecho raw
+    stdscr true keypad
+    stdscr true scrollok
+    0 LINES setscrreg
+    start_color
+	init-colors
+	| hook i/o words
+	hook-io
+	;
+make deinit-console
+	unhook-io
+	| uninitialize curses library
+	endwin
+	;
+
+~sys
+' init-console onstartup
+' deinit-console onexit
+exit~
+
+init-console
+
+
+| misc
+: consize  swap resize_term 0 LINES setscrreg ;
+: lines  LINES ;
+: columns  COLS ;
+: xyemit  -swap mvaddch ;
+: xytype  zt -swap mvprintw ;
+: scroll  stdscr scroll ;
+: refresh  prior refresh ;
+
+
+| cursor and positioning
+2variable (pos)
+: cursor  curs_set ;
+: gotoxy  swap move ;
+: getpos  stdscr dup cell+ @ swap @ ;
+: pos@  (pos) 2@ ;
+: savepos  getpos (pos) 2! ;
+: restorepos  pos@ gotoxy ;
+
+
+| colors and attributes
+defer normal
+:: standend ; is normal
+
+
+: fg  (fg-bg) 2@ nip | fall into 'color'
+: color ( fcolor bcolor --)
+	2dup (fg-bg) 2!
+      1- 8 * + 0 color_set ;
+: bg  (fg-bg) 2@ drop swap color ;
+| : cls  clear ;
+: cls (fg-bg) 2@ color LINES COLS * spaces 0 0 gotoxy ;
+
+: bold  A_BOLD attron ;
+: unbold  A_BOLD attroff ;
+: blink  A_BLINK attron ;
+: bright  blink ;
+: dim  A_BLINK attroff ;
+: reverse  A_REVERSE attron ;
+: underscore  A_UNDERLINE attron ;
+: concealed  A_INVISIBLE attron ;
+
+| initialize to boring:
+white black color
+
+| still OS-specific...
+os [IF]
+
+: fullscreen ( n -- ) drop ; | TODO
+: title ( a n -- ) 2drop ; | TODO
+
+[ELSE]
+
+k32 drop
+   1 vfunc: SetConsoleTitleA
+   3 vfunc: SetConsoleDisplayMode
+
+: fullscreen  if 1 else 2 then stdout swap scratch SetConsoleDisplayMode ;
+: title  zt SetConsoleTitleA ;
+
+[THEN]
+
+pop~
+
+|||
+def: bold
+ctx: ~os
+stack: --
+desc: =
+	Bold the foreground colour.
+=
+def: unbold
+ctx: ~os
+stack: --
+desc: =
+	Unbold the foreground colour (if bold).
+=
+def: bright
+ctx: ~os
+stack: --
+desc: =
+	Brighten the background colour.
+=
+def: dim
+ctx: ~os
+stack: --
+desc: =
+	Dim the background colour (if bright).
+=
+def: color
+ctx: ~os
+stack: --
+desc: =
+    Available console colors are black, blue, green, cyan, red,
+    magenta, yellow and white. One may set the current color by
+    typing, for example:
+       ok> red onGreen
+
+    Note that both foreground and background must be specified.
+=
+def: normal
+ctx: ~os
+stack: --
+desc: =
+	A deferred word, currently sets the screen to white text on a
+    black background.
+=
+def: gotoxy
+ctx: ~os
+stack: x y --
+desc: =
+	Place the cursor at coordinate x,y on the screen.
+=
+def: pos@
+ctx: ~os
+stack: -- x y
+desc: =
+	Return the x,y coordinate stored by savepos.
+=
+def: getpos
+ctx: ~os
+stack: -- x y
+desc: =
+	Return the cursor's current x,y coordinate.
+=
+def: savepos
+ctx: ~os
+stack: --
+desc: =
+	Save the cursor's current x,y coordinate.
+=
+def: restorepos
+ctx: ~os
+stack: --
+desc: =
+	Restore the cursor to the x,y coordinate stored by 'savepos'.
+=
+def: cls
+ctx: ~os
+stack: --
+desc: =
+	Clear the screen and place the cursor at 0,0.
+=
+def: fullscreen
+ctx: ~os
+stack: t --
+desc: =
+	'true' sets to fullscreen mode, 'false' to a window. Currently
+    Windows only.
+=
+def: cursor
+ctx: ~os
+stack: 0 | 1 | 2 --
+desc: =
+    Set the cursor's size, with 0 being invisible, 1 normal, and 2
+    large.
+=
+def: title
+ctx: ~os
+stack: a u --
+desc: =
+	Set the title of the console window, for example,
+            ok> " My Title" title
+
+    Currently Windows only.
+=
+def: consize
+ctx: ~os
+stack: cols rows --
+desc: =
+	Resize the console window.
+=
+def: xyemit
+ctx: ~os
+stack: x y char --
+desc: =
+	Move to screen coordinate x,y and print the character.
+=
+def: xytype
+ctx: ~os
+stack: x y a u --
+desc: =
+	Move to screen coordinate x,y and type the string.
+=
+related: console-io color bold unbold bright dim normal gotoxy getpos savepos restorepos pos@ cls space spaces cursor emit type type_ xyemit xytype fullscreen title consize
+

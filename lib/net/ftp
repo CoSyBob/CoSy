@@ -1,0 +1,46 @@
+| vim: ft=reva :
+push~
+
+~strings ~io
+needs net/sockets
+context: ~ftp
+~ftp
+0 value ftperr
+0 value server
+1000 constant #outbuf
+0 value outbuf
+64000 constant #inbuf
+0 value inbuf
+21 constant FTP
+
+: sendcmd
+	#outbuf cell- min
+	outbuf lplace crlf outbuf +lplace
+	server outbuf lcount 0 send to ftperr
+	;
+: response server inbuf #inbuf 0 recv inbuf swap ;
+: close
+	server 0;
+	outbuf if
+		" close" sendcmd
+		response type
+	then
+	closesocket
+
+	outbuf free 0 to outbuf
+	inbuf free 0 to inbuf
+	;
+
+: open ( <name> -- )
+	parsews
+: "open ( a n -- )
+	FTP connectsocket dup to server
+	-1 =if ." Could not connected to that server" cr ;then
+
+	#inbuf allocate to inbuf
+	#outbuf allocate to outbuf
+	outbuf inbuf and 0if ." Could not allocate buffers!" cr close then
+	response type
+	response type
+	;
+pop~

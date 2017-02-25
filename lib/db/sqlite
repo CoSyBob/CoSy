@@ -1,0 +1,113 @@
+| vim: ft=reva :
+| SQLite interface (http://sqlite.org/)
+
+| load the appropriate sqlite library:
+
+push~
+needs db/common
+needs callbacks
+
+| ~priv ~strings ~db
+~strings ~util ~db
+
+context: ~sqlite
+~sqlite
+
+os [IF] " libsqlite3.so.0" [ELSE] " sqlite3.dll" [THEN] lib sqlite
+
+| get the functions we will use
+2 func: sqlite3_open
+1 func: sqlite3_close
+5 func: sqlite3_exec
+0 func: sqlite3_libversion
+1 func: sqlite3_last_insert_rowid
+
+: sqlite_exec_cb ( handle a n cb -- )
+	>r zt r> 12345 0 sqlite3_exec sql_result !  ;
+
+| open a database and return the handle
+: sqlite_open ( addr len -- handle )
+	zt here dup off
+	sqlite3_open sql_result ! 
+	here @
+	;
+: sqlite_close ( handle -- ) sqlite3_close sql_result ! ;
+
+: sqlite_exec ( handle addr len -- ) 0 sqlite_exec_cb ;
+: sqlite_version ( -- a n ) sqlite3_libversion zcount ;
+: sqlite_lastid sqlite3_last_insert_rowid ;
+
+| convenience functions:
+| sql_fetch$ ( handle a n -- a1 n1 )
+| sql_fetch# ( handle a n -- n )
+| sql_fetch ( handle xt a n -- n )
+| sql_getcol$ ( n -- a n )
+| sql_getcol# ( n -- n )
+
+| Pass the 'xt' to call for each row.  This callback is a regular Forth word,
+| and has the stack-diagram ( n -- flag ).  That is, the number of columns in
+| this row, and it passes back the flag 'false' to continue or 'true' to stop
+
+variable sql_mru_query | ptr -> xt, ncols, coldata
+
+: sqlite_getcol$ ( n -- a n )
+	dup sql_mru_query @ cell+ @ clamp | clamp row request
+	cells sql_mru_query @ 2cell+ @ + @ zcount | swap
+	;
+
+: sqlite_getcol# ( n - n2 ) sqlite_getcol$ >>single ;
+
+| This is the real callback called by the SQLite library.  It packages up the
+| data required for the 'xt' callback and passes it on:
+:: ( ptr ncols **cols **colnames )
+	sql_mru_query @ 3cell+ ++
+	0 cb-param 
+	2 cb-param over 2cell+ !
+	1 cb-param over cell+ !
+	1 cb-param swap
+	@execute
+	; 64 cb: (sql_fetch)
+
+: sqlite_fetch ( handle a n xt -- n )
+	sql_mru_query @ >r	| save prior query data (for nested queries)
+	| allocate a memory chunk to hold the data we care about
+	here 4 cells allot dup sql_mru_query !
+	! | put xt in first position 
+	sql_mru_query @ 3cell+ off
+	zt | handle z
+	['] (sql_fetch) | handle z cb
+	sql_mru_query @ 0 sqlite3_exec sql_result !
+
+	sql_mru_query @ dup 3cell+ @ swap
+	-4 cells allot
+	r> sql_mru_query !  | restore prior data
+	drop
+	;
+
+~db
+: sqlite ( -- )
+	['] sqlite_open is sql_open
+	['] sqlite_close is sql_close
+	['] sqlite_exec is sql_exec
+	['] sqlite_version is sql_version
+	['] sqlite_lastid is sql_lastid
+	['] sqlite_fetch is sql_fetch
+	['] sqlite_getcol$ is sql_getcol$
+	['] sqlite_getcol# is sql_getcol#
+	;
+
+' sqlite ~sys.onstartup
+sqlite
+
+pop~
+|||
+def: sqlite
+ctx: ~db
+stack:  --
+ver: 6.1.8
+desc: =
+	Sets the deferred database access words to use the SQLite bindings.
+	This word is automatically called when the this library is used.
+=
+
+

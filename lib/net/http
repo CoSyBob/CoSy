@@ -1,0 +1,53 @@
+| http helper library
+| vim: ft=reva :
+
+push~
+needs net/sockets
+needs string/misc
+
+4 4096 * constant maxpagesize
+create buffer maxpagesize allot
+0 value server
+| ronware.org:blah.html
+: getserver ( a n -- a' n' )
+	7 /string				| skip the "http://" prologue
+	'/ split drop 2nip
+	;
+: getpage ( a n xt -- )
+	>r
+	2dup getserver 2dup
+	80 connectsocket 
+	dup -1 =if THROW_GENERIC throw ;then to server
+	| a n  a' n'
+	+ '/ swap c!		| needed, because 'connectsocket' munges the name
+	" GET " pad place
+		pad +place
+	server pad count 0 send
+	server crlf 0 send
+
+	repeat
+		server buffer maxpagesize 0 recv dup
+		buffer swap r@ execute
+	while 
+
+	| n -- number of bytes retreived
+	server closesocket
+	rdrop
+	;
+pop~
+
+|||
+
+def: getpage 
+ctx: ~
+stack: a n xt --
+ver: 7.0.2
+desc: =
+	Retrieves the URL given in (a,n), by calling-back to "xt" for each chunk of
+	the page received.  The xt has the stack diagram: ( a n -- ).  That is, it
+	is given a 'string' which contains the contents of the page so far.
+
+	The URL given should be in standard format, e.g.:
+
+		http://server.name/uri/to/page.html
+=

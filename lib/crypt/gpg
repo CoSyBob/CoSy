@@ -1,0 +1,69 @@
+| vim: ft=reva :
+| GPG interface library (actually, interface to GPGME)
+
+push~
+~ context: ~gpg
+os [IF] " libgpgme.so" [ELSE] " libgpgme-11.dll" [THEN] lib gpgme
+
+| possible encoding modes:
+0 constant NONE
+1 constant BINARY
+2 constant BASE64
+3 constant ARMOR
+| public key algorithms
+1 constant RSA
+2 constant RSA_E
+3 constant RSA_S
+16 constant ELG_E
+17 constant DSA
+20 constant ELG
+| hash algorithms
+1 constant MD5
+2 constant SHA1
+3 constant RMD160
+5 constant MD2
+6 constant TIGER
+7 constant HAVAL
+8 constant SHA256
+9 constant SHA384
+10 constant SHA512
+301 constant MD4
+302 constant CRC32
+303 constant CRC32_RFC1510
+304 constant CRC24_RFC2440
+| signature states
+1 constant SIG_GOOD
+2 constant SIG_BAD
+3 constant SIG_NOKEY
+4 constant SIG_NOSIG
+5 constant SIG_ERROR
+6 constant SIG_DIFF
+7 constant SIG_GOOD_EXP
+8 constant SIG_GOOD_EXPKEY
+| signature modes
+0 constant NORMAL
+1 constant DETACH
+2 constant CLEAR
+| trust attributes
+0 constant UNKNOWN
+1 constant UNDEFINED
+2 constant NEVER
+3 constant MARGINAL
+4 constant FULL
+5 constant ULTIMATE
+
+variable gpgme_error_code
+1 func: gpgme_check_version | ( const char * req_version)
+1 func: gpgme_new | (gpgme_ctx *ctx)
+1 vfunc: gpgme_release | ( ctx )
+2 vfunc: gpgme_set_armor  | ( ctx, yesno) 
+1 func: gpgme_get_armor ( ctx -- yesno )
+2 vfunc: gpgme_set_textmode ( ctx, yesno )
+1 func: gpgme_get_textmode ( ctx -- yesno )
+
+: gpgme_version ( -- a n ) 0 gpgme_check_version zcount ;
+: gpgme_new ( -- n ) 0 sp prior gpgme_new gpgme_error_code ! ;
+pop~
+
+
+|||

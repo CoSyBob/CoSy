@@ -1,0 +1,44 @@
+| vim: ft=reva
+|
+| net/mime
+|
+| Some words to work with mime types
+
+push~
+needs os/fs
+~os ~priv ~
+
+~priv
+create mime-types
+quote " .ico=image/ico
+.gif=image/gif
+.png=image/png
+.jpg=image/jpeg
+" asciizl,
+
+: mime-default " text/html" ;
+: lookup-mime ( a n -- a' n' )
+    pad place '= pad c+place
+    mime-types lcount pad count search 0if mime-default ;then
+    10 split if 2swap 2drop then
+    '= split if 2drop then
+    ;
+
+exit~
+
+: get-mime ( a n -- a' n' )
+    get-suffix dup 0if mime-default ;then
+    lookup-mime
+    ;
+
+pop~
+
+|||
+def: get-mime
+stack: a n -- a' n'
+ctx: ~
+desc: @
+	Given a filename extension (a,n), returns a "mime-type".
+@
+
+

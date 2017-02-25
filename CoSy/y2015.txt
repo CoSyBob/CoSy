@@ -1,0 +1,1889 @@
+ | ###################################################################### |
+ |  \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | revaver type |>| 7.0.10 
+ | ###################################################################### | 
+ | \/ \/ \/ \/ |  help sources | \/ \/ \/ \/ | 
+ 
+F1 : Key Help  	| Tapping the F1 key lists all key shortcuts .
+
+  | ====================================================================== |
+  | \/ \/ \/ |   4th.Cosy ( F6 )    | \/ \/ \/ |
+     
+  s" CShelp " CShelp 	| Get all occurances of phrase in source files  
+			| listed in |` sys Dv@ ` CoSySource v@
+			| split on empty lines
+
+  R dnames	| names in Root (  ` R  ) dictionary . 
+  Rnames 	|  Same as  /\  |
+ 
+  ` IntroHelp Dv@ 		
+  s" C:/4thCoSy/IntroHelp.txt" slurp^
+
+ | |\/| For a description of CoSy objects |\/|
+  s" valloc" CShelp 
+
+  | /\ /\ /\ |  4th.Cosy ( F6 )  | /\ /\ /\ |
+  | ====================================================================== |
+ | \/ \/ \/ |   Reva Forth output directly so use s(hift)F6 )   | \/ \/ \/ |
+  
+  help see
+  see esi@ 	| Standard Forth word
+  words @	| Standard Forth word
+  res> Help	| show help on each word in a string . Reva help often lists
+   | related words at the end of a definition . I often edit down the res
+   | contents down to these lists and then sF6 this line to display them all .
+
+  | /\ /\ /\ |  Reva Forth ( sF6 )  | /\ /\ /\ | 
+  | ====================================================================== |
+  | \/ \/ \/ |  WEB ( cF9 )  | cF9 on URL below to open in ` BROWSER  | \/ |
+
+|  ` BROWSER Dv@
+
+   http://cosy.com/CoSy/4th.CoSy.html
+   http://cosy.com/CoSy/4thCoSy/Help.html
+   http://dev.ronware.org/p/reva/
+   http://www.tecgraf.puc-rio.br/iup/
+
+  | /\ /\ /\ |  WEB ( cF9 )  | /\ /\ /\ | 
+ | ======================================================================= |
+
+| Types  |  Everything is a list
+
+  s" asdf \\qwert" 	| Strings  ( bytes ) 	\ is " escape " so must be doubled
+  i( 0 1 2 3 )i 	| integers 	also  | 123  _i | 123 456  2_i   |
+  f( 2.28 2 2.e5 )f 	| Floats 	also  | 3.14 ' _f | 3.14 2.  2_f 
+  `( asdf sym )` 			| symbols , strings with rho 1 =i  . See also  `
+  s" asdf " i( 0 1 2 )i ,L 		| general lists . this creates a list of 2 items
+  -1 _i i( 0 1 2 )i cL 				| same a ' ,L but catinates if same type  
+ 
+| /\ /\ /\ /\ |  help sources | /\ /\ /\ /\ | 
+| ======================================================================= |
+| ======================================================================= |
+| \/ | convenient lists .  Execute w sF6 to display and set ` resvar to name - |
+
+ ` ToDo ->		| sF6
+ ` ref ->		| sF6
+ ` Addrs ->		| sF6
+
+| /\ | convenient lists | /\ |  sF6 to display and set ` resvar holds name |
+| ctrl-s in res to save to ` resvar |
+
+ ` ref Dv@ vm s" visa" con 	| return lines in ` ref  containing s" visa" | F6
+| ======================================================================= |
+ 0
+ | ###################################################################### |
+ |  \/ \/ \/ \/ \/ \/ \/ \/ | Tek Log | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  | 
+ ` TekLogArk ->   | sF6 	| 2012 - 2014 |  First log notes
+ text>  " REVAUSERLIB" getenv str s" y2015.txt" cL  Foverwrite  
+
+
+ s" C:/reva/CoSy/y2015.txt" slurp^ >t0>
+
+  t0 daylncut s" appell" con 
+
+
+ | ###################################################################### |
+ |  \/ \/ \/ \/ \/ \/ \/ \/ | Tek Log | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  | 
+
+ | ======================== | Fri.Jan,20150102 | ======================== |
+ AF1 ` Tau Dv@ 1.e10 _f *f  2 _i fmtF$ AF0 >t0>
+ help math/floats
+ AF1 ` Tau Dv@ 1.e10 _f *f  AF0 >t0>
+ 5 sigdig !
+ AF1 t0 fmtF AF0 >t1>
+ t1
+
+ t0 10 _at* s" </div>" tokcut >t1> 
+ t1 s" " enc 
+ t0 10 _at* i( 0 )i cut 
+  s""  5 _cut
+ 2470056 DMP
+ 2495896 DMP
+ t1
+ AF1 i( 1 2 3 )i enc dup ,L lst AF0
+  t0 10. _f 
+
+ t0 { $.s cr s" </div>" toksplt enc } eachM> 
+ help >float
+ t0 0 i@  
+ | ======================== | Sun.Jan,20150104 | ======================== |
+| 37.2 fint f.
+ explored a bunch about missing exponential format
+ Added  ctrl-s and F1 to res window keys .
+ AF1 R " help" (sym) v@ van rtype  AF0   | ok 
+ | ======================== | Mon.Jan,20150105 | ======================== |
+  .needs
+ res> nlfy >t0>
+ t0 -1 _i cut*  >t0>
+ | ======================== | Tue.Jan,20150106 | ======================== |
+ s"  1 _i  2 _i  -i " ^eval
+| was | : ^eval ( str -- ? ) dup van eval ref0del ;
+  1 _i 2 _i s" -i " ^eval
+  1 _i 2 _i s"  -i " ^eval
+  2. _f  ` Tau Dv@ 5 _take { *f +/ } execute
+  2. _f  ` Tau Dv@ 5 _take s" *f +/ " ^eval
+ | ======================== | Fri.Jan,20150109 | ======================== |
+file fn work : ` dosslash^ 
+ | ======================== | Sat.Jan,20150110 | ======================== |
+ computations for comment at | http://wattsupwiththat.com/2015/01/09/two-new-papers-suggest-solar-activity-is-a-climate-pacemaker/#comment-1833223
+  2 sigdig !  | sF6
+ f( 2 4 9 14 20 25 28 27 23 17 11 6  -5 -4 0 6 12 17 20 19 14 8 3 -2 )f >t0
+ t0 2 _partition  >t1> 
+ t1 ' rho eachM>
+ t1 0 _at* t1 1 _at* -f |>| 7.00 8.00 9.00 8.00 8.00 8.00 8.00 8.00 9.00 9.00 8.00 8.00 
+ R0 +/ R0 rho i>f %f |>| 8.16 
+ R0 288. _f %f |>| 0.028 
+ 
+ f( 3 6 8 12 17 23 26 14 21 16 8 4  -16 -14 -10 -6 -2 2 5 4 0 -6 -11 -16 )f >t0> rho
+ t0 2 _partition  >t1> 
+ t1 0 _at* t1 1 _at* -f |>| 19.00 20.00 18.00 18.00 19.00 21.00 21.00 10.00 21.00 22.00 19.00 20.00 
+ R0 +/ R0 rho i>f %f |>| 19.00 
+ R0 288. _f %f |>| 0.066 
+ | ======================== | Sun.Jan,20150111 | ======================== |
+|  R >t0> rho		| \/ | CONVERTING TO ` META 2 COL STRUCTURE | \/
+  R `( ToDo res )` dsel >t1>    | ` dsel assumes 2 col dics w meta in obs
+  R ` ToDo a@ t1 ` ToDo s@ m!    R ` res a@ t1 ` res s@ m! 
+|  " CoSy/SaveRestoreNew.f" (needs) fails for some reason 
+  " C:/4thCoSy/CoSy/SaveRestoreNew.f" (include) ioerr @ _i 
+| ToDo |  AF1 t1 { s@ m@ } eachm AF0  | res>  Caught: can't index empty | not refed right
+  
+  t1 dup dsyms $.s  |>| (2) 3316F8 3ABA98 
+  t1 dup dsyms $.s  { dup s@ m@ } eachm | bombs
+  t1 dsyms {  } eachm | bombs
+  t1 t1 dsyms 1 _at* s@ m@   
+ | ======================== | Mon.Jan,20150112 | ======================== |
+| -- | Storing a verb in the Root |
+ s" 1.8 _f *f 32. _f +f "  R ` c2f v!
+  40. _f  R ` c2f v@ ^eval
+ f( 20 30 40 )f  R ` c2f v@ ^eval
+| -- |
+  ev { } execute
+  ev { } eachM>  | the empty fn is the identity fn
+  dnames { } cr $.s eachm
+ | ======================== | Tue.Jan,20150113 | ======================== |
+|  going to implement actual execution fns on quotations , literally strings |
+| for comment @ | http://wattsupwiththat.com/2015/01/09/two-new-papers-suggest-solar-activity-is-a-climate-pacemaker/#comment-1834679 
+| from | http://climatewiki.org/wiki/Category:Essential_Physics#Stefan-Boltzmann_law :
+| f( 324.3 	329.04 	333.84 	338.68 	343.58 	348.53 	353.54 	358.6 	363.71 )f >t0> rho
+ f( 4.74 	4.79 	4.85 	4.9 	4.95 	5.01 	5.06 )f >t0> rho
+ t0 i( 2 3 4 5 6 )i at* +/ |>| 24.76999 | pretty close .
+  5.670373e-8 _f R ` Fact v@  ` sb v!
+: 1%f ['] 1/f eachMfr ;
+| fixed  1/f in math\floats . needed fswap 
+  R ` Fact v@ ` sb v@ 
+ s" 4. _f ^f R ` Fact v@ ` sb v@ *f "  R ` 
+ | ======================== | Wed.Jan,20150114 | ======================== |
+  R ` Fact v@ ` sb v@ 
+ s" 4. _f ^f R ` Fact v@ ` sb v@ *f "  ()  ` T>Psb  v! 
+  _d dsyms 
+ t0 ' rho eachM> ,/ | >| 1 32 
+ t0 t0 ,L flip >t1>
+| t0 t0 cL flip   | bombs . It shouldn't 
+ t1 
+ s" dsyms " CShelp
+ 5. _f .5 _f ^f 1. _f -f 2. _f %f 1%f >t0>
+   >t1>
+  t0 t1 ` gs dicapnd 
+ t0 R ` Fact v@ ` gs v!
+  R ` Fact v@ dsyms 
+ | ======================== | Fri.Jan,20150116 | ======================== |
+  R ` Fact v@ ' rho eachM> ,/ | >| 9 8 
+  R ` Fact v@ dsyms 
+
+  s" CoSy/CoSy.f" ^slurp^ emptyLn toksplt >T0> rho
+  t1 ' rho eachM> ,/ ' max acrossI
+  T0  s" conn" ' ss eachM>
+ | ======================== | Sat.Jan,20150117 | ======================== |
+  help (create)
+  res> Help
+  ` TekLogArk -> 	| 
+
+: ssr 2p L@ R@ 0 i@ toksplt R@ 1 i@ ['] cL eachleft 2P ;
+  R ` Fact v@ dsyms   
+ res> >T0> 
+ T0 "lf "bl ,L 0 i@ toksplt >T1>
+ T1 "bl cL
+ T1 "bl ' cL eachleft ,/
+: tst 2p L@ R@ 0 i@ toksplt R@ ' cL eachleft 2P ;
+R@ 1 i@ cL  2P ; 
+ T1 "lf "bl ,L 
+ T0  "lf "bl ,L ssr
+ | ======================== | Sun.Jan,20150118 | ======================== |
+ R0 >t0> rho | |>| 1
+: tst 2p L@ R@ 0 i@ $.s o toksplt 2P ;
+  T0  "lf "bl ,L  0 i@ $.s o toksplt
+  T0  "lf "bl ,L ssr
+: ssr 2p L@ R@ 0 i@ toksplt R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut* 2P ;
+ | 1418 | ` ssr crude but working 
+  " C:/4thCoSy/lib/alg/hsort" (include)  ioerr @ _i
+| could modify ` hsort  to apply sort to both values
+  ` TekLogArk Dv@  vm s" flip " con  
+
+  s" C:/4thCoSy/CoSy/CoSy.csy" restorefile >t1> rho
+  s" C:/reva/CoSy/CoSy.csy" restorefile >t1> rho
+  t1 ` Fact v@ dsyms
+  t1 ` Fact v@ ' rho eachM> ,/ | >| 9 8 
+  t1 ` Fact v@ R ` Fact v!
+  R ` Fact v@ >t0> 0 _at* -1 _i cut* >t1>
+  t1 0  _i t0 at! 
+ t0 0 _at*
+   " C:/4thCoSy/CoSy/metaTst2.csy" foc _i >T0>
+  t0 " C:/4thCoSy/CoSy/metaTst.csy" Foverwrite
+  s" C:/4thCoSy/CoSy/metaTst.csy" ^slurp^ >T0> rho
+   T0 restorelistM >t0> rho
+  t1 storelstM --aab str swap free >t0> rho 
+| : str< ( c-addr n -- str )     | store a string and free 
+|   --aab str swap free ;
+ storelstM >t0> rho
+
+t1 ` res s@ m@ 
+t1 ` ToDo s@ m@ ` DISPLAY v@
+ T0 ` ToDo s@ m@ DMP
+
+  R `( ToDo res )` dsel >t1>    | ` dsel assumes 2 col dics w meta in obs
+  R ` ToDo a@ t1 ` ToDo s@ m!    R ` res a@ t1 ` res s@ m! 
+  t1 dsyms { t1 swap s@ m@ } eachM>
+  t1 dsyms { t1 swap s@ m@ } eachm 
+  10 _iota
+  t0 `( ToDo res )` dsel >t1>    | ` dsel assumes 2 col dics w meta in obs
+  t1 >T0>
+  t0 ` ToDo a@ t1 ` ToDo s@ m! 
+  t1 ` ToDo s@ m@ 
+  t0 ` res a@ t1 ` res s@ m! 
+  t1 ` res s@ m@ >T1>
+   t1 0 _at* T1 0 i
+
+ | ======================== | Mon.Jan,20150119 | ======================== |
+| Depricating " syms " in favor of " names " . renamed ` dnames ; ` Rnames 
+| : Rnames R : dnames ( dic -- names ) 0 _at* ; 
+| \/ | Trimming an error off the end of a 
+ R ` Fact v@ dnames
+ R ` Fact v@ >t0> 0 _at* -1 _i cut* >t1>
+ t1 enc t0 0  _i at! >T0> 
+| Note : changed  R ` Fact itself .
+ R ` Fact v@ ` C>K v@
+| --  Cleaned up DOS and I/O section below -- |
+
+| replaced \/ . haven't reread it , but trimming as you go likely faster .
+| : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
+|  over i# 0if 2ref0del ev enc ;then
+|  refs+> --bba ,s refs+> dup >r> --abca ss _ r> refs- 	| str tok intm res  
+|  over i# _i ['] _ eachleft ['] dsc eachM> swap refs- ;
+| with | \/ |
+
+: toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
+	2p> tokcut R@ rho ['] cut eachleft 2P ;
+
+ text> "lf toksplt >t0> rho
+ | ======================== | Tue.Jan,20150120 | ======================== |
+ text> VMlf >t0>
+ t0 s" ss " con
+ text> daylncut >t1> s" ss " con 
+  ` TekLogArk Dv@ daylncut >t1>  s" ss " con 
+ s" : --aab " CShelp 
+ s" --aab"  s" CoSy/AltStackOps.f" (CShelp) rho
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+ t0 ' rho eachM> >t1>
+ t1 ' maxi across 
+ t0 s"  ss " ' ss eachleft >t1> rho
+ t1 ' rho eachM> 
+ R0 ' maxi across
+ | ======================== | Wed.Jan,20150121 | ======================== |
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+  t0 s"  takeb" { cr over lst cr  ss }  eachleft >t1> rho
+  t1 ' rho eachM> ,/ 0 _i <>i & >T1>
+  t1 T1 at 
+  t0 T1 at* 
+ >T0> rho
+  T0 s"  ss " ss
+  t0
+ ' rho eachM>
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> >aux> 1 _take aux> 1 _i cut* ,L 
+ 
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt refs+ >aux> 1 _i take  1 _i cut* ,L 
+ | ======================== | Fri.Jan,20150123 | ======================== |
+Saved a value above in R0 which caused CoSy to bomb when restarted on first execution of even blank line
+Loaded good .csy and read in and restored bad .csy . resaved with empty ` R0 and ` res . problem fixed .
+ | ======================== | Sat.Jan,20150124 | ======================== |
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+  t0 s" takeb " { cr over lst cr  ss }  eachleft >t1> rho
+  t1 ' rho eachM> ,/ 0 _i <>i & >T1>
+  t0 126 _i at*
+ t0
+: toksplt 2p> tokcut dup+ 1 cut* R@ rho ['] cut* eachleft 2P ;
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+  t0
+: tst i( 0 1 )i _ ;
+| 2328 | encountered yesterday's RO restart prblm . Solved by executing w sf6
+ |  to empty res window and test can execute a blank in Forth 
+ ev >R0 	| empty R0 
+| shows need to factor start .csy file out of code .
+| added " COSYSTARTFILE=\4thCoSy\CoSy\CoSy.csy " to CoSy.bat and replaced  
+|  " REVAUSERLIB" getenv str s" CoSy.csy" cL restorefile ' R rplc 
+| with
+|  " COSYSTARTFILE" getenv str restorefile ' R rplc  
+ | ======================== | Sun.Jan,20150125 | ======================== | 
+ see toksplt
+ help literal 
+: tst [ i( 1 2 3 )i ] literal ;
+tst |>| 1 2 3
+ | ======================== | Mon.Jan,20150126 | ======================== |
+: tst s" asdf " ;  tst  |>| s" asdf " 
+
+ s" CoSy/CoSy.f" slurp^ >t0> rho
+: tst 2p> tokcut [ i( 0 1 )i ] literal cut 2P ;
+ t0 emptyLn tst >t0> rho
+ t0 0 i@ 
+ | ======================== | Tue.Jan,20150127 | ======================== |
+ s" CoSy/CoSy.f" slurp^ >t0> rho
+: tst 2p> tokcut [ i( 0 1 )i ] literal cut 2P ;
+ t0 emptyLn tst >t0> rho
+ t0 1 _at* rho
+ help argv help argc help hello | got diverted into cmd ln parameters . see 'examples/makeexe.f
+ | ======================== | Wed.Jan,20150128 | ======================== |
+help }}
+ 0 {{ if " no " else " yes " then }}
+ 1 argv str 
+| added optional .csy file commnand line parameter to startup .
+
+| was too complex  : tst 2p> tokcut [ i( 0 1 )i ] literal cut 2P ;
+|  2p> tokcut [ i( 0 1 )i ] literal cut >aux> 1 _at* R@ rho ['] cut eachleft cL 2P ;
+ s" CoSy/CoSy.f" slurp^ >t0> rho
+|  t0 emptyLn swap cL +aux> dup emptyLn ss _ aux- emptyLn rho ' cut* eachleft 
+ AF1  s" CoSy/CoSy.f" slurp^ emptyLn toksplt rho AF0  |  
+ AF> +-splt ' rho eachM> ,/  | >| 1157 1156 
+|  5 _iota i( 3 5 )i ' +i eachleft  | bombs . shouldn't .
+ 
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+ t0 s" ss " ' ss eachleft >t1> rho 
+ t1 ' rho eachM> ,/ 0 _i <>i & t1 swap at
+ t0 s" ss" { cr over lst cr  ss } eachleft >t1> rho
+ t1  t1 { rho i0 <>i } eachM> ,/ & >T0> at
+  t1 T0 at
+ T0  t1 T0 at  ,L flip
+ T0  t0 T0 at  ,L flip
+ t0 0 _at*
+ | ======================== | Thu.Jan,20150129 | ======================== |
+  s" CoSy/CoSy.f" slurp^ emptyLn toksplt >t0> rho
+ t0 s" ss" { ss } eachleft >t1> rho 
+  t1 ' rho eachM> ,/ 0 _i <>i & >T0> t1 swap at >T1>
+  T0 T1 ,L flip  | 242 244 
+ t0 242 _at*  | "across" defs 
+ t0 s"  ss" { i _i lst cr over lst cr  ss } eachleft >t1> rho
+| bombed on segment \/
+ t0          s" : _take "     { ss } eachleft >t1> rho  
+| : -0+i ['] sn eachMir ;		| sign  | always remember to close defs w  ;  or prefixes following def .
+|  -5 _i 5 _i thru -0+i
+: 2_i ( i i -- iv iv )  _i swap _i swap ;
+ -5 5 2_i thru -0+i
+ t1 ' rho eachM> ,/ -0+i & >T0> 
+ t0 T0 at* >T1> rho
+ T1
+ t0 s" ss" { ssN } eachleft >t1> rho 
+ 
+ T1 s" ss" ssN	enc	
+| may be  ` Vresize problem . replacing w ` take .
+ | ======================== | Fri.Jan,20150130 | ======================== |
+  f( 0.7 0.93 )f .25 _f ^f		| Some albedo to temperature calculations
+  R0 278.7 _f *f
+  278.7 _f R0 -f
+: 2_f _f _f swap ; 		|  2.  3. 2_f -f 	| >| -1.00000 
+  5 _iota 0 _take >t0>
+ t0 rho
+  D>
+  t0 s" ss" { ssN } eachleft >t1> rho 
+ help if
+ res> >T0> Help
+ T1  s" ss" ss
+   _iota  0 _take 
+ R0 >t0> rho
+ | ======================== | Sun.Feb,20150201 | ======================== |
+ ` ToDo -> 		| been clobered by F1 edit !
+ s" C:/4thCoSy/CoSy/CoSybad.csy" restorefile >t0> rho
+ t0 ` ToDo v@ 
+ R0 R ` ToDo v!
+| Solved issue of why (include)ed files have non-empty stack while loading
+| _slurp leaves  file name  a n  on stack .  stack reset on exit anyway .
+ | ======================== | Mon.Feb,20150202 | ======================== |
+ AF1 0 _i 500 _take rho AF0 
+ | ======================== | Tue.Feb,20150203 | ======================== |
+  s" CoSy/CoSy.f" slurp^ >t0> rho
+ emptyLn t0 cL >t1> emptyLn ss 
+ t1 R0 _
+ R0 >t0> rho
+ t0 emptyLn rho ' cut* eachleft 
+  .89 .3 2_f *f
+
+emptyLn toksplt >t1> rho
+ t0 s" ss" { ss } eachleft >t1> rho 
+
+ help  r-stack-ops 
+ xwords
+ res> >T0> rho
+ T0 emptyLn toksplt >t0> rho
+ T0 VMlf
+  help r@
+ res> >T0> Help
+ ~debug 
+  res> Help
+  help strings 
+ help 
+  
+  r@ ~debug.xt>near type
+  type
+ s" ~CoSy ~ui ~iup ~CSauxstack ~date ~AltStackOps ~ ~floats ~doubles ~sys ~strings ~io ~util ~os ~reva ~" 
+ R0 >T1>
+ T1 nlfy 
+ help pop~
+ help  .contexts help .~
+ help words
+ see (words)
+
+ | ======================== | Fri.Feb,20150206 | ======================== |
+ ` BC_REtax14 1000. _f ,L enc  ` Teller_REtax 2000.64 _f ,L enc cL
+ R0  ` Boulder_REtax 3000.28 _f ,L enc cL 
+ R0 flip >T0> rho
+ T0 ` BC_REtax14 v@ 
+ | ======================== | Sat.Feb,20150207 | ======================== |
+ | ======================== | Tue.Feb,20150210 | ======================== |
+|    ` asdf  ` qwer cL 	| bombs
+ `( asdf qwer )` 0 _at* 
+   ` asdf rho 
+   ` asdf  ` qwer symdot
+  Rnames
+  ` Types Dv@ 0 _at*
+   ` asdf ` qwer ,L
+   `( asdf qwer )` 
+ ` asdf ` qwer ,L  cL
+  {{ s" asdf " }} 
+ | ======================== | Wed.Feb,20150211 | ======================== |
+macro : sym2 parsews (sym) compiling? if refs+> literal, then  ; forth
+  help 
+ | ======================== | Thu.Feb,20150212 | ======================== |
+ s" C:/4thCoSy/CoSy/IntroHelp.txt" ' shell onvan
+ | ======================== | Fri.Feb,20150213 | ======================== |
+  s" CoSy/CoSy.f" slurp^ >T0> rho
+ t0 emptyLn toksplt >t1> rho  | Caught: nonce : empty , needs prototype 
+ emptyLn T0 cL >T1> rho
+ T1 dup emptyLn  ssN _ >T0>  rho
+
+ T0 emptyLn rho ' cut* eachleft 
+ T0 
+ T0 ' rho eachM> ,/ >t0>
+ t0  T0 ,L flip
+ t0 2 _i 
+ | ======================== | Mon.Feb,20150216 | ======================== |
+|  Model T RPM chart  |
+ http://www.funprojects.com/pdf/More%20on%20Spark%20Timing.pdf
+ http://www.mtfca.com/discus/messages/29/50508.jpg
+  res> >T0> rho
+ T0 R ` ModelT.engineSpecs v! 
+ ` ModelT.engineSpecs  Dv@
+  R0  vm >t0>
+  t0 ' nlfy eachM> >T1> ' rho eachM>
+: ^>float { >>float if _f ;then z" not number " throw } onvan ;
+  s" 500" ^>float
+  T1 0 _at* 0 _at* ^>float
+  T1 0 _at* { ^>float } eachm enc
+  T1 {  ^>float  eachm enc } eachm
+  T1 0 _at* ' rho eachm enc
+   T1 {{ p[ {{ rho }} ]p }} 
+| : tst { { rho } eachm enc } eachm ;  | cannot nest { } 
+ | ======================== | Tue.Feb,20150217 | ======================== |
+ help ;then
+ : tst inline{ e9 } ;  
+ see tst
+ see vector! see vector see ahead
+  R0 >t0> ' rho eachm
+    help 0;drop
+  here _i 6511475 
+  T1 0 _at* { ^>float } eachm enc
+  here _i
+ T1 refs@ _i			| *** check reference count for an object . ***
+  T1 {  { ^>float } eachM> } eachM>  | need recursive ` quotations .
+
+| \/ | Table of all K.CoSy definitions  | \/ |  cF9 will open 
+ 	http://cosy.com/K/CoSy/K_CoSy.htm  
+| /\ | Table of all K.CoSy definitions  | /\ |
+
+| Gets back to ` toksplt and ` ss
+  s" CoSy/CoSy.f" slurp^ >T0> rho
+ T0
+ T0 emptyLn toksplt >t1> rho  | Caught: nonce : empty , needs prototype 
+  5 _iota 3 _i cut 
+   
+: fnnm r@ ~debug.xt>near ;
+: tst  1 _i curfn 2 _i +i ; 
+ tst
+  see curfn 
+ (aux) dup @ - cell /  _i 
+ aux# _i
+
+{ >>float _f } onvan
+ f( 3.14 asdf 2.8 )f 
+ t0 van 
+ >>float _f
+ help 1-
+ see ^>float
+   5 3  _2takecalc _i
+ | ======================== | Thu.Feb,20150219 | ======================== |
+| ? How to nucleate a community ? | | CockPit Construction Set  |
+   0 -1  _2takecalc _i
+| Refined   ` _take handling of empties , and error handling 
+    s" " 2 _take
+| 0if ref0del fnnm  "  : nonce : empty , needs prototype " strcat zt throw ;then
+ s" asdf " { s" asdf " cL } eachm 	| acomplishes a lot that  eachleft does 
+ T0 emptyLn toksplt >t0> 
+ t0 s"  ss " { ssN } eachleft >t1> rho   | bombs on s" : _take " section 
+  t0 ilst
+ t0 265 _at* >T1>
+ T1 s"  ss " ssN
+ T1 rho  |>|  560 
+ s"  ss "  rho 
+ 560. 4. 2_f %f |>| 140.00000 
+ T0 emptyLn toksplt >t0> 
+ T1 van "  ss " search  
+ | ======================== | Fri.Feb,20150220 | ======================== |
+  see search cr see searchN
+ T0 emptyLn toksplt >t0> 
+ t0 i( 264 265 266 )i at
+ s"  ss " >t1>  | van type
+
+ t0 265 _at* 
+ R0 van t1 van search
+ t0 265 _at* -65 _take
+: search prior search 00; over 0 <if 3drop 0 then ; 
+| 20150220.203705 | 
+ t0 s"  ss " { ss } eachleft >t1> rho   |  
+ s" : ss " CShelp
+  see prior search 
+  R0 van t1 van search 
+ | ======================== | Sat.Feb,20150221 | ======================== |
+ ` sys refs+> R ` _ATR sx_ ! 		| change name of ` _ATR sub dictionary to ` sys
+ R ` sys v@ ` CoSySource v@
+ s" : CShelp " CShelp
+ s"  ss " CShelp 
+ s" ss "  s" CoSy/CoSy.f"  (CShelp) >t0>
+| Seemed to have fixed ` ss  by Kludge fix of ` search . Wrote
+ http://cosy.com/CoSy/4th.CoSy/Help.html 
+| /\ | start in | ` BROWSER Dv@  | using  cF9 
+ | ======================== | Tue.Feb,20150224 | ======================== |
+  res> >t0> 
+ t0 R ` ModelT.engineSpecsHeadings v!
+ R ` ModelT.engineSpecsHeadings v@
+  s" : 1p " CShelp
+ | ======================== | Wed.Feb,20150225 | ======================== |
+ R 2 _take >t0> rho 
+ t0 storelst^ >t1> rho
+  t1 restorelist >t0> rho
+ s"  rplc " CShelp
+ t0 ' R rplc  | then saved as 2 cols , dropped K attributes col 
+ R rho  |>| 2
+ Rnames
+ ` c2f >t0> Dv@ 	| look at object named ` File
+ R t0 dds 				| delete it 
+| 2332 |  In copy downloaded from upload . 
+ | ======================== | Thu.Feb,20150226 | ======================== |
+| 2000 | trial Hangout w Dennis Ruffer  | cell phone broke in half
+ | ======================== | Fri.Feb,20150227 | ======================== |
+ Rnames
+ ` sys Dv@ ` DISPLAY v@ ` dlgAtr v@ ` SIZE v@ 
+: v!> ( val dic sym -- dic ) over >r v! r> ; 
+ () >t0> 
+   s" 320x400"  t0 ` SIZE dicapnd t0
+  ` sys Dv@ ` DISPLAY v@ ` dlgAtr v@ >t0>
+ t0
+ s" 320x170" t0 ` text.size v! 
+ ` sys Dv@ ` DISPLAY v@ ` dlgAtr v@ 
+ () ' rho eachm 
+    ` SIZE name?_ _i
+   s"  name?_ " CShelp 
+   s"  strym?_ " CShelp 
+  see dicapnd
+ | ======================== | Sat.Feb,20150228 | ======================== |
+| 1124 | 
+  s" //ACER-PC/reva/CoSy/Tui.f" slurp^
+|   editbox[ " 330x80" size  expand  " Result " tip
+|     " LUCIDA CONSOLE::16" attr: FONT 
+|  editbox[ " 330x170" size  expand  " Working Text" tip
+|     " LUCIDA CONSOLE::16" attr: FONT 
+| 1221 |  Sam Falvo : want something I can understand all the way up from
+ transistor to operating system code . 
+  4th.CoSy's aim is to take it from there to the the level of 
+  finite mathematical notation .
+  dot : +/ *
+ s" | \\/ " 71 _i take 
+ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ | \/ |
+| 1420 | | 1425 | 
+
+  http://www.cosy.com/CoSy/
+
+  Reva x86 Forth	| IUP interface
+
+  s" : m! " CShelp
+  lkjdfhlasdkf   
+
+ R dnames
+  R rho 
+ R { rho } eachm 
+ R 2 _i at* rho
+ rho
+ R ` text v@
+ R ` ModelT.engineSpecs v@ 
+ | ======================== | Sun.Mar,20150301 | ======================== |
+ text> vm >t0> rho 
+  t0 s" revaver type |>| 7.0.10 " con 
+ | ======================== | Mon.Mar,20150302 | ======================== |
+ s" : ref" CShelp
+ s" : p2" CShelp
+ | ======================== | Sat.Mar,20150314 | ======================== |
+: rotate >_ _rotate ;
+
+ ` sys Dv@ ` CoSySource v@
+ s" src/reva.f"  slurp^ 		| thought of adding  reva.f to search list but too few blank lines to be useful
+  R 1 _at* >t0
+ | ======================== | Thu.Apr,20150409 | ======================== |
+  ` TekLogArk Dv@ daylncut >t0> s" CoSySource " con
+  see tos
+ help stack-ops
+ see c2f
+  s"  c2f " CShelp
+  1050. _f f2c
+ | ======================== | Fri.Apr,20150417 | ======================== |
+ | ======================== | Sat.Apr,20150418 | ======================== |
+  Rnames
+  s" exp" CShelp
+ help ~floats
+ res> Help
+ | ======================== | Mon.Apr,20150420 | ======================== |
+| was error in  1/f  . 
+| : 1/f  inline{ d9 e8 de f9 } ;inline	| fld1 fdivrp
+: 1/f  inline{ d9 e8 de f1 } ;inline	| fld1 fdivrp
+ 1. fexp 1/f _f
+ f1 _f 
+ 0.1 1/f _f 
+ | ======================== | Wed.Apr,20150429 | ======================== | 
+  5 p2 . 
+ see p2
+: tst  asm{ bsr eax, eax } ;
+ help eval
+ res> >t0>  
+ t0 van eval 
+  23 tst .
+ t0 van type
+ | ======================== | Fri.May,20150501 | ======================== |
+mainly working on Reva201101 | need to sync dirs .
+ s"  in " CShelp
+ words~ ~os
+ res> Help
+ s" dir " shell> vm 5 _i cut* -3 _i cut* >t0> 
+| need to finish  ' match 
+ t0 t0 match  | |>| 1
+ t0 s" off "   match   |>| 0
+ t0  t0 1 _i cut* match
+ s" asdf"  s" asdf" match  |>| 1
+ 5 _iota i>f  5 _iota i>f match |>| 1 
+ 5 _iota i>f >t0> 2. _f *f 2. _f %f t0 match   |>| 1
+| 2142 | simples all working | 
+ | ======================== | Sat.May,20150502 | ======================== |
+ s" dir " shell> vm 5 _i cut* -3 _i cut* >t0>  reverse reverse >t1>
+ t0 t1 ' i# on2>
+ . .
+ t0 t1 { 0 i@ } on2> 
+ match _i
+ R0 >_
+ t0 t1 match   
+| mixed raw & CoSy bools .
+ | ======================== | Sun.May,20150503 | ======================== |
+ s" dir " shell> vm 5 _i cut* -3 _i cut* >t0>  reverse reverse >t1>
+ t0 s" off "   match_ _i
+| alias:  |>| |
+ | ======================== | Mon.May,20150504 | ======================== |
+ s" dir " shell> vm 5 _i cut* -3 _i cut* >t0>  reverse reverse >t1>
+  t0 t1 match
+ t0 t1 { 0 i@ } on2 ,L  ' rho eachM>
+ t0 t1 ,L flip
+ 
+| problem with  ctrl-s 
+| : saveLastsave  ymdhms  R s" lastSave" v!
+
+AF1 s" dir " shell> vm 5 _i cut* -3 _i cut* >t0>  reverse reverse >t1 AF0
+AF1  t0 t1 match  AF0 	| look ok 
+
+ | ======================== | Fri.May,20150515 | ======================== |
+ Rnames
+  ` ToDo Dv@  s" C:/4thCoSy/CoSy/ToDo.txt" Fwrite
+  s" Fwrite " CShelp
+C:\Program Files (x86)\Bluetooth Command Line Tools\bin>btinfo
+Local bluetooth radio not found.
+ | ======================== | Sat.May,20150516 | ======================== |
+ 24 _iota i( 2 3 4 )i take
+ 10 _iota 10 _partition >t0> 
+ t0
+  10 _iota
+  ' 0=i aaplym  AF0
+ 5 not _i
+   help ;then
+ : --ca 		--cab drop ;
+ 1 2 3 --cab 
+ see tst
+ see aaplym
+ see --ca see drop
+
+s" dsc " CShelp
+  see --abaa
+ s" C:/4thCoSy/CoSy/AltStackOps.f" slurp^ vm >t0>
+ s" C:/4thCoSy/CoSy/AltStackOps4.f" slurp^ vm >t1>
+ t0 t1 ,L ' rho eachM>
+  s" : in" CShelp
+ | ======================== | Sun.May,20150517 | ======================== |
+ AF1 10 _iota ' 0=i aaplym >t0 AF0
+ 10 _iota 10 _partition >t0> 
+ AF1 t0 ' 0=i aaplym >t1 AF0
+ R0 >T0
+ AF1 ev >T0 AF0
+ 24 _iota i( 2 3 4 )i take >t0>
+ t0 ' 0=i aaplym >t1>     | appears to be working ! 
+  s" longer " CShelp 
+ | ======================== | Thu.May,20150521 | ======================== |
+ s" _rand" CShelp
+ help/ rand
+ res> Help
+  rand _i
+  s" -O"  2 80  _rand at    | generate string of rands for WUWT comment .
+ | ======================== | Sat.May,20150523 | ======================== |
+  ` ASCIIbrowser Dv@ vm >T0>
+   T0 
+  T0  65 1 2_i 26 _i apv at  
+  i( 65 97 )i  26 _iota  swap ' +i eachrightI ,/ >t0>
+  T0 t0 at { -1 _take } eachM> ,/
+  R0 ` ALPHabet Dv!
+  ` ALPHabet Dv@  dsc ` ALPHabet Dv!
+  ` ALPHabet Dv@ 2 _partition flip ' ,/ eachM> ,/
+   s" asdf" 4 _iota 1 i@i@ 
+ 24 _iota i( 2 3 4 )i take >t0>
+    t0 { 100 _i +i } aaplym   
+   ' +i >aux
+   10 _iota { 100 _i +i } execute
+  { i1 aux@ } _i >t0> 
+  help disassemble
+ | ======================== | Sun.May,20150524 | ======================== |
+  help  contexts   | see | http://dev.ronware.org/p/reva/wiki?name=Contexts
+  words~ ~debug
+  ~debug res> Help exit~
+  ' +i >aux
+  { i1 aux@ } 16 ~debug.dasm 
+  10 _iota { 100 _i +i } execute
+  10 _iota { 100 _i +i } aaplym 
+alias: xeq execute
+ see @execute see xeq 
+  
+  10 _iota { 100 _i aux@ xeq } execute
+  24 _iota i( 2 3 4 )i take >t0>
+  t0 { i1 ['] +i xeq } aaplym   
+ | ======================== | Mon.May,20150525 | ======================== |
+ see aaplym
+  10 _iota { 100 _i +i } execute
+ AF1  10 _iota { 100 _i +i } aaplym  AF0
+ AF1  10 _iota enc { 100 _i +i } aaplym AF0 
+  i1 -1 x!  
+ | ======================== | Tue.May,20150526 | ======================== |
+| are  xi x@ x! properly recursive ?
+ 
+|\/| Essential parameters at the top of \4thCoSy\src\revacore.asm 
+; must be a power of 2 (between 8k and 2mb appear reasonable)
+DICTSIZE equ 2000 * 1K
+CODESIZE equ 2000 * 1K
+STACKSIZE equ 2 * 1K
+TIBSIZE equ 1K
+HEADERSIZE = (save_header_end - save_header)
+
+XT_FIELD equ 4
+NAME_FIELD equ 8
+CLASS_FIELD equ -4
+REVA equ 'Reva'
+|/\| Essential parameters at the top of \4thCoSy\src\revacore.asm 
+ | ======================== | Wed.May,20150527 | ======================== |
+| decided  p and x stack fns don't help recursive needs . 
+| needs stack of stack pointers . see http://www.forth.com/archive/jfar/vol3/no1/article3.pdf
+: esi dup asm{ mov eax, esi }  ; 
+ see esi
+  esi $.  |>| $427870 
+  1 1 1 1 esi $.  |>| $427860 
+  $427860 _i
+  $427870 - _i
+  s0 $.   |>| $427874 
+
+  0 1 2 3  SF1 
+ SFptr @ $. 	| $42785C   | $427864 
+  0 SF@ $.
+  SFptr @ @ $.
+  SF0
+  see SF0 see 3drop see 4drop 
+(6) 0 1 2 3 427874 427878 
+ | ======================== | Thu.May,20150528 | ======================== |
+  0 1 2 3   SF1 
+  10 20 30 SF1
+
+  SFptr @ $.  s0 $.   0 SF@ $.
+  SF1
+  SF0   | | 0109 | 
+  SFptr @ dup @
+ | ======================== | Fri.May,20150529 | ======================== |
+| Still need to get balance right . 
+  s0 $.  s0 @ $.  |>| $427874 $0 
+| Bad idea : | Makes use of fact that | s0 @ 0 = | .. SFptr @ @ 0; ...
+  SFptr @ $.> @ $.
+  esi  s0 = .
+  SFptr @  .
+ | ======================== | Sat.May,20150530 | ======================== |
+| cleanest to | s0 s0 ! |
+  SFptr @ $.  s0 $. s0 @ $.  0 SF@ $.
+  SF1 
+  SF0
+  0 1 2 3  SF1 
+  10 20 30 SF1
+  s" 0; 0drop; 0;drop" Help
+  SFptr @   $.
+  see SF0  see 0drop; see 0; see 0;drop
+  SFptr @ 2cell- @ $.
+   0 SF@ $. 
+  --bba   
+  esi@ cell+ s0 <> $.
+ | ======================== | Tue.Jun,20150602 | ======================== |
+ | ======================== | Wed.Jun,20150603 | ======================== |
+| real problem in  ' esi! | http://www.cs.virginia.edu/~evans/cs216/guides/x86.html
+ | ======================== | Thu.Jun,20150604 | ======================== |
+  SFptr @ $.  0 SFx dup $. @ $.  esi@ dup $. @ $.  | >| $427870 $42786C $42786C $427870 $0 
+  0 1 2 3  SF1 
+  SFptr @ $.  0 SFx dup $. @ $.  esi@ dup $. @ $.  | >| $427860 $42785C $427870 $42785C $427870 
+  10 20 30 SF1  
+  SFptr @ $.  0 SF@ $.  esi@ dup $. @ $. | >| $427850 $427860 $42784C $427860 
+  SF0 
+  0 SF@ $.  esi@ dup $. @ $. 
+  0 SF@ dup $. @ $.   esi@ dup $. @ $. 
+: tst (s0) ;
+: tst inline{ 89 F0  8D 76 FC } 2cell- ;
+ see tst 
+ 0 1 2 3 tst
+  see reset  see drop see 2drop see esi! see esi@  see + see @ 
+ | ======================== | Fri.Jun,20150605 | ======================== |
+ 0 1 2 3 SF1
+  SFptr @ $.
+  esi@ $.
+  see esi! 
+ 0 SF@ $. 
+: tst  asm{ mov esi, eax } asm{ mov eax, [esi-4] } ; 
+ see tst | inline{ 89 c6  8B 46 FC }
+: tst inline{ 89 c6  8B 46 FC }  ;  
+   10 20 30 SF1   
+  tst
+ SFptr @ $.
+ reset s0 SFptr !
+ 1 2 3 
+  cell+
+  -1 SF@ @ $.
+@ @ $.
+ see drop see 2drop see 4drop see reset
+  see 2/
+: tst asm{ sar eax, 2 } ;
+  -8 tst .
+  s0 $. SFptr @ $.
+ $0061BE8C @ 
+  addr s0      
+ SFptr @ $. cr  SFptr @ 8 cells - 64 dump
+ | ======================== | Sat.Jun,20150620 | ======================== | 
+: cells/ asm{ sar eax, 2 } ; 			| in util.f  .  Should be in reva.f 
+: SFn 0 SFx dup @ swap - cells/ 2 - ;
+: SF_ ( res -- res ) >r SF- r> ;
+| redefine `( 1p 2p 1P 2P )` in terms of stack .
+ | ======================== | Sun.Jun,20150621 | ======================== |
+|   { { 5 _i } execute } execute  | Confirmed once again it bombs |
+| SF fns not yet right !
+ | ======================== | Mon.Jun,20150622 | ======================== |
+ | ======================== | Tue.Jun,20150623 | ======================== |
+ | ======================== | Wed.Jun,20150624 | ======================== |
+ | ======================== | Thu.Jun,20150625 | ======================== |
+ | ======================== | Sat.Jun,20150627 | ======================== |
+: esi@ asm{ lea esi, [esi-04] } asm{ mov eax, esi } ; 
+: esi! cell+ asm{ mov esi, eax } ; 
+ esi@ _i fmtI$ 
+ esi@ esi! 		| effectively ' nop |
+ esi@ cell+ s0 2_i =i |>| 1 |
+ SFptr @ dup @  s0  | 2_i cL fmtI$  |>| 1
+  SFptr @ @ $.  
+   1 2 3 SF+
+ SFptr @ $. 0 SF@ $.
+   $427860 $427874 
+   $427854 $427860 
+   $427844 $427854  
+  4 5  SF+
+ 0 SF@ $. L@ $. R@ $. 
+ s0 @ $.
+  SFptr @ dup $. @ dup $. @ $.
+ 6 7 SF+ 9 0 
+ SFptr @ @  dup SFptr ! esi!
+ SF-
+| --- | 1027 | works . so stupid took so long for something so simple | --- |
+  see ~util.save
+: tst 1p R@ rho 1P> ;
+  see tst
+  see 1p
+  s" asdf" tst  
+
+: tst 2p> $.s +i $.s cr 2P> ; 
+ see 2p>
+  1 2 SF+  RA 2@ 
+ | ======================== | Mon.Jun,20150629 | ======================== |
+: tst 2p> $.s +i $.s cr 2P> ; 
+ 2 1 2_i 
+| \/ | Realized that StackFame fns are not compatable with dirty stack .
+| 2102 | ===================================== |
+ need fns which only drop known number of params .
+| Optimized  ndrop from loop . moved ' esi@ ' esi! to  /util.f
+  1 2 3 4 SF+
+  1 SF-n
+: tst 2p> $.s +i $.s cr 2P> ; 
+ 2 1 2_i 2p>
+ refs@ 
+ LR@  
+2p
+: SF-n | ( ... n -- drop n ) restores previous stack pointer but just drops n
+	>r SFptr @ @ SFptr ! r> ndrop ; 
+  10 20 2_i thru 
+ | ======================== | Tue.Jun,20150630 | ======================== |
+   2p 2P
+  text> "lf ss >t0> rho
+ | ======================== | Fri.Jul,20150703 | ======================== |
+ | ======================== | Sat.Jul,20150704 | ======================== |
+   text> "lf tokcut 
+ | ======================== | Wed.Jul,20150708 | ======================== |
+: nop ;   see nop
+ | ======================== | Thu.Jul,20150709 | ======================== |
+ | ======================== | Fri.Jul,20150710 | ======================== |
+   text> 600 _take >T0> "lf toksplt
+ | ======================== | Sat.Jul,20150711 | ======================== |
+: ndrop 1+ cells esi@ + esi!  ;
+: ndrop esi@ swap 1+ cells + esi!  ;
+ see prior ndrop
+ 3 4 1 ndrop
+ T0 "lf ss | bombs 
+ 20 30 2_i thru | bombs
+: tst  1p 1P ; 
+  1 _i  tst
+ | ======================== | Sun.Jul,20150712 | ======================== |
+  1 _i 
+  SF+
+  R@
+  R@ refs+
+  R@ refs@ .
+  R@ refs-
+  1 2 3 4 SF+
+  s0 . SFptr @ dup . @ .
+  0 SF-n 
+  see negate
+: tst  1p 1P ; 
+  AF1 1 _i  tst AF0  AF>  +/  |>| 0
+ | ======================== | Mon.Jul,20150713 | ======================== |
+ | ======================== | Tue.Jul,20150714 | ======================== |
+: >=0 ( n -- 0 1 ) -1 <I ;
+ | ======================== | Wed.Jul,20150715 | ======================== |
+ help aligned see aligned
+ help notail
+ help classes
+| The syntax of the command is incorrect.  dos error on 1st execution sometimes
+ 1 2 3 4 SF+
+ 2 SF-n
+ see SF-n
+ 0 SF@ $.
+| | 1158 | seem to have solved mysterious bomb in ' SF-n  by adding |{ dup drop }|
+| before final ' ndrop  | neither  ' notail  nor  ' aligned  did anything . 
+| would be very interested in an explanation of this bug .
+
+ 20 30 2_i thru |>| 20 21 22 23 24 25 26 27 28 29 
+: tst  1p 1P ;  1 _i  tst 
+  T0 "lf ss 
+  T0 "lf tokcut
+  10 _iota -5 _i +i +-splt
+ T0 "lf swap cL >t0>
+ t0 "lf ss 
+ text> "lf toksplt
+ text> vm rho
+ | ======================== | Fri.Jul,20150717 | ======================== |
+ | ======================== | Mon.Jul,20150720 | ======================== |
+ text> vm >t0> rho
+ t0  s"  con " con 		| con needs  dup drop  kludge |
+ T0 vm s" con " ncon 
+ | ======================== | Tue.Jul,20150721 | ======================== |
+ | ======================== | Wed.Jul,20150722 | ======================== |
+ | ======================== | Thu.Jul,20150723 | ======================== |
+  AF1  text> vm rho AF0
+: con  2p L@ dup R@ dup drop conn at  2P> ; 
+   text> vm s"  con " con 	
+
+: nlfy  "bl dup drop toksplt ;
+   text> nlfy rho 
+  R ` sys v@ ` CoSySource v@ 
+ s" lower"  s" CoSy/CoSy.f" (CShelp)
+   "bl .s dup drop .s drop 
+ slurp^ emptyLn toksplt swap con
+  R0 swap con >T0>
+: tst  slurp^ emptyLn toksplt swap con ;
+   s" lower"  s" CoSy/CoSy.f" tst 
+ 
+  dup i# if { "nl swap cL } eachm then ; 
+ | ======================== | Sun.Aug,20150809 | ======================== |
+ | ======================== | Tue.Aug,20150811 | ======================== |
+  text> >t0> rho
+  t0 "bl toksplt rho
+: nlfy "bl dup drop toksplt ;
+ t0 nlfy rho 
+ | ======================== | Wed.Aug,20150812 | ======================== |
+ | ======================== | Sun.Aug,20150823 | ======================== |
+ 1 2 3 4 SF+
+ 2 SF-n
+ reset
+ s0 dup $. @ $. |>| $427874 $427874 | $427874 $42DDE4 
+ esi@ $. |>| $427870 
+ SFptr @ dup $. @ $.   0 SF@ $.  
+ L@ $. R@ $.
+  text> >t0> rho
+  t0 "bl toksplt >t1> rho
+ t1 $.
+: tst0 r@ DMP ;
+: tst tst0 ; 
+: tst ;
+ see tst
+ " tst" find-dict
+---
+ s" find (xfind) [ ['] ] back compile create does> find-dict findprev func: func:>xt header last lastxt vfunc: words xfind" >T0> rho
+ T0 o cr D> cr "bl toksplt 
+  T0 nlfy
+: nlfy
+o cr D> cr "bl toksplt ;
+ words~ ~debug
+: nlfy o "bl toksplt ;
+   T0 nlfy
+ | ======================== | Mon.Aug,20150824 | ======================== |
+ | ======================== | Tue.Aug,20150825 | ======================== |
+ T0 "bl toksplt
+: tst D> cr "bl toksplt ; 
+ T0  tst 
+: nlfy  "bl toksplt ;
+
+ { "bl toksplt } value q0
+ t0 DMP
+--
+: tst 1p $.s cr R@ o  1P> ;
+: tst here  128 - 256 dump  ; 
+: tst1 tst ; 
+   see tst  ' 
+  tst 16 - DMP
+  here 128 - 256 dump
+ ` tst 128 - 256 dump
+ see ~debug..xt
+ | ======================== | Sat.Aug,20150829 | ======================== |
+ help stack-size
+ .contexts
+  last @ 1024 - 2048 dump
+| ---
+ s" CShelp " CShelp
+ ." | --- | " cr
+    T0 "bl toksplt $.s 
+ T0 nlfy $.s
+  here 2048 -
+  ` cold 2048 dump
+ | ======================== | Sun.Aug,20150830 | ======================== |
+| The example to dump the tictionary at |
+ http://dev.ronware.org/p/reva/wiki?name=Intermediate+Tutorial
+| |(|   ( in Windows:)  ' cold here over - dump  ) 	|)|
+  ' cold here swap - _i |>| 2321493 
+| is obviously is not the size of the dictionary . ` dump of course bombs .
+ | ======================== | Mon.Aug,20150831 | ======================== |
+ ` ToDo Dv@ >t0> rho
+  t0  "bl toksplt >t0> 
+  t0 nlfy >t1> rho
+  t1 >T0> rho
+ 10 _take >T0>
+ T0 rho
+  T0 s" T" ." con " cconb 
+   T0  s" T" ." con " con
+  T0 30 _at s" *"  ." con " conb  | bombs !
+  T0 30 _at* lower 
+  s" *" lower 
+  see lower
+  s" T" s" *"  cconb    
+ | ======================== | Tue.Sep,20150901 | ======================== |
+| \/ redefomed : extended to whole )| 256 _iota |( from C:\4thCoSy\src\reva.f
+   bounds 
+  $20 26 bounds 2_i cL reverse
+: lc ( c -- c' ) dup 65 90 between if $20 or then ;  
+| I can't find any Reva help on the use of  ` ' attached to a character 
+  'A emit	| sF6
+ | ======================== | Thu.Sep,20150903 | ======================== |
+| \/  copied from  C:\4thCoSy\lib\string\misc unchanged  .
+: strlwr ( a n -- a n ) 2dup bounds do i c@ lc i 
+: lower ( str -- str ) | convert string to lower case 
+  dup vdup dup van strlwr 2drop swap ref0del ;   
+ | ======================== | Fri.Sep,20150904 | ======================== |
+  T0 30 _at* lower
+  T0 s" *" ." con " conb  +/ 
+  s"  vdup" CShelp 
+| 1622 | ! ` SF fns Seem to be working .  | 1752 | well , NOT | 2110 | maybe .
+   T0 40 _take s" *"  ." con " conb 	| Seems solid |
+   text> daylncut s" aaply" con  		| get back to the main goal , left off in May !
+ | ======================== | Sat.Sep,20150905 | ======================== |
+ | ======================== | Sun.Sep,20150906 | ======================== |
+  T0 s" |" ." con " conb		| bombs 
+  T0 1 _at* >t0>
+  text> "lf ss 
+ s" a"  s" a" ss  
+  aux# _i
+  " aa"  " a" search 
+  help /string
+ s" |" >t0>
+  t0 van 
+  -1 /string 
+  t0 i#  $.
+  1 /string 
+  i( 1 0 )i  i( 50 )i take  50 _i iota +i
+  s" | " van search 
+
+ see 1+
+  10 _iota 10 _partition >t0> 
+  AF1 t0 ' 0=i aaplym >t1 AF0
+
+  T0 40 _take s" T"  ." con " conb
+ | ======================== | Wed.Sep,20150909 | ======================== |
+| got in some sort of state which was failing to save ` text and ` res 
+| and tended to bomb on save . Needed to restore from CoSy.bk . Making restore.bat
+ copy CoSy.bk CoSy.tmp
+ del CoSy.csy
+ ren CoSy.tmp cosy.csy
+ | ======================== | Thu.Sep,20150917 | ======================== |
+ Rnames
+ | ======================== | Fri.Sep,20150918 | ======================== |
+ | ======================== | Sat.Sep,20150919 | ======================== |
+ | ======================== | Mon.Sep,20150921 | ======================== |
+ | ======================== | Tue.Sep,20150922 | ======================== |
+ | ======================== | Wed.Sep,20150923 | ======================== |
+| dup of an empty stack is 0  
+|  s0 cell- esi!  | does nothing 
+|  esi@ @ 0 =     | 
+  1 2 3 
+ 1 2 SF+
+   SFptr @
+$.s cr esi@ 64 dump  s0 @ dup $. @ $.
+(8) 14 1 2 427874 1 2 3 427860 
+00427850 60 78 42 00 03 00 00 00 02 00 00 00 01 00 00 00 `xB.............
+00427860 74 78 42 00 02 00 00 00 01 00 00 00 14 00 00 00 txB.............
+00427870 00 00 00 00 74 78 42 00 00 00 00 00 00 00 00 00 ....txB.........
+00427880 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
+$427874 $427874 
+   reset
+ 
+  SFptr @ 
+  dup @
+  SFptr !
+  | s1 min
+  cell+
+  esi!
+    2 ndrop
+  1 ndrop
+  2 SF-n
+  0 SF-n
+
+  1 SF@   $.
+| 1458 |  I think I've got it . I really think I've got it !
+| 1517 | NOPE ! | 1610 |  ! maybe , except for empty stack 
+  text>  "lf s"  | ======================== | " cL ss
+ | ======================== | Thu.Sep,20150924 | ======================== |
+: SF-n | ( ... n -- drop n ) restores previous stack pointer but just drops n
+	>r SFptr @ dup @ SFptr ! esi! r> 1+ ndrop ; 
+|  see [variable]  decrements stack | fixed in lib/Debugger .
+| 1724 |  Once again I think I've got it 
+: SF-n  	>r SFptr @ dup @ SFptr ! cell+ esi! r> ndrop ; 
+: tst  SF+ $.s 2 SF-n ;
+  1 2 tst  | works 
+| 1739 |  /\ not now  
+ | ======================== | Sat.Sep,20150926 | ======================== |
+ 1 2 3
+ 1 2  SF+
+ 0 >aux 
+ SFptr @
+ dup @
+ SFptr !
+ cell+ esi! 
+ aux> ndrop 
+
+ 1 2  SF+   0 SF-n
+ see >r see r>
+  2 SF-n 
+| 1440 | F`n " bug "  w |( >r r> )|  Replacing w aux stk rather than figuring out 
+| renaming ` SF-n  to ` SF-  because items to drop is generically necessary .
+: SF- | ( ... n -- drop n ) restores previous stack pointer but just drops n
+	>aux SFptr @ dup @ SFptr ! cell+ esi! aux> ndrop ; 
+ | ======================== | Sun.Sep,20150927 | ======================== |
+| redefined especially ` aux-ok  to fix  erasure of 0 REFed results in
+|  parameter pop s" P>" verbs 
+: >aux+ dup+ >aux ;
+: aux-ok> aux> dup refs-ok ;
+: aux- aux> refs- ;
+ | ======================== | Mon.Sep,20150928 | ======================== |
+| seems to have solved clear problem , but weird issue w simply nested fns remains
+  text>  "lf tokcut rho   |	|>| 1432 					| works
+: tst "lf tokcut ; 						text> tst rho 	| works not
+: tst "lf dup drop tokcut ; 	text> tst rho 	| works
+: tst dup drop "lf tokcut ;   text> tst rho 	| works not
+
+| 1511 | Going to post bug to 
+ https://groups.google.com/forum/#!forum/comp.lang.forth
+  see dup  see drop
+ 
+: tst 1p> "lf dup drop tokcut 1P> ;   text> tst  | works 
+
+ "lf s"  | ======================== | " cL refs+> value daylnTok 
+ daylnTok refs@ _i
+  
+  "lf refs@ _i
+ 1 2 3 
+ 1 2 SF+ 
+ 2 SF-
+: tst  SF+ 2 $.s SF- ;
+  1 2 tst  | works 
+ 
+: tst 1p> o 1P> ;  
+  5 _i >t0> tst
+ 
+ text> "lf toksplt
+ text> daylncut 
+ text> vm
+ see SF- see cell+
+ | ======================== | Tue.Sep,20150929 | ======================== |
+ s" dir C:/4thCoSy/bin/" dosslash^ shell> 
+ | ======================== | Wed.Sep,20150930 | ======================== |
+| 1126 |  | 1421 | 
+   i( 0 -1 )i  10 _i iota +i  
+0 0 2 2 4 4 6 6 8 8 
+
+: tst  SF+ 2 SF- ;
+  1 2 tst  | works 
+: tstt tst ;  1 2 3 tstt   | works
+ 
+ see dup see drop
+: dupdrop  dup drop ;  
+: tst "lf dupdrop tokcut ; 	text> tst rho 	| works
+
+| 2032 | got | https://groups.google.com/forum/#!topic/comp.lang.forth/QE0JuSC8yMI
+|  s" How can " dup drop " be anything other than a nop " out |
+ | ======================== | Thu.Oct,20151001 | ======================== |
+: vm "lf dup drop tokcut ;
+ AF1 text> vm rho AF0   | ok 
+    s"  take" CShelp
+: daylncut ( str -- listOFstrings ) daylnTok dup drop tokcut ;
+  text> daylncut rho
+ | ======================== | Fri.Oct,20151002 | ======================== |
+: ts  ; 
+: tst s" help" dup drop tokcut ; 	text> tst >t0> rho 	| works not
+: tst tokcut ; 	text> "lf tst rho 	| works 
+
+R ` sys v@ ` CoSySource v@
+
+: daylncut ( str -- listOFstrings ) daylnTok tokcut ;
+ daylnTok
+s" 
+ | ======================== | " 
+  text> daylncut  rho  |>| 150 
+ 
+: tst "lf  tokcut ; 	text> tst rho 	| works 
+
+  text>  1300 _take >t0>
+  t0 "lf tokcut
+ | ======================== | Sat.Oct,20151003 | ======================== |
+: tst  1p R@ 5 _i *i 1P> ;  	5 _i tst 	| works
+: tst  1p> 5 _i *i 1P> ;  	5 _i tst 	| works
+: tst  2p>  *i 2P> ;  5	5 2_i tst 	| works
+: tst  2p>  *i 2P> ;  5	5 2_i tst   | works 
+: tst  1p> rho 1P> ;  text> tst 		| works
+ text> "lf  rho swap rho swap cL 		| works
+: tst  2p> rho swap rho swap cL  2P> ;  text> "lf tst   |  bombs
+: tst  2p L@ rho R@ rho cL 2P> ;  text> "lf tst   | works 
+: tst  2p LR@ rho swap rho swap cL  2P> ;  text> "lf tst   | 
+: tst "lf  tokcut ; 	text> tst rho 	| works not
+: tst "lf dup drop tokcut ; 	text> tst rho 	| works not
+: tst "lf ss ; 	text> tst  	| works not   
+  text> "lf ss
+ | ======================== | Thu.Oct,20151008 | ======================== |
+| Finessing SF  problem w  " dup drop " added to  p fns .
+ | ======================== | Sat.Oct,20151010 | ======================== |
+ ' con still not working 
+ | ======================== | Sun.Oct,20151011 | ======================== |
+    text> daylncut rho
+ text>  daylnTok ss
+: tokcut  2p LR@ ss o i0 swap ,I L@ swap cut 2P> ;
+  text> daylnTok tokcut
+: tst  2p LR@  ss  2P> ;  text> daylnTok tst 					| work not
+: tst dup drop 2p LR@  ss  2P> ;  text> daylnTok tst 	| work not
+: tst 2p LR@ dup drop ss  2P> ;  text> daylnTok tst 	| work
+: tst 2p L@ R@ ss  2P> ;  text> daylnTok tst 					| work not
+: tst 2p L@ dup drop R@ ss  2P> ;  text> daylnTok tst | work ~
+: dd dup drop ; 
+: ts  ; 
+  
+: tst 2p L@ R@ dd ss  2P> ;  text> daylnTok tst 			| work
+
+: tst 2p L@ R@ o 2p LR@ o drop 2P>  2P> ;  text> daylnTok tst >t0> rho 			| work
+
+  text> 500 _take >T0>
+
+: tst 2p LR@ 2p LR@ $.s cr ,L 2P>  2P> ;  T0 "lf tst >t0 	| work ~
+                                       (8) 17B8A8 178AB8 427870 17B8A8 427868 427864 17B8A8 427868 
+: tst 2p LR@ $.s 2p LR@ $.s cr ,L 2P>  2P> ;  T0 "lf tst >t0 			| work
+(5) 17B8A8 178AB8 427870 17B8A8 178AB8 (8) 17B8A8 178AB8 427870 17B8A8 178AB8 427864 17B8A8 178AB8 
+
+: tst 2p LR@ 2p LR@ $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 	| work ~
+  (8) 17B8A8 173040 427870 17B8A8 427868 427864 17B8A8 427868 
+: tst 2p> 2p> $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 			| work
+  (8) 17B8A8 173040 427870 17B8A8 173040 427864 17B8A8 173040 
+
+: stst SF+ LR@ ; 1 2 stst $.s | sF6  | works
+ (5) 1 2 427870 1 2 
+ reset  
+: stst SF+ LR@ SF+ ; 1 2 stst $.s 
+ (6) 1 2 427870 1 427868 427864 
+: stst SF+ LR@ dup SF+ ; 1 2 stst $.s 
+ (7) 1 2 427870 1 2 4 427864 
+: stst SF+ R@ SF+ ; 1 stst $.s 
+ (4) 1 427870 42786C 427868 
+: stst SF+ 0 SF+ ; 1 stst $.s 
+ (4) 1 427870 4 427868 
+: stst SF+ SF+ ; 1 stst $.s 
+ (3) 1 427868 427868 
+
+reset  1  SF+ 0 SF+ $.s 
+ (4) 1 427870 0 427868 
+reset  : stst SF+ 0 SF+ ; 1 stst $.s 
+ (4) 1 427870 4 427868 
+
+reset  1  SF+ 0 0 SF+ $.s 
+ (5) 1 427870 0 0 427868 
+reset  : stst SF+ 0 0 SF+ ; 1 stst $.s 
+(5) 1 427870 0 43208C 427868 
+ 
+ see stst
+: stst SF+ 0 SF+ ; 1 stst $.s 
+ 
+
+ see stst see SF+ see esi@ see cell- see xchg 
+
+ reset 
+: tst  $.s cr ,L  2P> ;  T0 daylnTok tst >t0> rho 			| work
+--
+: tst 2p LR@ 2p LR@ $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 			| work
+: tst 2p> 2p> $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 			| work
+: tst 2p> 2p> $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 			| work
+: tst 2p> 2p> $.s cr ,L 2P>  2P> ;  T0 daylnTok tst >t0> rho 			| work
+--
+https://groups.google.com/d/msg/comp.lang.forth/QE0JuSC8yMI/2q1bQeWoCwAJ
+https://groups.google.com/d/msg/comp.lang.forth/QE0JuSC8yMI/3-ip872pCwAJ
+| 0125 | 
+ | ======================== | Mon.Oct,20151012 | ======================== |
+ based on insight from Anton Ertl added  mov [esi],eax   :
+: esi@ inline{ 8D 76 FC  89 06  89 F0 } ; 
+  | lea esi,[esi-04]  mov [esi],eax   mov eax, esi 
+  | esi contains the current stack ptr ,
+  |  , ie , the address of the item which was ToS when it was called .
+ reset  1  SF+ 0 0 SF+ $.s 
+ reset  : stst SF+ 0 0 SF+ ; 1 stst $.s 
+| Both work .  Everything works including  ` CShelp |
+ | ======================== | Tue.Oct,20151013 | ======================== |
+| Work on removing empty results from ' CShelp  |
+: CShelp 1p R ` sys v@ ` CoSySource v@ dup+ l0! R@ ' (CShelp) eachright dup+ ' rho eachM> ,/ >0i & 
+ | ======================== | Wed.Oct,20151014 | ======================== |
+ | ======================== | Thu.Oct,20151015 | ======================== |
+| fixed bug in Dv! for new objects . traced to  ' sym?_
+ T1 ` script0 Dv!  
+| redefined  ` at  to be what ` at* was : disclose singletons .
+|  R ` testickle (wheresym)      R 1 _at swap _at  | actually worked off the cuff
+   R ` testackle (wheresym) |>| $7FFFFFFF 
+ Rnames  
+   R ` testackle vdel 
+   R ` testickle vdel
+   s"  hi " R ` testackle v!  s"  ho "   R ` testickle v!
+ | ======================== | Fri.Oct,20151016 | ======================== |
+ | ======================== | Sat.Oct,20151017 | ======================== |
+ ` script0 ->
+ R ` script0 v@ >t0>
+ t0
+ s" : tst 1p> i1 +i  1P> ; " >T1>  van  eval
+  
+  s" dsc " CShelp >T0>
+  T0 ' rho 'm ,/ i1 >i & T0 swap at
+ _i  >i
+: CShelpTst CShelp >aux+> dup ['] rho 'm ,/ i1 >i & at aux- ; 
+ | ======================== | Mon.Oct,20151019 | ======================== |
+ res> >t0> 
+ t0 >T0>
+ T0 vm >T0
+  ` morse Dv@ >t0>
+  t0 ' c>i 'm  >t1>
+  t1 { 9 _i ['] =i f?^ } 'm >t1>
+  t0 t1 ' take each   t0  t1 { i1 +i } 'm  { cut dsc } each  ' ,L each 
+  R0 flip ` morse Dv!
+  
+  ` morse Dv@ 0 _at >t0>
+ t0
+ t0   s" ASDF" 4 _partition ' f?^ eachright  
+  i( 1 2 3 4 )i 4 _partition
+ ' enc 'm   
+
+  t0 ,/ s" ASDF" ' ss eachright 
+ s" A" 
+' enc 'm
+' _ each 
+  t0 0 _at "ht =i
+ t0 0 _at "ht =i  
+{ "ht f?^ } 'm
+  t0 { 2 _take } 'm
+
+ Rnames
+ ` ASCIIbrowser Dv@ 
+ 2.25 _f f( 2. 4. )f ^f
+  s" dsc " CShelpTst
+   see esi@
+ T1 ` script0 Dv!
+ s" dsc " T0 { >r> (CShelp) r> swap ,L } eachright >aux+> 
+  aux@ dup flip 1 _at*  ' rho eachM> ,/ >0i & at 
+ 
+: tst 2p> ' (CShelp) eachright >aux+> ' rho eachM> ,/ >0i & R@ aux@ ' cL eachM>   
+ ` ToDo ->
+: tst  >aux+ lst aux- ; 
+ 1 _i tst
+  see dup+
+ | ======================== | Fri.Oct,20151030 | ======================== |
+  jedit  | cF9 runs but bombs on failure to return .
+ | ======================== | Sun.Nov,20151101 | ======================== |
+  see aaplym
+  s" aaplym" CShelp >t0>   |>| ( nonce  ) 	| that's wrong .
+| also bombed on  ctrlS because t0 nonsense .
+ AF1  s" aux- " CShelpFul lst  AF0 | AF> +-splt ' rho 'm |>|  6002 6002 
+  s" aaplym" CShelpFul >aux+> aux@ dup ' rho 'm ,/ i1 >i & at dup refs@ aux-
+| 1859 | seem to have found a profound error in ref counting revealed in ' at .
+ AF1  s" aaplym" CShelpFul dup+ dup ' rho 'm ,/ i1 >i & at refs+> swap refs-ok> AF0 
+ AF> +-splt ' rho 'm 
+ AF1  s" aaplym" CShelp lst AF0
+
+ Rnames
+   `( Pi Tau SVfigDemo20131116 TekLogArk )` ' Dv@ 'm   | corrupt . somehow emptied 
+  s" C:/4thCoSy/CoSy/CoSy - Copy.csy" 
+  `( Pi Tau SVfigDemo20131116 TekLogArk )` { t0 swap v@ } 'm 
+ R0 >t1>
+ t1 3 _at 
+  t1 
+ t0 ` TekLogArk v@  ` TekLogArk Dv!
+  t0 ` SVfigDemo20131116 v@
+  s" restore" CShelp
+ s" C:/reva/CoSy/CoSy.csy"  restorefile >t0> dnames 
+ t0  ` Tau v@ ` Tau Dv!
+ | ======================== | Wed.Nov,20151104 | ======================== |
+  `( Pi Tau SVfigDemo20131116 TekLogArk )` ' Dv@ 'm 
+   ` sys Dv@  ` DISPLAY v@
+   ` res s" 330x160" ,L ` text s" 330x420" ,L ,L flip
+   R0  ` sys Dv@ ` Tui v! 
+  { " sys" (sym) Dv@ " Tui" (sym) v@ " res" (sym) v@ } execute 
+   ` sys Dv@ ` Tui v@ ` text v@
+  s" 330x420" ` sys Dv@ ` Tui v@ ` text v!
+  ` sys Dv@ ` Tui v@
+| 1227 | window size specs for Tui now saved in  R  .
+| ----  failed to save in personal ` R  -----
+  s" C:/reva/CoSy/CoSy.csy"  restorefile >t0> dnames 
+  ` sys Dv@ t0 ` sys v!
+  t0  s" C:/reva/CoSy/CoSy.csy" savelist
+| /\ | transfer new  ` sys | /\ | ========== |
+  s" LUCIDA CONSOLE::10" ` sys Dv@ ` Tui v@ ` font v!
+  s" LUCIDA CONSOLE::12" ` sys Dv@ ` Tui v@ ` font v!
+ | ======================== | Sun.Nov,20151108 | ======================== |
+Got NextBook 10.1 | Saving new .zip | on NextBook | 1515 | 
+ ` sys Dv@ ` Tui v@ flip
+ | 2022 | 
+ ` res s" 330x80" ,L ` text s" 330x320" ,L ,L 
+ R0 ` font  s" LUCIDA CONSOLE::12" ,L enc cL flip
+ R0 >t0>
+ t0 ` sys Dv@ ` Tui v!
+ | ======================== | Tue.Nov,20151110 | ======================== |
+  ` sys Dv@ 
+` Tui v@
+  s" 330x280" ` sys Dv@ ` Tui v@ ` text v!
+  s" 330x70" ` sys Dv@ ` Tui v@ ` res v!
+  s" LUCIDA CONSOLE::12" ` sys Dv@ ` Tui v@ ` font v!
+  ` sys Dv@ ` DISPLAY vdel
+  s" : vdel " CShelp
+  s" 330x140" ` sys Dv@ ` Tui v@ ` text v!
+  s" 330x70" ` sys Dv@ ` Tui v@ ` res v!
+  s" LUCIDA CONSOLE::18" ` sys Dv@ ` Tui v@ ` font v!
+ bye
+ | ======================== | Thu.Nov,20151112 | ======================== |
+  s" 300x60" ` sys Dv@ ` Tui v@ ` res v!
+  s" 300x140" ` sys Dv@ ` Tui v@ ` text v!
+  s" LUCIDA CONSOLE::20" ` sys Dv@ ` Tui v@ ` font v!
+ | ======================== | Sat.Nov,20151121 | ======================== |
+ s"  CoSy NEEDS MORE HEADS" >t0> 
+ t0 i( 7 23 )i take >t0>
+ t0 dup ' reverse 'm ' cL each 
+ R0 dup reverse cL
+( 
+ s"  CoSy NEEDS MORE HEADS  SDAEH EROM SDEEN ySoC " 
+ s" CoSy NEEDS MORE HEADS CC SDAEH EROM SDEEN ySoC" 
+ s" oSy NEEDS MORE HEADS CooC SDAEH EROM SDEEN ySo" 
+ s" Sy NEEDS MORE HEADS CoSSoC SDAEH EROM SDEEN yS" 
+ s" y NEEDS MORE HEADS CoSyySoC SDAEH EROM SDEEN y" 
+ s"  NEEDS MORE HEADS CoSy  ySoC SDAEH EROM SDEEN " 
+ s" NEEDS MORE HEADS CoSy NN ySoC SDAEH EROM SDEEN" 
+ s" NEEDS MORE HEADS CoSy NN ySoC SDAEH EROM SDEEN" 
+ s"  NEEDS MORE HEADS CoSy  ySoC SDAEH EROM SDEEN " 
+ s" y NEEDS MORE HEADS CoSyySoC SDAEH EROM SDEEN y" 
+ s" Sy NEEDS MORE HEADS CoSSoC SDAEH EROM SDEEN yS" 
+ s" oSy NEEDS MORE HEADS CooC SDAEH EROM SDEEN ySo" 
+ s" CoSy NEEDS MORE HEADS CC SDAEH EROM SDEEN ySoC" 
+ s"  CoSy NEEDS MORE HEADS  SDAEH EROM SDEEN ySoC " 
+ )
+ | ======================== | Sun.Nov,20151122 | ======================== |
+| 1036 | revert to more normal , not display , font ,
+ ` sys Dv@ ` Tui v@ >t0>
+  s" 330x80" t0 ` res v!
+  s" 330x270" t0 ` text v!
+  s" LUCIDA CONSOLE::12" t0 ` font v!
+ | ======================== | Sun.Nov,20151122 | ======================== |
+| 1903 | Ordered beer Pier23 w StacySmith 20151122.190625, Calamari/Fries,
+ | ======================== | Wed.Nov,20151125 | ======================== |
+| 1243 | 
+ | ======================== | Wed.Dec,20151202 | ======================== |
+ R0 >T0>
+ T0 s"  ( " toksplt >t0>
+ t0 rho
+ t0 s"  ) " ' toksplt eachleft 
+ T0 s"  ( " s"  ) " ,L ' ss eachright 
+ | ======================== | Sun.Dec,20151213 | ======================== |
+ | ======================== | Sun.Dec,20151227 | ======================== |
+ Rnames
+ ` state Dv@
+  text> ` state v!
+ s"  CD " shell>
+ s" ctrlS" CShelp 
+ | ======================== | Wed.Dec,20151230 | ======================== |
+ T0 s"  ( " s"  ) " ,L ' ss eachright 
+  10 _iota { 100 _i +i } execute
+ AF1  10 _iota { 100 _i +i } aaplym  AF0
+ AF1  10 
+  ` sys Dv@ ` Tui v@ flip
+  ` res s" 330x80" ,L ` text s" 330x270" ,L ,L ` font s" LUCIDA CONSOLE::12" ,L enc cL 
+ | ======================== | Thu.Dec,20151231 | ======================== |
+| archived P and x stack vocab . rewrote w SF fns . 
+ 20 _iota enc { 100 _i +i } aaplym
+| 1720 | seem to have gotten it righr 1st time
+ AF1 20 _iota 2 _partition  { 100 _i +i } aaplym  AF0
+ 20 _iota 2 _partition >t0> 
+ t0 ' +/ 'm 
+ t0 enc { 100 _i +i } aaplym 
+ t0 0 _at enc t0 0 _at!
+ t0
+ | ======================== | Fri.Jan,20160101 | ======================== |
+ 20 _iota 2 _partition >t0> 
+ t0 0 _at enc enc  t0 0 _at! t0
+ t0 { 100 _i +i } aaplym 
+ i( 1 0 )i >t1>
+ t0 { t1 +i } applym
+ t0 0 _at t1 +i 
+|  t0 0 _at >t0>    | bombs on freeing of whole t0 
+| there is a significant issue w need to ref+ result of ` at . need to make new obj res
+   t0  3 _at  >t0>
+  10 _iota >t0>  i( 1 0 )i >t1> ' +i aaply   
+  AF1 t0 t1 ' *i aaply AF0
+  10 _iota i( 1 0 )i swap ' +i aaply   
+  10 _iota enc >t0  i( 1 0 )i >t1 
+ 20 _iota 2 _partition >t0  i( 1 0 )i >t1 
+  t0  t1  ' +i aaply  
+| 0008 | ! works !
+  20 _iota 2 _partition >t0  i( 1 0 )i enc >t1 
+  t0  t1  ' +i aaply  
+  i( 1 0 2 0 )i i( 2 2 )i take >t1>
+  t0  t1  ' +i aaply  
+| 0101 |  
+ | ======================== | Sat.Jan,20160102 | ======================== |
+
+  ` morse Dv@ >t0>
+
+
+
+
+ s" cellVecInit " CShelp
+
+
+
+ s" v?refs+ " CShelp
+
+	s" save" CShelp 
+| #################### | | #################### | | #################### | 
+
+_iota enc { 100 _i +i } aaplym AF0 
+ 
+|  | 20151029 ymd>fixed 20 + fixed>ymd _i  |>| 20151118 
+| needs to be aaply : days+ 2p L@ 0 i@ day>fixed L@ + fixed>ymd _i swap refs0del ;
+
+| ----- |\/| Useful phrases |\/| ----- |
+  reset 
+  Rnames  		| names of items in "R"oot dictionary 
+  ` ASCIIbrowser Dv@
+  file-dlg >t0>			| get file name 
+
+| \/ | sF6 | \/ | cause direct 4th output | \/ |
+  words 0
+  help here
+  help :  see :
+  res> Help
+| /\ | sF6 | /\ | cause direct 4th output | /\ |
+
+  s" shell>" CShelp
+| \/ | SETTING DISPLAY SIZE | \/ |
+ ` sys Dv@ ` Tui v@ >t0>
+  s" 350x160" t0 ` res v! 		| 330x80
+  s" 350x420" t0 ` text v! 		| 330x270
+  s" LUCIDA CONSOLE::10" t0 ` font v! 	| LUCIDA CONSOLE::12
+| ` res s" 330x80" ,L ` text s" 330x270" ,L ,L ` font s" LUCIDA CONSOLE::12" ,L enc cL flip
+
+  text> VMlf >t0>
+  text> daylncut >t0> 
+  t0 s" aaply" con
+  s" dir examples " shell>
+  ` ToDo -> 		| sF6
+ | ###################################################################### |
+ | ###################################################################### |
+ | ###################################################################### |
+  
+| \/ \/ \/ | for checking Allocate - Free matching | \/ \/ \/ |
+ AF1  4.6 _f .5 _f *f dup *f  AF0 >t0> 
+ AF1 s" CShelp " CShelp AF0
+ t0
+ AF> +-splt ' rho 'm
+ AF> fmtI
+ AF> +/
+ AF> rho  
+ AF> 
+i0 >i 
+ R0 ' rho eachM>
+ R0 ' -i across
+ t1
+| /\ /\ /\ | for checking Allocate - Free matching | /\ /\ /\ |
+
+ | ###################################################################### |
+   s" ~\\/" 70 _take
+s" ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~" 
+
+|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
+|\/| |\/| |\/|  DOS & NETWORK COMMUNICATION & SYNCHRONIZATION  | |\/| |\/| 
+
+  file-dlg >t0> | browse for a file name .
+
+ s" dir /? " shell> 	 		| help for windows  dir cmd .
+ s" dir C:/4thCoSy/CoSy/" dosslash^ shell> 	| using dosslash^ to use forward slashes
+ s" dir CoSy " shell> 		| dir  defaults to dir Reva started in .
+
+ s" type CoSy\\ReadMe.txt" shell> 	| return contents of text file  
+ s" CoSy\\ReadMe.txt" ' shell onvan	| execute file with its associated app .
+  | note use of non-resulting  ' shell .   ` shell> bombs CoSy when task done .
+  
+| copying to another machine on network 
+ s" dir \\\\CoSy2013\\reva\\CoSy\\ "  shell> 	| useful to check connection .
+ s" copy c:\\reva\\cosy\\CoSy.csy \\\\ACER-PC\\reva\\CoSy\\ " shell>
+
+ s" dir CoSy\\*.f /b /s "  shell> >t0> | get full source file names ,
+ t0 "nl toksplt  -1 _i cut* >t0> 	|  split on nl . drop empty last row
+| Alternatively w short names but selecting from all files
+ s" dir CoSy\\ /b " shell> VMnl -1 _i cut* >t0> 	| get naked dir and return 
+	| as list of strings . Note cannot use ` dosslash^ to avoid doubling of backslash
+ t0 s" .f" con >t0>		| select *.f CoSy source files 
+ t0 s" .f~" ncon >t0>
+
+| I keep a few links to CoSy lists I sometimes want to retrieve something from
+| like the environment on my netbook . For instance to copy my  ` ToDo list
+| to when I'm going shopping , or returning .  I'll execute one of the strings
+| below to set R0 , then restore that file 
+
+| \/ | RESTORING AN ITEM FROM A *.csy FILE | \/ |
+
+ s" C:/4thCoSy/CoSy/CoSy.csy" 
+ s" C:/4thCoSy/CoSy/CoSy.bk" 
+ s" C:/reva/CoSy/CoSy.csy" 
+ file-dlg  | browse for file name
+
+  R0 restorefile >t0> ' rho 'm 	| check shapes for integrity .
+  t0 dnames
+  t0 ` help >t1> v@ 
+  R0  R t1 v!	| replace local of object copy with one from file read .
+
+| /\ | RESTORING AN ITEM FROM A *.csy FILE | /\ |
+  
+ s" |/\\| " i( 2 80 )i take
+|/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| 
+|/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| 
+ | ###################################################################### |
+
+ | ###################################################################### |
+|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
+                              Example Daily Log
+|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
+  
+ | ###################################################################### |
+ |  \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | 2014 | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
+ | ======================== | Sat.Aug,20140809 | ======================== |
+~ 11 | WP Blues | | 1238 | 
+ | ======================== | Sun.Aug,20140810 | ======================== |
+ | ======================== | Mon.Aug,20140811 | ======================== |
+ | ======================== | Tue.Aug,20140812 | ======================== |
+get Introduction to Heat Transfer (Hardcover) by David P. Dewitt, Frank P. Incropera 
+ | ======================== | Wed.Aug,20140813 | ======================== |
+ | ======================== | Thu.Aug,20140814 | ======================== |
+ | ======================== | Fri.Aug,20140815 | ======================== |
+ | ======================== | Sat.Aug,20140816 | ======================== |
+10 | Littleton Western Day
+ | ======================== | Sun.Aug,20140817 | ======================== |
+ | ======================== | Mon.Aug,20140818 | ======================== |
+ | ======================== | Tue.Aug,20140826 | ======================== |
+http://www.powweb.com renewal 
+1615 | Bastiat ; CMR 
+ | ======================== | Wed.Aug,20140827 | ======================== |
+( AmazonChase ; 13.84 )
+ | ======================== | Thu.Aug,20140828 | ======================== |
+ | ======================== | Fri.Aug,20140829 | ======================== |
+ | ======================== | Sat.Aug,20140830 | ======================== |
+...
+ |  \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | 2015 | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
+
+ | ======================== | Wed.Sep,20150916 | ======================== |
+~ MinnowBrook
+
+ | ======================== | Sat.Nov,20151121 | ======================== |
+Stanford | 1147 |* 
+                                 FORTH DAY
+
+   		       HONORED TO BE HANGOUTing WITH
+		    THE FATHER OF THE LANGUAGE OF TODAY
+
+				CHUCK MOORE
+				
+			( JUST WORKING TO BRING 
+			  THE soul OF KEN IVERSON
+				TO THE PARTY )
+
+			| ------------------------ |
+
+		       TAKING SIMPLICITY to the EXTREME
+-- GOALS
+		   SUCCINCT ENOUGH TO TWEET GREAT THOUGHTS 
+		   | ----------------------------------- |
+
+		     ARTIFICIALLY AID *MY* INTELLIGENCE  
+	          FIT IN A SMALL HEAD   WITH A LEAKY MEMORY
+                     Working at my Peter Principle Limit
+  
+		      Maximize Rate of making mistakes
+		 -> NoteComputing interpretive environment 
+
+      EVERYTHING JUST TEXT			      TRANSPARENT STRUCTURE
+  ENTER : just newLine | F6 : DO	 		DOWN TO THE CHIP
+					
+		  GIVE PEOPLE CONTROL OVER THEIR OWN MACHINES
+
+-- USES
+			 Captain Picard's LOG
+
+		LOT's of ABILITIES w/in A SENTENCE OR 2
+
+	NOTATION for COMBINATORIC APPLICATION of FUNCTIONS to DATA
+
+	Vocablary evolved from APL , Particularly Arthur Whitney's K
+
+		     THE MOST ABSOLUTELY SOLID ACTION : 
+	        ctrlS : SAVE YOUR WORK , ie : SAVE the ` R TREE 
+
+ 	    $$$ Time stamped records for Billing & Court $$$
+		
+	IoT 	Instrumentation requiring complex algorithms 
+	3D printing , visualization  |  APL mkt : COMPLEX FINANCE
+-- GUTS
+				CORE CHALLENGE
+	   Transform fixed address space to  dynamic nested objects
+			      -> Reference Counting  
+
+		 EVERYTHING IS A LIST	ITEMS MAY BE LISTS
+                  http://cosy.com/CoSy/4th.CoSy.html#CoSyHeader
+
+	    A DICTIONARY IS A LIST OF 2 LISTS | ( Names ; Values )
+
+		    The "Root" dictionary is named  ` R
+
+ VOCABULARY on LISTS
+  R rho 	| APL word "count"  # of items in list  | raw :  i#	
+  R ' rho 'm 	| count each ( monadic )
+
+-- 
+| 3 genaric functions | ( ix i@ i! ; vx v@ V! ; Dvx Dv@ Dv! ; at at! )
+ 
+VOCABULARIES :
+ AltStackOps | Stack Diagram names for common stack permutations
+  s" jedit C:/4thCoSy/CoSy/AltStackOps.f " shell>
+ Reference Counting |
+  s" : ref" CShelp
+ Stack Frames |
+  s" : SF" CShelp
+  s" jEdit C:/4thCoSy/CoSy/CSauxstack.f" shell>
+
+STUBS : 
+ s" jedit CoSy/RecurInterp.f " shell>  	| lot done on input parsing 
+ s" jedit CoSy/Job.f" shell> 	| Functionalized IUP windows .
+				| Important use of ` meta 
+-- ToDo
+
+ ` ToDo ->
+ s" C:/CoSyNew/y15/ToDo_HIMYM_7-8crop.jpg " ' shell onvan
+
+
+| BEST OVERVIEW OF MAINSTREAM APL | 
+| Morten Kromberg, CTO, Dyalog Ltd. | Talks at Google 
+  https://youtu.be/PlM9BXfu7UY 
+
+
+
+	  A Great deal can be fleshed out quickly by individuals
+	  who can't go to sleep until they understand something .
+
+*| 1159 | 
+ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+
+ |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
+ s" =" 80 _take
+ | ====================================================================== |
+ | ###################################################################### | 
+ 
+  1 2 2015 30 DAYLNS  | sf6  | insert res in text using  F5 
+ | ======================== | Wed.May,20160525 | ======================== |
+CoSy.com Domain renew
+ | ======================== | Wed.Apr,20180411 | ======================== |
+MinnowBrook
+ 
+ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ 
+  help '
+  res> Help
+  s" case" CShelp
+
+| ------------------------ |
+ ` ToDo ->
+ ` ref ->
+ ` Addrs ->
+| ------------------------ |
+    resvar 
+  R ` ref v@ vm s" visa" con 
+ | ###################################################################### |  
+ |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
+ | ###################################################################### |
+ | ###################################################################### | 

@@ -1,0 +1,128 @@
+| vim: ft=reva
+|
+| Some simple CGI utilities...
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file.
+
+push~
+
+
+context: ~cgi
+~ ~util ~io ~strings
+~cgi
+
+context: ~params
+
+
+| Define your own implementation for this word to process the
+| CGI parameters.
+|
+| stack signature: ( a1 n1 a2 n2 -- 0|-1 )
+| (a1, n1): parameter name
+| (a2, n2): parameter value
+| If you return 0 further operation is aborted, otherwise continued...
+|
+| The default process is to populate ~params with the parameters passed in.
+defer process
+|
+| analyze the parameter string and call the xt for
+| each cgi parameter...
+: process-data ( a n -- -1|0)
+  -1
+  repeat
+    drop
+    '= split  | a n 0 | a1 n1 a2 n2 -1
+    if
+      >r -rot r> -rot | a2 n2 a1 n1
+      '& split  | a2 n2 a1 n1 0 | a2 n2 a1 n1 a3 n3 -1
+      if
+        >r -rot r> -rot | a2 n2 a3 n3 a1 n1
+        >r >r
+          process
+        r> r>
+        rot dup
+      else
+        process 0
+      then
+    else
+      2drop 0 0
+    then
+  while
+;
+
+
+| Helper to unescape strings
+: unescape ( a n -- a' n' )
+  " " pad lplace
+  0do
+    dup c@     | a c
+    dup '% =if
+      drop
+      1+
+      hex
+      dup 2 >single drop
+      decimal
+
+      pad c+lplace
+      2 +
+      3 skip
+    else
+      pad c+lplace
+      1+
+    then
+  loop
+  drop
+
+  pad lcount
+;
+: read-post ( -- a n -1 | 0 )
+  " CONTENT_LENGTH" getenv 00;
+  >single
+  if
+    here dup rot dup allot stdin read -1
+  else
+    drop 0
+  then
+;
+
+' ~params constant PARAMS
+: find-param ( a n -- dict | 0 )
+	PARAMS in~ ~sys find-word ;
+: create-param ( a1 n1 a2 n2 )
+  2swap (create) asciizl, does> lcount
+;
+
+: myprocess ~params create-param exit~ true ;
+' myprocess is process
+: read-params read-post if process-data drop then ;
+
+read-params
+~sys
+' read-params onstartup
+
+
+
+
+pop~
+
+|||
+
+def: process
+stack: a1 n1 a2 n2 -- 0|-1
+ctx: ~cgi
+ver: 6.1
+desc: =
+	This word is defined by the user of the library - it is called for each of
+	the CGI parameters.  (a1,n1) is the parameter name, (a2,n2) is the parameter
+	value.  If you wish to terminate the processing, return 0 otherwise, -1 will
+	continue.
+=
+
+def: read-post 
+stack:  -- a n -1 | 0 
+ctx: ~cgi
+ver: 6.1
+desc: =
+	
+=

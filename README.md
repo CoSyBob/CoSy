@@ -1,2 +1,4 @@
 # CoSy
-CoSy Life Log
+ Commit.0
+CoSy Living Log
+See http://CoSy.com

@@ -1,0 +1,354 @@
+| vim: ft=reva
+|
+| allocated static arrays, by macoln
+
+push~
+
+needs alg/common
+
+~struct
+
+alias: >nuls 3cell-
+
+defer newsize
+defer movedata
+variable ary
+
+z" null" @ negate constant "null"
+
+: nulfill ( a-end a-begin --)
+       do null @ i ! cellskip loop ;
+: allocnull ( alloc-size -- a)                         | allocate and fill with nulls
+       cells dup allocate ( cells a)
+       tuck swap bounds nulfill ;
+: data! ( info0...infonth a limit -- a)
+       0do tuck ! cell+ loop ;
+
+: (array) ( size -- a)
+       dup 1+ allocnull 1 data! ;
+: (darray) ( a-var size body -- a)                     | size dup'd for null#, extra cell for resize padding
+       over dup 4 + allocnull 3 data! tuck swap ! ;    | a-var not for header, new a stored there after resize
+: (2array) ( cols rows -- a)
+       2dup * -rot 2 pick
+       3 + allocnull 3 data! ;
+: (3array) ( cols rows depth -- a)
+       >r 2dup r@ * * -rot r> 3 pick
+       4 + allocnull 4 data! ;
+
+: cols ( -- cols)
+       ary @ 2cell- @ ;
+: rows ( -- rows)
+       ary @ 3cell- @ ;
+: deep ( -- depth)
+       ary @ 4cell- @ ;
+: (size) ( array -- n)
+       cell- @ ;
+: (all) ( array -- lastcell firstcell)
+       dup dup (size)
+       cells + swap ;
+
+
+| auto-resizing
+: ?nul-  null @ = nuls +! ;
+: ?nul+  null @ = abs nuls +! ;
+: +25%  dup 4 /mod + + ;
+: -25%  dup 4 /mod + - 1+ ;
+
+: #nuls ( -- n)
+       0 all do
+         i @ null @ =if 1+ then
+         cellskip
+       loop ;
+
+: old>NEW ( a-new a-oldlast a-oldfirst --)
+       do
+         i @ over !
+         cell+
+         cellskip
+       loop
+       drop ;
+: OLD>new ( a-old a-newlast a-newfirst --)
+       do
+         dup @ i !
+         cell+
+         cellskip
+       loop
+       drop ;
+
+: newbuf ( a-var array -- array a-new)
+       dup @ tuck dup  ( array a-var array array)
+       (size)  ( array a-var array size)
+       newsize  ( array a-var array newsize)
+       swap 2cell- @  ( array a-var newsize body)
+       dup>r (darray)  ( array a-new) ( body)
+       dup r> ! ;
+
+: ?grow ( a-var --)
+       dup @ >nuls @ not 0drop; drop
+       : grow ( a-var --)
+              newbuf  ( array a-new)
+              over (all) movedata  ( array)
+              3cell- free
+              #nuls nuls ! ;
+
+: ?shrink ( a-var --)
+       dup @ >nuls @ size 2/ > 0drop; drop
+       : shrink ( a-var --)
+              ['] > >defer compare
+              newbuf ( array a-new)
+              over dup (size) sort ( array a-new)
+              over swap (all) movedata ( array)
+              3cell- free
+              #nuls nuls !
+              undo compare ;
+
+| absolute navigation
+: xy>b ( x y -- a)
+       cols * + ary @ + ;                              | for byte arrays
+: b>xy ( a -- x y)
+       ary @ - cols /mod ;
+: xy>c ( x y -- a)                                     | for cell arrays
+       cols * + cells ary @ + ;
+: c>xy ( a -- x y)
+       ary @ - 1 cells / cols /mod ;
+: xyz>c ( x y z -- a)
+       cols deep * rot * + swap deep * + cells ary @ + ;
+: c>xyz ( a -- x y z)
+       ary @ - 1 cells / cols deep * /mod swap deep /mod -rot ;
+
+| relative navigation (2-D 4-byte, 1-byte)
+: E  cell+ ;
+: W  cell- ;
+: N  cols cells - ;
+: S  cols cells + ;
+
+: east  1+ ;
+: west  1- ;
+: north  cols - ;
+: south  cols + ;
+
+
+: 1ins ( data offset --)
+       ary @ swap cells + ! ;
+: 2ins ( data x y --)
+       xy>c ! ;
+: 3ins ( data x y --)
+       xyz>c ! ;
+: dins ( data a --)
+       ['] +25% is newsize
+       ['] old>NEW is movedata
+       xchg ?nul- ary ?grow ;
+
+: 1prt ( --)
+       "null" null !
+       all do
+         i @
+         dup null @ =if
+           drop 'x emit space
+         else
+           .
+         then
+         cellskip
+       loop
+       ."  // array of" space
+       size .
+       cr ;
+
+: 2prt ( --)
+       "null" null !
+       ary @ dup
+       (size) 0do
+         i cols mod 0if
+           cr
+         then
+         dup @
+         dup null @ =if
+           drop 'x emit 2 spaces
+         else
+           .
+         then
+         cell+
+       loop drop
+       ."  // array of" space
+       cols (.) type ." x" rows (.) type
+       ." =" ary @ (size) .
+       cr ;
+
+
+: arraymode
+  { ary @ (all) } is all
+  { ary @ (size) } is size
+  { ary @ >nuls } is nuls
+  { cells ary @ + } is th
+  { ary @ dup (size) sort } is srt
+  { ary @ dup cell- @ 1- cells + } is end
+  { all do i fetch over match if drop i
+     unloop ;then cellskip loop drop false } is fnd ;
+
+: array ( size <name> --)
+       create
+         "null" null ! (array) ,
+       does>
+         @ ary ! arraymode
+         ['] 1ins is ins
+         ['] 1prt is prt
+         { ary @ cell- free } is rmv ;
+
+: 2array ( cols rows <name> --)                        | 2-D array with header [rows|cols|size|data...]
+       create
+         0 null ! (2array) ,
+       does>
+         @ ary ! arraymode
+         ['] 2ins is ins
+         ['] 2prt is prt
+         { ary @ 3cell- free } is rmv ;
+
+: 3array ( cols rows depth <name> --)
+       create
+         "null" null ! (3array) ,
+       does> @ ary ! arraymode
+         ['] 3ins is ins
+         ['] 1prt is prt
+         { ary @ 4cell- free } is rmv ;
+
+: darray ( size <name> --)
+       create
+         "null" null ! ary swap here (darray) ,
+       does>
+         @ ary ! arraymode
+         ['] dins is ins 
+         ['] 1prt is prt
+         { ary @ 3cell- free } is rmv
+         { ary @ dup (size) swap >nuls @ - } is num
+         ['] -25% is newsize
+         ['] OLD>new is movedata
+         { fnd null @ swap ! nuls ++ ary ?shrink } is del ;
+
+to~ ~priv allocnull
+to~ ~priv data!
+
+pop~
+
+
+|||
+def: array
+ctx: ~struct
+stack: size <name> --
+desc: =
+    Create a linear array of fixed size, allocated to OS memory.
+    For example:
+
+       ok> needs alg/array
+       ok> ~struct ~myapp
+       ok> 33 array myarray
+
+    For convenience, declaring
+
+       ok> myarray
+
+    sets it as the active data structure, so words like 'size' and
+    'prt' automatically know to operate on it.
+=
+def: (array)
+ctx: ~struct
+stack: size -- a
+desc: =
+    Used to implement 'array', but is necessary if you wish to
+    allocate one within a turnkey:
+
+       ok> 33 array myarray
+       ok> : makearray  33 (array) ['] myarray ! ;
+       ok> ' makearray is appstart
+       ok> save myapp.exe
+=
+def: 2array
+ctx: ~struct
+stack: cols rows <name> --
+desc: =
+    Create a 2-D array.
+=
+def: (2array)
+ctx: ~struct
+stack: cols rows -- a
+desc: =
+    An '(array)' for '2array'.
+=
+def: 3array
+ctx: ~struct
+stack: cols rows depth <name> --
+desc: =
+    Create a 3-D array.
+=
+def: (3array)
+ctx: ~struct
+stack: cols rows depth -- a
+desc: =
+    An '(array)' for '3array'.
+=
+def: darray
+ctx: ~struct
+stack: size <name> --
+desc: =
+    Create a dynamic linear array that expands when full, and con-
+    tracts when half empty (if using 'ins' and 'del'). Resize amount
+    may be changed in the deferred word 'newsize', default 25%.
+=
+def: (darray)
+ctx: ~struct
+stack: a-variable size body -- a
+desc: =
+    An '(array)' for 'darray'.
+=
+def: ary
+ctx: ~struct
+stack: -- a
+desc: =
+    Variable holding the address of the active array.
+=
+def: rows
+ctx: ~struct
+stack: -- cols
+desc: =
+    Return the number of columns in the active (2- or 3-D) array.
+=
+def: cols
+ctx: ~struct
+stack: -- rows
+desc: =
+    Return the number of rows in the active (2- or 3-D) array.
+=
+def: deep
+ctx: ~struct
+stack: -- depth
+desc: =
+    Return the depth of the active (3-D) array.
+=
+def: xy>c
+ctx: ~struct
+stack: x y -- a
+desc: =
+    Given coordinates (x,y), return the corresponding cell in
+    the active (2-D) array. Origin is first cell, 0,0.
+=
+def: c>xy
+ctx: ~struct
+stack: a -- x y
+desc: =
+    Given a cell in the active (2-D) array, return the corres-
+    ponding coordinates (x,y). Origin is first cell, 0,0.
+=
+def: xyz>c
+ctx: ~struct
+stack: x y z -- a
+desc: =
+    Given coordinates (x,y,z), return the corresponding cell in
+    the active (3-D) array. Origin is first cell, 0,0,0.
+=
+def: c>xyz
+ctx: ~struct
+stack: a -- x y z
+desc: =
+    Given a cell in the active (3-D) array, return the corres-
+    ponding coordinates (x,y,z). Origin is first cell, 0,0,0.
+=
+related: (array) array (2array) 2array (3array) 3array size th end all cols rows deep xy>c c>xy xyz>c c>xyz fnd ins del prt rmv srt

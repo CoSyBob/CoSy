@@ -1,0 +1,86 @@
+| vim: ft=reva :
+push~
+~sys ~os ~
+
+variable cb-param-base
+: cb-param ( n -- m ) 1+ cells cb-param-base @ + @ ;
+: cb-setup (s0) @ >rr sp cell+ cell+ (s0) !   cb-param-base xchg >rr ;
+: cb-teardown rr> rr> (s0) ! cb-param-base ! ; 
+
+: cb: ( xt stacksize <name> -- )
+	cells allot | save that many bytes out of 'here'
+	here cell-
+	| ( xt newstack <name> -- )
+	| now, create the callback entity:
+	header
+	| fill in "stuff":
+	$e089 2, | mov eax, esp  -- use TOS as the offset
+	$50 1,	| push eax  -- temporary area for returned EAX
+	$60 1,	| pusha ( pushed eight registers on-stack )
+	$be 1,  | mov esi, imm32
+	,		| 'here' which was beginning of our stack
+	['] cb-setup compile
+	| ( xt -- )
+	$bb 1, , | mov ebx, imm32 (xt)
+	$d3ff 2, | call dword ebx
+	['] cb-teardown compile
+	$20244489 , | mov [esp+32], eax | save till after popa
+	$61 1,  | popa
+	$58 1,	| pop eax -- get EAX result
+	$c3 1,	 | ret
+	;
+
+hide cb-param-base
+hide cb-setup
+hide cb-teardown
+
+: stdcb: ( xt numparams stacksize <name> -- )
+	swap cells >r
+	p: cb:
+	-1 allot
+	$c2 1,	 | ret
+	r> 2,	| bytes to pop
+	;
+
+| callback is taken from Helmar's tcl/tk binding...
+	| pop eax
+	| push ebx ecx edx edi esi ebp
+	| mov esi, esp
+	| sub esp, 40
+	| call .1
+	| add esp, 40
+	| pop ebp esi edi edx ecx ebx
+	| ret
+	| .1: jmp eax
+: callback 
+	inline{
+		58 53 51 52 57 56 55 89 E6 83 EC 40 E8 0A 00 00
+		00 83 C4 40 5D 5E 5F 5A 59 5B C3 FF E0
+	} ;
+pop~
+
+|||
+
+def: cb: 
+stack:  xt numparams stacksize <name> -- 
+ctx: ~os
+desc: =
+	Create a new word whose xt can be used as a callback for a cdecl
+	function. It is crucial the numparams be correct, or the callback
+	will crash. 
+	
+	The "xt" is a normal Forth word, and can use any other Forth words
+	it needs - subject to the 'stacksize' (number of words available
+	for this callback to push) and subject to any environmental issues
+	regarding the platform you are running on.
+
+	=
+
+def: stdcb: 
+stack:  xt numparams stacksize <name> -- 
+ctx: ~os
+desc: =
+	Same as "cb:", but for a stdcall function 
+	=
+
+related: cb: stdcb: { }

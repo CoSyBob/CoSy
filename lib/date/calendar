@@ -1,0 +1,539 @@
+| vim: ft=reva :
+| Implementation of Julian and Gregorian calendar functions.
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+
+push~
+needs math/doubles 
+needs math/mod 
+needs alg/enum
+~doubles ~io ~
+
+context: ~date
+
+~priv
+| Compat layer for Baden's macros:
+: 2r@ r> r> r> 2dup >r >r swap rot >r ;
+: third   2 pick ;
+: fourth  3 pick ; 
+
+~date
+
+| Enumerations which can be used as symbolic names:
+0 enum: Sun Mon Tue Wed Thu Fri Sat enum;
+1 enum: Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec enum;
+
+~priv
+create weekdays '' Sun , '' Mon , '' Tue , '' Wed , '' Thu , '' Fri , '' Sat ,
+create months '' Jan , '' Feb , '' Mar , '' Apr , '' May , '' Jun , '' Jul ,
+	'' Aug , '' Sep , '' Oct , '' Nov , '' Dec ,
+create month-days 31 1, 28 1, 31 1, 30 1, 31 1, 30 1, 31 1, 31 1, 30 1, 31 1, 30 1, 31 1,
+
+~date
+: array>name ( n a -- a n ) swap cells + @ >name count ;
+: monthname ( n -- a n ) 12 clamp months array>name ;
+: dayname ( n -- a n ) 7 clamp weekdays array>name ;
+
+: isleap?  ( yyyy -- flag )
+	dup 4 mod not
+	over 100  mod and not not
+	swap 400 mod not or ;
+
+: ddd>yyyyddmm ( yyyy ddd -- yyyy dd mm )
+	1 max 366 min	| clamp input to valid 'ddd' value
+	over isleap? not 29 +  month-days 1+ c!	| set leap/not-leap february
+	12 0 do
+		| get month-days for this month:
+		month-days i + c@		| yyyy ddd md
+		2dup 1+ <if drop i 1+ unloop ;; then	
+		-
+	loop
+	drop 12 ;
+
+: mmddyyyy>ddd ( month day year -- day-of-year )
+	>r swap    ( day month)( r: year)
+	dup >r     ( r: year month)
+		367 *  362 -  12 / + ( day-of-year)
+	r> 2 >if
+		r@ isleap? not + 1- 
+	then
+	rdrop 
+	;
+
+| unix timestamp epoch is 00:00 on 1 Jan 1970
+: unix>time&date ( unix-timestamp -- ss mm hh dd MM yyyy )
+	60 /mod		| ss mmmm
+	60 /mod     | ss mm hhhhhh
+	24 /mod     | ss mm hh dddddd
+	dup 365 / 1970 + swap	| ss mm hh yyyy  dddddddd
+	100 * 36525 /mod drop 100 /
+	ddd>yyyyddmm rot ;
+: _time ( -- ss mm hh ) time&date 3drop ;
+: _date ( -- dd MM yyyy ) time&date >r >r >r 3drop r> r> r> ;
+: today ( -- mm dd yyyy ) _date >r swap r> ;
+: (date) ( mm dd yyyy -- a n) 
+	>r
+	(.) pad place
+	32 pad c+place
+	1 - monthname pad +place
+	32 pad c+place
+	r> (.) pad +place pad count ;
+
+: .date (date) type ;
+
+: (today) ( -- a n ) today (date) ;
+
+: .today (today) type ;
+
+|  *******************************************************************
+|  *     Julian Day Numbers                                          *
+|  *******************************************************************
+
+: fixed>dow     ( fixed-date -- day-of-week ) 7 _mod ;
+
+~priv -1721425 constant JD-START exit~
+
+: jd>fixed   ( julian-day-of-year -- fixed-date ) JD-START + ; 
+: fixed>jd  ( moment -- julian-day-of-year ) JD-START - ;
+
+|  *******************************************************************
+|  *     Gregorian Calendar                                          *
+|  *******************************************************************
+
+: gregorian>fixed    ( month day year -- fixed-date )
+    dup 1- >r                          ( R: previous-year)
+    mmddyyyy>ddd                              ( day-of-year)
+    r@   4 /_  +
+    r@ 100 /_  -
+    r@ 400 /_  +
+    r> 365 * + ;
+
+: fixed>gregorian-year  ( fixed-date -- gregorian-year )
+    1 -        ( d0)
+    146097 /_mod             ( d1 n400)
+        400 * swap           ( year d1)
+    36524  /_mod             ( year d2 n100)
+        dup >r               ( year d2 n100)( R: n100)
+        100 *  rot + swap    ( year d2)
+    1461   /_mod             ( year d3 n4)
+        4 * rot + swap       ( year d3)
+    365    /_                ( year n1)
+        dup >r               ( year n1)( R: n100 n1)
+        +                    ( year)
+    r> 4 = r> 4 = or not if 1+ then ;
+
+: fixed>gregorian      ( fixed-date -- month day year )
+    dup fixed>gregorian-year >r              ( R: year)
+    dup Jan 1 r@ gregorian>fixed -   ( date prior-days)
+    over Mar 1 r@ gregorian>fixed 1- >if
+        r@ isleap?  if  1+  else 2 +  then
+    then
+    12 *  373 +  367 / >r            ( date)( R: year month)
+    2r@ 1 rot
+    gregorian>fixed - 1+               ( day)
+    r> swap r> ( month day year) ;
+
+: calendar  ( fixed -- )
+    dup fixed>gregorian nip         ( fixed month year)
+    cr  8 spaces  over 1- 
+		monthname type
+    space dup . cr
+	." Su   Mo   Tu   We   Th   Fr   Sa" cr
+    2dup >r  1+ 1  r> gregorian>fixed >r
+        1 swap gregorian>fixed   ( fixed first-of-month)
+        dup fixed>dow 5 * spaces
+    r> over - 1+ 1 do
+        i 2 .r
+        2dup =if  " * " type else  2 spaces  then
+        1+  dup fixed>dow 0if cr then
+    loop
+    fixed>dow if cr then drop ;
+
+: cal ( month day year -- )  gregorian>fixed calendar ;
+
+: gregorian-date-difference         ( g-date-1 . . g-date-2 . . -- n )
+    gregorian>fixed >r gregorian>fixed r> swap - ;
+
+: days-remaining ( month day year -- n ) dup  Dec 31 rot  gregorian-date-difference ;
+: weekday-on-or-before     ( date k -- date' ) over swap - fixed>dow - ;
+: weekday-on-or-after  ( date k -- date' ) swap 6 + swap weekday-on-or-before ;
+: weekday-nearest     ( date k -- date' ) swap 3 + swap weekday-on-or-before ;
+: weekday-after     ( date k -- date' ) swap 7 + swap weekday-on-or-before ;
+: weekday-before     ( date k -- date' ) swap 1- swap weekday-on-or-before ;
+: nth-weekday  ( n k month day year -- date )
+    gregorian>fixed       ( n k date)
+    swap rot >r                ( date k)( R: n)
+    r@ 0 <if  weekday-after  else  weekday-before  then ( date)
+    r> 7 * + ;
+
+1 constant FIRST
+-1 constant LAST
+
+: today>fixed today gregorian>fixed ;
+
+: daysTil ( mm dd YYYY -- n ) gregorian>fixed today>fixed  - ;
+
+| (US) is the date in DST or not?
+: dst? ( fixed -- flag )
+	dup fixed>gregorian-year 
+	dup 1966 <if 2drop false ;then	| no DST before 1966
+	>r 
+	r@ 2007 <if
+		r@ 1987 <if
+			| prior to 1987:
+			LAST Sun Apr 30 r@ nth-weekday
+		else
+			| from 1987-2007:
+			FIRST Sun Apr 1 r@ nth-weekday
+		then
+		LAST Sun Oct 31 r> nth-weekday
+	else
+		| from 2007 on:
+		2 Sun Mar 1 r@ nth-weekday
+		FIRST Sun Nov 1 r> nth-weekday
+	then
+	between
+	;
+: eu-dst? ( fixed -- flag )
+	dup fixed>gregorian-year
+	dup 1996 <if 2drop false ;then | No EU DST before 1996
+	>r
+	LAST Sun Mar 31 r@ nth-weekday
+	LAST Sun Oct 31 r> nth-weekday
+	between
+	;
+
+pop~
+
+||| 
+def: Sun
+stack: -- 0
+ctx: ~date
+desc: @
+	Symbolic name for Sunday
+@
+def: Mon
+stack: -- 1
+ctx: ~date
+desc: @
+	Symbolic name for Monday
+@
+def: Tue
+stack: -- 2
+ctx: ~date
+desc: @
+	Symbolic name for Tuesday
+@
+def: Wed
+stack: -- 3
+ctx: ~date
+desc: @
+	Symbolic name for Wednesday
+@
+def: Thu
+stack: -- 4
+ctx: ~date
+desc: @
+	Symbolic name for Thursday
+@
+def: Fri
+stack: -- 5
+ctx: ~date
+desc: @
+	Symbolic name for Friday
+@
+def: Sat
+stack: -- 6
+ctx: ~date
+desc: @
+	Symbolic name for Saturday
+@
+related: Sun Mon Tue Wed Thu Fri Sat
+
+def: Jan
+stack: -- 1
+ctx: ~date
+desc: @
+	Symbolic name for January
+@
+def: Feb
+stack: -- 2
+ctx: ~date
+desc: @
+	Symbolic name for February
+@
+def: Mar
+stack: -- 3
+ctx: ~date
+desc: @
+	Symbolic name for March
+@
+def: Apr
+stack: -- 4
+ctx: ~date
+desc: @
+	Symbolic name for April
+@
+def: May
+stack: -- 5
+ctx: ~date
+desc: @
+	Symbolic name for May
+@
+def: Jun
+stack: -- 6
+ctx: ~date
+desc: @
+	Symbolic name for June
+@
+def: Jul
+stack: -- 7
+ctx: ~date
+desc: @
+	Symbolic name for July
+@
+def: Aug
+stack: -- 8
+ctx: ~date
+desc: @
+	Symbolic name for August
+@
+def: Sep
+stack: -- 9
+ctx: ~date
+desc: @
+	Symbolic name for September
+@
+def: Oct
+stack: -- 10
+ctx: ~date
+desc: @
+	Symbolic name for October
+@
+def: Nov
+stack: -- 11
+ctx: ~date
+desc: @
+	Symbolic name for November
+@
+def: Dec
+stack: -- 12
+ctx: ~date
+desc: @
+	Symbolic name for December
+@
+related: Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+
+
+def: fixed>dow
+stack: f -- dow
+ctx: ~date
+desc: @
+	Converts a fixed date to the day of the week (0=SUN) it is.
+@
+def: jd>fixed
+stack: jday -- fixed
+ctx: ~date
+desc: @
+	Converts a Julian calendar date to a fixed date.
+@
+def: fixed>jd
+stack: fixed -- jd
+ctx: ~date
+desc: @
+	Converts a fixed date to a Julian calendar date.
+@
+def: gregorian>fixed
+stack: mm dd yyyy -- f
+ctx: ~date
+desc: @
+	Convert the MM/DD/YYYY Gregorian date to a fixed date.
+@
+def: fixed>gregorian-year
+stack: f -- yyyy
+ctx: ~date
+desc: @
+	Get the Gregorian year for the given fixed date.
+@
+def: fixed>gregorian
+stack: f -- mm dd yyyy
+ctx: ~date
+desc: @
+	Convert the fixed date to the MM/DD/YYYY Gregorian date.
+@
+def: calendar
+stack: f -- 
+ctx: ~date
+desc: @
+	Prints a calendar for the month containing day "f"
+@
+def: cal
+stack: mm dd yyyy -- 
+ctx: ~date
+desc: @
+	Prints a calendar for the month containing Gregorian date MM/DD/YYYY
+@
+def: gregorian-date-difference
+stack: mm dd yyyy mm2 dd2 yyyy2 -- n
+ctx: ~date
+desc: @
+	Returns the numbers of days between the Gregorian dates MM/DD/YYYY and
+	MM2/DD2/YYYY2
+@
+def: days-remaining
+stack: mm dd yyyy -- n
+ctx: ~date
+desc: @
+	Returns the numbers of days left in the Gregorian year from Gregorian date
+	MM/DD/YYYY
+@
+def: weekday-on-or-before
+stack: date k -- date'
+ctx: ~date
+desc: @
+	Given a fixed date and a weekday, return a fixed date which is that weekday,
+	and as near to the fixed date passed in as possible, within a week before.
+	If the passed in date is that weekday, returns that date.
+@
+def: weekday-on-or-after
+stack: date k -- date'
+ctx: ~date
+desc: @
+	Given a fixed date and a weekday, return a fixed date which is that weekday,
+	and as near to the fixed date passed in as possible, within a week after.
+	If the passed in date is that weekday, returns that date.
+@
+def: weekday-nearest
+stack: date k -- date'
+ctx: ~date
+desc: @
+	Given a fixed date and a weekday, return a fixed date which is that weekday,
+	and as near to the fixed date passed in as possible, whether before or
+	after, within a week.
+	If the passed in date is that weekday, returns that date.
+@
+def: weekday-after
+stack: date k -- date'
+ctx: ~date
+desc: @
+	Given a fixed date and a weekday, return a fixed date which is that weekday,
+	and as near to the fixed date passed in as possible, within a week after.
+@
+def: weekday-before
+stack: date k -- date'
+ctx: ~date
+desc: @
+	Given a fixed date and a weekday, return a fixed date which is that weekday,
+	and as near to the fixed date passed in as possible, within a week before.
+@
+def: nth-weekday
+stack: n k mm dd yyyy -- date
+ctx: ~date
+desc: @
+	Find the "n"th weekday "k" from Gregorian date MM/DD/YYYY.  If the "n" is
+	negative, counts backward.
+@
+def: FIRST
+stack: -- 1
+ctx: ~date
+desc: @
+	For use with "nth-weekday" as the "n" parameter.
+@
+def: LAST
+stack: -- -1
+ctx: ~date
+desc: @
+	For use with "nth-weekday" as the "n" parameter.
+@
+def: today>fixed
+stack: -- f
+ctx: ~date
+desc: @
+	Returns today's date as a fixed date
+@
+def: dst?
+stack: f -- flag
+ctx: ~date
+ver: 6.1.4
+desc: @
+	Using US/Canadian rules, return whether or not the fixed date "f" falls
+	during Daylight Saving Time (DST).
+@
+def: eu-dst?
+stack: f -- flag
+ctx: ~date
+ver: 6.1.4
+desc: @
+	Using European Union rules, return whether or not the fixed date "f" falls
+	during Daylight Saving Time (DST).
+@
+def: monthname
+stack: n -- a n
+ctx: ~date
+desc: @
+	Converts the numeric month (0-11) to a three character abbreviation.  For
+	example, "2" -> "Mar"
+@
+def: dayname
+stack: n -- a n
+ctx: ~date
+desc: @
+	Converts the numeric day of week (0-6) to a three character abbreviation.
+	For example, "2" -> "Tue"
+@
+def: isleap?
+stack: yyyy -- flag
+ctx: ~date
+desc: @
+	Return true if the input year is a leap year (according to the Gregorian
+	rules!).  This will not be correct for Julian era years.
+@
+def: ddd>yyyyddmm
+stack: yyyy ddd -- yyyy dd mm
+ctx: ~date
+desc: @
+	Converts a  year and "julian day" within the year, into YYYY DD MM
+@
+def: mmddyyyy>ddd
+stack: mm dd yyyy -- ddd
+ctx: ~date
+desc: @
+	Converts Gregorian MM/DD/YYYY to a Julian day number
+@
+def: unix>time&date
+stack: unixtime -- ss mm hh dd MM yyyy
+ctx: ~date
+desc: @
+	Converts Unix timestamp (seconds since 0hrs 1/1/1970) to a "time&date" 
+@
+def: today
+stack: -- mm dd yyyy
+ctx: ~date
+desc: @
+	Returns today's date as Gregorian MM/DD/YYYY
+@
+def: (date)
+stack: mm dd yyyy -- a n
+ctx: ~date
+desc: @
+	Prints the Gregorian date MM/DD/YYYY into a string, as "7 Jan 2005"
+@
+def: .date
+stack: mm dd yyyy -- 
+ctx: ~date
+desc: @
+	Prints the Gregorian date MM/DD/YYYY as "7 Jan 2005"
+@
+def: (today)
+stack: -- a n
+ctx: ~date
+desc: @
+	Returns today's date in a string as "7 Jan 2005"
+@
+def: .today
+stack: -- a n
+ctx: ~date
+desc: @
+	Prints today's date as "7 Jan 2005"
+@
+related: (today) .today (date) .date today

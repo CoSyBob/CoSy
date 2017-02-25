@@ -1,0 +1,51 @@
+| vim: ft=reva :
+| --- \/  FLOORED MODULO FNS - from ansi standard  \/ ----
+| Floored mod is generally what you want if working with negative numbers
+
+push~ 
+needs math/doubles ~doubles ~
+
+: /_mod  ( dividend divisor -- remainder quotient )
+    >r s>d r> fm/mod ;
+: /_    ( dividend divisor -- quotient )  /_mod nip ;
+: _mod  ( dividend divisor -- remainder )  /_mod drop ;
+: */_mod ( amount multiplier divisor -- remainder quotient  ) >r m* r> fm/mod ;
+: */_   ( amount multiplier divisor -- quotient )  */_mod nip ;
+
+pop~
+
+| --- /\  FLOORED MODULO FNS - from ansi standard  /\ ----
+|||
+
+def: /_mod
+stack: dividend divisor --  rem quot
+ctx: ~
+desc: @
+	Floored version of "/mod"
+@
+def: /_
+stack: dividend divisor --  quot
+ctx: ~
+desc: @
+	Floored version of "/"
+@
+def: _mod
+stack: dividend divisor --  rem
+ctx: ~
+desc: @
+	Floored version of "mod"
+@
+def: */_mod
+stack: amount multiplier divisor --  rem quot
+ctx: ~
+desc: @
+	Like "*/_" but returns remainder as well
+@
+def: */_
+stack: amount multiplier divisor --  quot
+ctx: ~
+desc: @
+	Floored version of "*/"
+@
+
+related: /_mod /_ _mod */_mod */_

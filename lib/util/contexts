@@ -1,0 +1,22 @@
+| vim: ft=reva:
+push~
+reva ~priv ~
+: snap~
+    create        ( <name> -- ; take a snapshot of the current search order)
+    contexts dup lcount  swap - cell+ asciizl,
+    does>         ( set the search order to that one from the snapshot )
+    lcount over contexts rot move 
+    peek @ last !  ;
+pop~
+|||
+
+def: snap~
+ctx: ~
+stack: <name> -- 
+ver: 6.0.11
+desc: +
+	Moved to library "util/contexts" in 6.0.12
+	Creates a "snapshot" of the current search-order.  The word
+	"<name>" it creates, when invoked, will reset the search order
+	to the way it was when "<name>" was created.
++

@@ -1,0 +1,72 @@
+| vim: ft=reva :
+| choices - the "case" analog from older Reva
+
+push~
+~priv
+variable action 
+~util ~
+
+: choices: create 0 , ['] noop , 
+  does>  ( n -- )
+    dup cell+ @ action !
+    dup @ dup 0if 3drop ;then | don't do anything if no choices
+    >r  | count on return-stack
+    cell+
+    repeat 
+        | get next 'choice' and see if it matches:
+        cell+ dup @ 2 pick =if
+            | it does, so execute and quit:
+            rdrop nip cell+ @execute 
+        ;then
+        | bump to next 'choice' and decrement choices left count:
+        cell+ r> 1- dup >r 
+    while 2drop
+    | don't forget to clean up if we didn't do anything:
+    rdrop action @execute ;
+: choice ( xt n -- ) last @ >xt @ ++ , , ;
+: default ( xt -- ) last @ >xt @ cell+ ! ;
+
+pop~
+
+|||
+
+def: choices: 
+ctx: ~
+stack:  <name> -- 
+desc: =
+	MOVED TO choices in 6.0.11
+	Creates a new 'choice' variable called '<name>'.  This sets up a
+	sort of 'sparse array' decision tree.  Use it like this:
+	 
+		choices: mychoices
+			' choice1  'a choice
+			' choice2  'b choice
+			' choice-default default
+
+	Then you use it like:
+
+		ekey mychoices
+
+	and the appropriate choice gets called.
+=
+
+def: choice 
+ctx: ~
+stack:  xt n --  
+desc: =
+	MOVED TO choices in 6.0.11
+	Puts "xt" in the most recent 'choices:' variable, where 'n' is the
+	value which will cause 'xt' to be executed when the 'choice:'
+	variable is executed.
+=
+
+def: default 
+ctx: ~
+stack:  xt -- 
+desc: =
+	MOVED TO choices in 6.0.11
+	Makes 'xt' the default "choice" to be executed when nothing else
+	matches.  The default "default" is to do nothing.
+=
+
+related: choices: choice default

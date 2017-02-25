@@ -1,0 +1,365 @@
+| vim: ft=reva
+
+| Wrapper for the CD (CanvasDraw) library.
+| For the copyright restrictions (basically the same
+| as for IUP) have a look at the CD wensite:
+| http://www.tecgraf.puc-rio.br/cd
+
+push~
+~
+context: ~cd
+~util
+~cd
+
+os [IF]
+  " libcd.so"    lib lib-cd
+  " libcdiup.so" lib lib-cd-iup
+[ELSE]
+  " cd.dll"      lib lib-cd
+  " cdiup.dll"   lib lib-cd-iup
+[THEN]
+
+
+lib-cd drop
+
+0 func: cdVersion              as cd-version
+0 func: cdVersionDate          as cd-version-date
+0 func: cdVersionNumber        as cd-version-number
+2 func: cdCreateCanvas         as cd-create-canvas
+3 func: cdCreateCanvasf        as cd-create-canvas-f
+1 func: cdKillCanvas           as cd-kill-canvas
+1 func: cdGetContext           as cd-get-context
+1 func: cdContextCaps          as cd-context-caps
+1 func: cdActivate             as cd-activate
+0 func: cdActiveCanvas         as cd-active-canvas
+1 func: cdSimulate             as cd-simulate
+0 func: cdFlush                as cd-flush
+0 func: cdClear                as cd-clear
+0 func: cdSaveState            as cd-save-state
+1 func: cdRestoreState         as cd-restore-state
+1 func: cdReleaseState         as cd-release-state
+2 func: cdSetAttribute         as cd-set-attribute
+3 func: cdSetfAttribute        as cd-set-f-attribute
+1 func: cdGetAttribute         as cd-get-attribute
+
+0 func: cdContextNativeWindow  as cd-context-native-window
+4 func: cdGetScreenSize        as cd-get-screen-size
+0 func: cdGetScreenColorPlanes as cd-get-screen-color-planes
+
+3 func: cdRegisterCallback     as cd-register-callback
+6 func: cdPlay                 as cd-play
+
+4 func: cdGetCanvasSize        as cd-get-canvas-size
+1 func: cdUpdateYAxis          as cd-update-y-axis
+4 func: cdMM2Pixel             as cd-mm-to-pixel
+4 func: cdPixel2MM             as cd-pixel-to-mm
+2 func: cdOrigin               as cd-origin
+
+1 func: cdClip                 as cd-clip
+4 func: cdClipArea             as cd-clip-area
+1 func: cdGetClipPoly          as cd-clip-poly
+4 func: cdClipArea             as cd-clip-area
+
+2 func: cdPointInRegion        as cd-point-in-region
+2 func: cdOffsetRegion         as cd-offset-region
+4 func: cdRegionBox            as cd-region-box
+1 func: cdRegionCombineMode    as cd-region-combine-mode
+
+3 func: cdPixel                as cd-pixel
+2 func: cdMark                 as cd-mark
+4 func: cdLine                 as cd-line
+1 func: cdBegin                as cd-begin
+2 func: cdVertex               as cd-vertex
+0 func: cdEnd                  as cd-end
+4 func: cdRect                 as cd-rect
+4 func: cdBox                  as cd-box
+6 func: cdArc                  as cd-arc
+6 func: cdSector               as cd-sector
+6 func: cdChord                as cd-chord
+3 func: cdText                 as cd-text
+
+1 func: cdBackground           as cd-background
+1 func: cdForeground           as cd-foreground
+1 func: cdBackOpacity          as cd-back-opacity
+1 func: cdWriteMode            as cd-write-mode
+1 func: cdLineStyle            as cd-line-style
+2 func: cdLineDashes           as cd-line-dashes
+1 func: cdLineWidth            as cd-line-width
+1 func: cdLineJoin             as cd-line-join
+1 func: cdLineCap              as cd-line-cap
+1 func: cdInteriorStyle        as cd-interior-style
+1 func: cdHatch                as cd-hatch
+3 func: cdStipple              as cd-stipple
+2 func: cdGetStipple           as cd-get-stipple
+3 func: cdPattern              as cd-pattern
+2 func: cdGetPattern           as cd-get-pattern
+1 func: cdFillMode             as cd-fill-mode
+3 func: cdFont                 as cd-font
+3 func: cdGetFont              as cd-get-font
+1 func: cdNativeFont           as cd-native-font
+1 func: cdTextAlignment        as cd-text-alignment
+1 func: cdTextOrientation      as cd-text-orientation
+1 func: cdMarkType             as cd-mark-type
+1 func: cdMarkSize             as cd-mark-size
+
+3 func: cdVectorText           as cd-vector-text
+3 func: cdMultiLineVectorText  as cd-multiline-vector-text
+
+1 func: cdVectorFont           as cd-vector-font
+4 func: cdVectorTextDirection  as cd-vector-text-direction
+1 func: cdVectorTextTransform  as cd-vector-text-transform
+3 func: cdVectorTextSize       as cd-vector-text-size
+1 func: cdVectorCharSize       as cd-vector-char-size
+
+3 func: cdGetVectorTextSize    as cd-get-vector-text-size
+4 func: cdGetVectorTextBounds  as cd-get-vector-text-bounds
+
+4 func: cdFontDim              as cd-font-dim
+3 func: cdTextSize             as cd-text-size
+7 func: cdTextBox              as cd-text-box
+4 func: cdTextBounds           as cd-text-bounds
+1 func: cdGetColorPlanes       as cd-get-color-planes
+
+3 func: cdEncodeColor          as cd-encode-color
+4 func: cdDecodeColor          as cd-decode-color
+1 func: cdDecodeAlpha          as cd-decode-alpha
+2 func: cdEncodeAlpha          as cd-encode-alpha
+3 func: cdPalette              as cd-palette
+
+7 func: cdGetImageRGB          as cd-get-image-rgb
+13 func: cdPutImageRectRGB     as cd-put-image-rect-rgb
+14 func: cdPutImageRectRGBA    as cd-put-image-rect-rgb-a
+12 func: cdPutImageRectMap     as cd-put-image-rect-map
+8 func: cdRGB2Map              as cd-rgb-to-map
+
+2 func: cdCreateImage          as cd-create-image
+3 func: cdGetImage             as cd-get-image
+7 func: cdPutImageRect         as cd-put-image-rect
+1 func: cdKillImage            as cd-kill-image
+6 func: cdScrollArea           as cd-scroll-area
+
+3 func: cdCreateBitmap         as cd-create-bitmap
+7 func: cdInitBitmap           as cd-init-bitmap-rgba
+6 func: cdInitBitmap           as cd-init-bitmap-rgb
+5 func: cdInitBitmap           as cd-init-bitmap-map
+1 func: cdKillBitmap           as cd-kill-bitmap
+2 func: cdBitmapGetData        as cd-bitmap-get-data
+5 func: cdBitmapSetRect        as cd-bitmap-set-rect
+5 func: cdPutBitmap            as cd-put-bitmap
+3 func: cdGetBitmap            as cd-get-bitmap
+2 func: cdBitmapRGB2Map        as cd-bitmap-rgb-to-map
+
+
+-1 constant CD_QUERY
+
+0 constant CD_RGB
+1 constant CD_MAP
+$100 constant CD_RGBA
+
+0 constant CD_IRED
+1 constant CD_IGREEN
+2 constant CD_IBLUE
+3 constant CD_IALPHA
+4 constant CD_INDEX
+5 constant CD_COLORS
+
+-1 constant CD_ERROR
+0 constant  CD_OK
+
+0 constant CD_CLIPOFF
+1 constant CD_CLIPAREA
+2 constant CD_CLIPPOLYGON
+3 constant CD_CLIPREGION
+
+0 constant CD_UNION
+1 constant CD_INTERSECT
+2 constant CD_DIFFERENCE
+3 constant CD_NOINTERSECT
+
+0 constant CD_FILL
+1 constant CD_OPEN_LINES
+2 constant CD_CLOSED_LINES
+3 constant CD_CLIP
+4 constant CD_BEZIER
+5 constant CD_REGION
+
+10 constant CD_POLYCUSTOM
+
+0 constant CD_EVENODD
+1 constant CD_WINDING
+
+0 constant CD_MITER
+1 constant CD_BEVEL
+2 constant CD_ROUND
+
+0 constant CAPFLAT
+1 constant CAPSQUARE
+2 constant CD_CAPROUND
+
+0 constant CD_OPAQUE
+1 constant CD_TRANSPARENT
+
+0 constant CD_REPLACE
+1 constant CD_XOR
+2 constant CD_NOT_XOR
+
+0 constant CD_POLITE
+1 constant CD_FORCE
+
+0 constant CD_CONTINOUS
+1 constant CD_DASHED
+2 constant CD_DOTTED
+3 constant CD_DASH_DOT
+4 constant CD_DASH_DOT_DOT
+5 constant CD_CUSTOM
+
+0 constant CD_PLUS
+1 constant CD_STAR
+2 constant CD_CIRCLE
+3 constant CD_X
+4 constant CD_BOX
+5 constant CD_DIAMOND
+6 constant CD_HOLLOW_CIRCLE
+7 constant CD_HOLLOW_BOX
+8 constant CD_HOLLOW_DIAMOND
+
+0 constant CD_HORIZONTAL
+1 constant CD_VERTICAL
+2 constant CD_FDIAGONAL
+3 constant CD_BDIAGONAL
+4 constant CD_CROSS
+5 constant CD_DIAGCROSS
+
+0 constant CD_SOLID
+1 constant CD_HATCH
+2 constant CD_STIPPLE
+3 constant CD_PATTERN
+4 constant CD_HOLLOW
+
+0 constant CD_NORTH
+1 constant CD_SOUTH
+2 constant CD_EAST
+3 constant CD_WEST
+4 constant CD_NORTH_EAST
+5 constant CD_NORTH_WEST
+6 constant CD_SOUTH_EAST
+7 constant CD_SOUTH_WEST
+8 constant CD_CENTER
+9 constant CD_BASE_LEFT
+10 constant CD_BASE_CENTER
+11 constant CD_BASE_RIGHT
+
+0 constant CD_SYSTEM
+1 constant CD_COURIER
+2 constant CD_TIMES_ROMAN
+3 constant CD_HELVETICA
+4 constant CD_NATIVE
+
+0 constant CD_PLAIN
+1 constant CD_BOLD
+2 constant CD_ITALIC
+3 constant CD_BOLD_ITALIC
+
+8 constant CD_SMALL
+12 constant CD_STANDARD
+18 constant CD_LARGE
+
+$00000000 constant CD_CAP_NONE
+$00000001 constant CD_CAP_FLUSH
+$00000002 constant CD_CAP_CLEAR
+$00000004 constant CD_CAP_PLAY
+$00000008 constant CD_CAP_YAXIS
+$00000010 constant CD_CAP_CLIPAREA
+$00000020 constant CD_CAP_CLIPPOLY
+$00000040 constant CD_CAP_MARK
+$00000080 constant CD_CAP_RECT
+$00000100 constant CD_CAP_VECTORTEXT
+$00000200 constant CD_CAP_IMAGERGB
+$00000400 constant CD_CAP_IMAGERGBA
+$00000800 constant CD_CAP_IMAGEMAP
+$00001000 constant CD_CAP_GETIMAGERGB
+$00002000 constant CD_CAP_IMAGESRV
+$00004000 constant CD_CAP_BACKGROUND
+$00008000 constant CD_CAP_BACKOPACITY
+$00010000 constant CD_CAP_WRITEMODE
+$00020000 constant CD_CAP_LINESTYLE
+$00040000 constant CD_CAP_LINEWIDTH
+$00080000 constant CD_CAP_WD
+$00100000 constant CD_CAP_HATCH
+$00200000 constant CD_CAP_STIPPLE
+$00400000 constant CD_CAP_PATTERN
+$00800000 constant CD_CAP_FONT
+$01000000 constant CD_CAP_FONTDIM
+$02000000 constant CD_CAP_TEXTSIZE
+$04000000 constant CD_CAP_TEXTORIENTATION
+$08000000 constant CD_CAP_PALETTE
+$10000000 constant CD_CAP_LINECAP
+$20000000 constant CD_CAP_LINEJOIN
+$40000000 constant CD_CAP_REGION
+$80000000 constant CD_CAP_CHORD
+$FFFFFFFF constant CD_CAP_ALL
+
+0 constant CD_SIZECB
+0 constant CD_CONTINUE
+1 constant CD_ABORT
+
+$0000 constant CD_SIM_NONE
+$0001 constant CD_SIM_CLIPAREA
+$0002 constant CD_SIM_CLIPPOLY
+$0004 constant CD_SIM_TEXT
+$0008 constant CD_SIM_MARK
+$0010 constant CD_SIM_LINE
+$0020 constant CD_SIM_RECT
+$0040 constant CD_SIM_ARC
+$0080 constant CD_SIM_POLYLINE
+$0100 constant CD_SIM_BOX
+$0200 constant CD_SIM_SECTOR
+$0400 constant CD_SIM_POLYGON
+$0800 constant CD_SIM_WD
+$1000 constant CD_SIM_VECTORTEXT
+$2000 constant CD_SIM_CHORD
+$FFFF constant CD_SIM_ALL
+
+CD_SIM_LINE CD_SIM_RECT CD_SIM_ARC CD_SIM_POLYLINE or or or  constant CD_SIM_LINES
+CD_SIM_BOX CD_SIM_SECTOR CD_SIM_POLYGON  or or  constant CD_SIM_FILES
+CD_SIM_CLIPAREA CD_SIM_CLIPPOLY  or  constant CD_SIM_CLIP
+
+$FF0000 constant CD_RED
+$800000 constant CD_DARK_RED
+$00FF00 constant CD_GREEN
+$008000 constant CD_DARK_GREEN
+$0000FF constant CD_BLUE
+$000080 constant CD_DARK_BLUE
+
+$FFFF00 constant CD_YELLOW
+$808000 constant CD_DARK_YELLOW
+$FF00FF constant CD_MAGENTA
+$800080 constant CD_DARK_MAGENTA
+$00FFFF constant CD_CYAN
+$008080 constant CD_DARK_CYAN
+
+$FFFFFF constant CD_WHITE
+$000000 constant CD_BLACK
+
+$808080 constant CD_DARK_GRAY
+$C0C0C0 constant CD_GRAY
+
+
+: cd-red   ( n -- n )  16 >>  $FF and  ;
+: cd-green ( n -- n )  8 >>  $FF and  ;
+: cd-blue  ( n -- n )  $FF and  ;
+
+: cd-put-image-rgb  0 0 0 0  cd-put-image-rect-rgb  ;
+: cd-put-image-rgb-a  0 0 0 0  cd-put-image-rect-rgb-a  ;
+: cd-put-image-map  0 0 0 0  cd-put-image-rect-map  ;
+: cd-put-image  0 0 0 0  cd-put-image  ;
+
+: cd-copyright  " Copyright (C) 1994-2005 Tecgraf/PUC-Rio and PETROBRAS S/A"  ;
+
+
+lib-cd-iup drop
+0 func: cdContextIup           as cd-context-iup
+
+pop~
+
+||| 

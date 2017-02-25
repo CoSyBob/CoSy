@@ -1,0 +1,367 @@
+| vim: ft=reva :
+|  HelFORTH - x86 disassembler for Reva 6.04
+| -------------------------------------------------
+|      File: disasm-core.h4
+|   Version: 2.0
+|    Author: Helmar Wodtke
+|      Year: 2004, 2005, 2006
+| -------------------------------------------------
+|
+| first some tools from HelFORTH
+|
+
+push~ 
+~
+context: ~debug 
+~sys ~io ~strings ~util 
+
+~debug
+context: ~debug-priv 
+macro
+: my defer? 1+ literal, then> dup @ >rr >rr
+    later rr> r> ! ;
+forth
+
+defer .addr      
+defer .cell
+defer handle-ret
+~debug-priv
+variable lastaddr
+variable mute?
+: myemit mute? @ if drop ;then emit ;
+: mytype 0 ?do dup c@ myemit 1+ loop drop ;
+: space    32 myemit ;
+: spaces   0; space 1- spaces ;
+
+: nop      ;
+: alloz    0; 0 1, 1- alloz ;
+| ----------- utilities --------------------------------------
+|
+: sigbyte       dup $80 and if $ff tuck and xor 1+ negate then ;
+: parse,        here parsews dup 1,
+                0 ?do dup c@ '_ of 32 then 1, 1+ loop drop ;
+: ..            parsews eval
+: (..)          over 1+ 2dup =if drop ;then swap (..) ;
+: .xhb          15 and '0 over 9 >if drop 55 then + myemit ;
+: .xb           dup  4 >> .xhb .xhb ;
+: .xw           dup  8 >> .xb  .xb  ;
+: .xd           dup 16 >> .xw  .xw  ;
+: .sign         -rot over and if xor 1+ '- else nip '+ then myemit ;
+: .xsb_         dup c@ $80       $ff .sign .xb 1+ ;
+: .xsw               $8000     $ffff .sign .xw ;
+: .xsd           $80000000 $ffffffff .sign .xd ;
+: .xsw_         dup w@ .xsw 2 + ;
+: .xb_          dup c@ .xb  1+ ;
+: .xw_          dup w@ .xw  2 + ;
+: xdump         0 ?do .xb_ space loop drop ;
+: ,,            ', myemit ;
+
+| ------------------------------------------------------------
+| jump vector for opcode disassembly
+|
+create _activity 256 cells alloz
+variable activity _activity activity !
+
+: known         cells activity @ + @ ;
+: as:           p: ::
+: (as:)         over -1 =if drop ;then
+                tuck swap cells activity 
+				@ 
+				+ ! (as:) ;
+: is:           parse, >r as: r> p: literal then> count mytype ;
+: =>            is: $40 1, p: ; ;
+: disasm'       dup c@ known ?dup if >r ;then " db " mytype .xb_ ;
+
+| ------------------------------------------------------------
+|
+defer .[         make .[        '[ myemit ;
+defer .]         make .]        '] myemit ;
+: .[] .[ later .] noop ;
+defer |e         make |e        'e myemit ;
+defer w|d        make w|d       'd myemit ;
+defer |d         make |d        'd myemit ;
+defer getcell    make getcell   dup @ swap cell+ swap ;
+defer sigcell    make sigcell   ;
+' .xd dup is .addr is .cell
+defer offset     make offset    + ; | offset addr -- addr'
+
+| registers
+
+: unireg        |e " axcxdxbxspbpsidi"
+: (reg)         drop swap 7 and 2 * + 2 mytype ;
+: segreg        " escsssdsfsgs????" (reg) ;
+: bytreg        " alcldlblahchdhbh" (reg) ;
+| : eunireg       my |e undo |e unireg ;
+
+| wordlists
+
+: wordlist:     create
+: (wordlist)    parse, 1+ c@ '; <>if (wordlist) ;then ;
+: select        swap 0 of count ;then 1- swap count + select ;
+: .select       select mytype ;
+
+| ------------------------------------------------------------
+| decode effective adresses
+|
+: sib           0 >r over c@ dup $38 and $20 <>if
+                  dup 3 >> 7 and unireg
+                  dup 6 >> 3 and ?dup if '* myemit 1 swap << '0 + myemit
+                  then rdrop '+ >r
+                then 7 and swap $c0 and 0 =if 5 of rdrop 1+ ;then
+                then r> ?dup if myemit then unireg 1+ ;
+defer eareg ' unireg is eareg
+: ea            | ptr -- ptr'
+                dup c@ $c0 and
+                  $00 of dup c@ 7 and 5 =if
+                    1+ .[] dup @ .addr cell+     ;then
+                  else $c0 =if dup c@ eareg 1+   ;then then
+                .[] count tuck
+                dup 7 and 4 =if sib else unireg
+                then swap $c0 and
+                  $40 of .xsb_                   ;then
+                  $00 =if dup 1- c@ 7 and 5 <>if ;then then
+                dup @ ?dup if .xsd then cell+    ;
+
+: eabyte        my eareg ['] bytreg is eareg ea ;
+| : w|d_ea        my .[ make .[ w|d '[ myemit ea ;
+: w|d_ea        my .[ ea ; 
+: subcode       1+ dup c@ 3 >> 7 and ;
+: unireg,ea     subcode unireg ,, ea ;
+: ea,unireg     subcode swap ea ,, swap unireg ;
+: bytreg,eabyte subcode bytreg ,, eabyte ;
+: eabyte,bytreg subcode swap eabyte ,, swap bytreg ;
+: eax           0 unireg ;
+: w?            dup c@ 1 and ;
+: reg,ea        w? if unireg,ea ;then bytreg,eabyte ;
+: ea,reg        w? if ea,unireg ;then eabyte,bytreg ;
+: ea/w          1- w? if 1+ ea ;then " byte " mytype 1+ eabyte ;
+: /w            dup 1 or ;
+
+| ------------------------------------------------------------
+
+wordlist: math1 add_  or_  adc_  sbb_ and_ sub_  xor_ cmp_  ;
+wordlist: math2 rol_  ror_ rcl_  rcr_ shl_ shr_  sal_ sar_  ;
+wordlist: math3 test_ ???_ not_  neg_ mul_ imul_ div_ idiv_ ;
+wordlist: strops ?    ?    movs  cmps ?    stos  lods scas  ;
+wordlist: wl-8f pop_  ???_ ???_  ???_ ???_ ???_  ???_ ???_  ;
+wordlist: wl-fe inc_  dec_ ???_  ???_ ???_ ???_  ???_ ???_  ;
+wordlist: wl-ff inc_  dec_ call_ call_far_ jmp_ jmp_far_ push_ ???_ ;
+wordlist: loops loopnz_ loopz_ loop_ ;
+
+: b|w|d         dup c@ 1 and 0 =if 'b myemit 1+ ;then w|d 1+ ;
+: register      dup c@ 7 and unireg 1+ ;
+: shortjump     1+ dup c@ sigbyte over 1+ offset .addr 1+ ;
+: condition     dup dup 6 and 6 =if 1 xor then 1 and 1 =if 'n myemit then
+                1 >> 7 and " oczasplg" drop + c@ myemit ;
+: near          1+ getcell sigcell over offset .addr ;
+: math1.1       1- subcode math1 .select ;
+: math1.2       subcode math1 .select ;
+: math2.1       subcode math2 .select ;
+: math2.2       subcode math2 .select ;
+: math3.1       subcode math3 .select ;
+
+wordlist: fp-d8 fadd_ fmul_ fcom_ fcomp_ fsub_ fdiv_ fmul_ fcomp_ fsubr_  fdivr_  ;
+: mathd8 subcode fp-d8 .select 1+ 1+ ;
+: fpinst " FP" mytype 1+ 1+ ;
+-1 | magic stop
+$00 $08 $10 $18 $20 $28 $30 $38
+$01 $09 $11 $19 $21 $29 $31 $39 as: math1.1 ea,reg ;
+$02 $0A $12 $1A $22 $2A $32 $3A
+$03 $0B $13 $1B $23 $2B $33 $3B as: math1.1 reg,ea ;
+$04 $0C $14 $1C $24 $2C $34 $3C as: math1.1 1+ " al," mytype .xb_ ;
+$05 $0D $15 $1D $25 $2D $35 $3D as: math1.1 1+ eax ,, getcell .cell ;
+$06 => push_es
+$07 => pop_es
+$0E => push_cs
+$0F as: dup 1+ c@ $F0 and $80 =if
+        'j myemit 1+ dup c@ condition space near ;then dup c@ .xb 1+ ;
+$16 => push_ss
+$17 => pop_ss
+$1E => push_ds
+$1F => pop_ds
+$26 => es:
+$27 => daa
+$2E => cs:
+$2F => das
+$36 => ss:
+$37 => aaa
+$3E => ds:
+$3F => aas
+$40 .. $47 is: inc_ register ;
+$48 .. $4F is: dec_ register ;
+$50 .. $57 is: push_ register ;
+$58 .. $5F is: pop_ register ;
+$60 is: pusha |d 1+ ;
+$61 is: popa |d 1+ ;
+$62 is: bound_ unireg,ea ;
+$63 is: arpl_ unireg,ea ;
+$64 => fs: $65 => gs: $66 => o2/o4 $67 => a2/a4
+$68 is: push |d space 1+ getcell .cell ;
+$69 is: imul_ unireg,ea ,, getcell .cell ;
+$6A is: push_ |d 1+ .xsb_ ;
+$6B is: imul_ unireg,ea ,, .xsb_ ;
+$6C $6D is: ins b|w|d ;
+$6E $6F is: outs b|w|d ;
+$70 .. $7F is: j dup c@ condition space shortjump ;
+$80 as: math1.2 eabyte ,, .xb_ ;
+$81 as: math1.2 ea ,, getcell .cell ;
+$83 as: math1.2 ea ,,  .xsb_ ;
+$84 /w is: test_ reg,ea ;
+$86 /w is: xchg_ reg,ea ;
+$88 /w is: mov_ ea,reg ;
+$8A /w is: mov_ reg,ea ;
+$8C is: mov_ subcode swap ea ,, swap segreg ;
+$8D is: lea_ unireg,ea ;
+$8E is: mov_ subcode segreg ,, ea ;
+$8F as: subcode wl-8f .select w|d_ea ;
+$90 => nop
+$91 .. $97 is: xchg_ eax ,, register ;
+$98 => cbw/cwde $99 => cdq
+$9B => wait
+$9E => sahf $9F => lahf
+$9C is: pushf |d 1+ ;
+$9D is: popf  |d 1+ ;
+$A0 is: mov_al,[ 1+ getcell .addr .] ;
+$A1 is: mov_ 1+ eax " ,[" mytype getcell .addr .] ;
+$A2 is: mov_[ 1+ getcell .addr " ],al" mytype ;
+$A3 is: mov_[ 1+ getcell .addr " ]," mytype eax ;
+$A4 .. $A7 $AA .. $AF as: dup c@ 1 >> 7 and strops .select b|w|d ;
+$A8 is: test_al, 1+ .xb_ ;
+$A9 is: test_ 1+ eax ,, getcell .cell ;
+$B0 .. $B7 is: mov_ dup c@ bytreg ,, 1+ .xb_ ;
+$B8 .. $BF is: mov_ dup c@ unireg ,, 1+ getcell .cell ;
+$C0 /w as: math2.1 ea/w ,, .xsb_ ;
+$C2 is: ret_ 1+ .xw_  handle-ret ;
+$C3 is: ret 1+ handle-ret ; | => ret
+$C4 is: les_ unireg,ea ;
+$C5 is: lds_ unireg,ea ;
+$C6 is: mov_ 1+ ea ,, .xb_ ;
+$C7 is: mov_ 1+ ea ,, getcell .cell ;
+$C8 is: enter_ 1+ .xw_ ,, .xb_ ;
+$C9 => leave
+$CA is: retf_ 1+ .xw_ ;
+$CB => retf
+$CC => int_3
+$CD is: int_ 1+ .xb_ ;
+$CE => into
+$CF => iret handle-ret
+$D0 /w as: math2.2 ea/w " ,1" mytype ;
+$D2 /w as: math2.2 ea/w " ,cl" mytype ;
+$D4 is: aam 1+ dup c@ 10 <>if space .xb_ ;then 1+ ;
+$D5 is: aad 1+ dup c@ 10 <>if space .xb_ ;then 1+ ;
+$D7 => xlatb
+$D8 as: mathd8 ;
+$D9 .. $DF as: fpinst ;
+$E0 .. $E2 as: dup c@ 3 and loops .select shortjump ;
+$E3 is: j 1 unireg " z " mytype shortjump ;
+$E4 is: in_al, 1+ .xb_ ;
+$E5 is: in_ eax ,, 1+ .xb_ ;
+$E6 is: out_ 1+ .xb_ " ,al" mytype ;
+$E7 is: out_ 1+ .xb_ ,, eax ;
+$E8 is: call_ near ;
+$E9 is: jmp_ near handle-ret ;
+$EB is: jmp_short_ shortjump ;
+$EC => in_al,dx
+$ED is: in_ eax " ,dx" mytype 1+ ;
+$EE => out_dx,al
+$EF is: out_dx, eax 1+ ;
+$F0 => lock
+$F1 => int1
+$F2 => repnz
+$F3 => repz
+$F4 => hlt
+$F5 => cmc
+$F6 as: math3.1 1- subcode swap eabyte swap 0 =if ,, .xsb_ then ;
+$F7 as: math3.1 1- subcode swap ea swap 0 =if ,, getcell .cell then ;
+$F8 => clc
+$F9 => stc
+$FA => cli
+$FB => sti
+$FC => cld
+$FD => std
+$FE as: subcode wl-fe .select eabyte ;
+$FF as: subcode wl-ff .select w|d_ea ;
+drop | remove stop
+
+| ------------------------------------------------------------
+variable done?
+: ret!
+	done? on
+	dup lastaddr !
+	;
+
+~debug
+: -output mute? on ;
+: +output mute? off ;
+
+: disasm | disasm                | ptr c -- ptr'
+	done? off
+	dup -1 =if 
+		['] ret! is handle-ret 100 + 
+	else 
+		['] noop is handle-ret 
+	then
+: disasm-int
+  done? @ if drop 0 then
+  0; 1- swap 
+  dup .xd space
+  dup -output disasm' +output
+  over - 2dup space xdump
+  9 swap - 0 over >if drop 0 then
+  3 * 1+ spaces disasm' cr
+  dup lastaddr !
+  swap disasm-int ; 
+
+: dasmaddr ( startaddress minendaddress -- )
+  2dup - 0 <if swap 1 disasm swap dasmaddr ;then 2drop ;
+: dasm ( startadress minbytes -- ) over + dasmaddr ;
+' dasm  is disassemble
+
+pop~
+
+||| 
+
+def: dasm
+stack: startaddr minbytes --
+ctx: ~debug
+desc: =
+	Disassemble at least "minbytes" starting at "startaddr"
+=
+
+def: dasmaddr	
+stack: startaddr minendaddr --
+ctx: ~debug
+desc: =
+	Disassemble starting from "startaddr" to at least "minendaddress"
+=
+
+def: +output	
+stack: --
+ctx: ~debug
+desc: =
+	Allow console output to appear
+=
+
+def: -output	
+stack: --
+ctx: ~debug
+desc: =
+	Disallow console output 
+=
+
+def: .addr
+stack: a --
+ctx: ~debug
+desc: =
+	Display the address given
+=
+
+def: disasm
+stack: ptr c -- ptr'
+ctx: ~debug
+desc: =
+	Dissasemble from address "ptr" for "c" bytes, leaving the next address on TOS
+=
+
+related: disasm .addr -output +output dasmaddr dasm
+

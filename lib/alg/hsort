@@ -1,0 +1,26 @@
+| vim: ft=reva :
+| Helmar's sort
+push~
+needs alg/sort-common
+
+~priv
+: le'      cell-
+: le       2dup + ;
+: (sort)   over if >r le' @ r@
+             compare 0if le dup @ r> rot ! else r> then
+           (sort) ;then nip nip ; 
+~
+: hsort ( buf size -- )
+	cells
+	: (hsort)
+           ?dup if 2dup le' @ (sort) >r le' r> swap !
+           (hsort) ;then drop ;
+pop~
+|||
+
+def: hsort
+stack: buf size --
+ctx: ~
+desc: =
+	Sort the buffer "buf" of "size" cells, using the Heapsort algorithm.
+=

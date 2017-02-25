@@ -1,0 +1,60 @@
+| vim: ft=reva :
+| Implementation of Julian calendar
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+
+push~
+needs date/calendar
+~priv ~doubles ~date
+|  *******************************************************************
+|  *     Julian Calendar                                             *
+|  *******************************************************************
+
+~priv
+Dec 30 0 gregorian>fixed constant Julian-Epoch
+exit~
+
+: julian-leap-year? ( j-year -- flag ) dup >r  4 _mod  r> 0 >if  0  else  3  then = ;
+
+: julian>fixed    ( month day year -- fixed-date )
+    >r swap                         ( day month)( R: year)
+        dup >r  367 * 362 - 12 /  + ( day)( R: year month)
+    r> 2 >if                             ( day)( R: year)
+        r@ julian-leap-year? if  1-  else  2 -  then
+    then
+    Julian-Epoch + 1-
+    r> dup 0 <if true else false then - 1- dup >r  365 * +  r> 4 /_ + ;
+
+: fixed>julian  ( fixed-date -- month day year )
+    dup Julian-Epoch - 4 *  1464 +  1461 /_    ( date approx)
+    dup 0 >if true else false then not + >r                         ( date)( R: year)
+        dup Jan 1 r@ julian>fixed -   ( date prior-days)
+        over Mar 1 r@ julian>fixed <if else | not if
+            r@ julian-leap-year? if  1+  else  2 +  then
+        then
+        12 *  373 +  367  /_                    ( date month)
+        swap over 1 r@ julian>fixed - 1+    ( month day)
+    r> ( month day year) ;
+
+pop~
+||| 
+def: julian-leap-year?
+stack: year -- flag
+ctx: ~date
+desc: @
+	Determine if the year is a leap year according to Julian calendar rules.
+@
+def: julian>fixed
+stack: mm dd yyyy -- fixed
+ctx: ~date
+desc: @
+	Convert the Julian year MM/DD/YYYY to a fixed date
+@
+def: fixed>julian
+stack: fixed -- mm dd yyyy
+ctx: ~date
+desc: @
+	Convert the fixed date to a Julian year MM/DD/YYYY
+@
+
+related: fixed>julian julian>fixed julian-leap-year?

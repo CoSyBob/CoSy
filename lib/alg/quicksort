@@ -1,0 +1,99 @@
+| vim: ft=reva :
+| Quick Sort (contributed by Jukka)
+
+push~
+needs alg/sort-common
+
+~priv
+
+
+: >=; ( a1 a2 -- a1 a2 ) inline{ 3B 06 7F 02 AD C3 } ;inline
+: @s ( a x -- n x ) inline{ 8B 1E 8B 1B 89 1E } ;inline
+: 4floor ( a -- a.aligned ) inline{ 24 FC } ;inline
+| : lodsd inline{ AD } ;inline                             
+
+forth
+
+variable storepos
+
+macro
+
+: while_ne
+  $75063B 3,
+  here - 1-
+  1,
+;
+
+: (setpos) storepos $A3 1, , ;
+: (pos)
+  storepos dup
+  $A1 1, ,
+  $04588D 3,
+  $1D89 2, ,
+;
+
+forth
+
+: findpivot ( l r -- l r pivot )                       
+  over 2dup - 2/ 4floor +
+;
+
+: exchange ( a1 a2 -- a1 a2 )
+  inline{ 8B 1E 8B 0B 87 08 89 0B }
+;
+
+: tumble ( p cur -- p p )
+  repeat
+    2dup
+    @s @
+    compare
+    0if
+      dup (pos)
+      exchange
+	   drop
+    then
+    cell+
+  while_ne
+;
+
+: partition ( l r -- l r p )
+  findpivot
+  exchange
+  drop
+  over
+  (setpos)
+  tumble
+  dup (pos)
+  exchange
+  nip
+|  swap
+|  exchange
+|  lodsd
+;
+
+: (quicksort) ( l r -- l )
+  >=;
+  partition
+  cell+ swap
+  (quicksort)
+  2cell-
+  (quicksort)
+;
+
+: qsort ( a n -- )
+  0drop;
+  1- cells over +
+  (quicksort) drop
+;
+
+to~ ~ qsort
+
+pop~
+
+|||
+def: qsort
+stack: buf size --
+ctx: ~
+desc: =
+	Sort the buffer "buf" of "size" cells, using the QuickSort algorithm.
+=

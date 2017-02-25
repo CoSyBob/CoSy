@@ -1,0 +1,151 @@
+| vim: ft=reva:
+| PCRE library wrapper
+
+needs string/misc
+push~
+~util
+~strings
+~priv
+os [IF] " libpcre.so" [ELSE] " pcre3.dll" [THEN] lib libpcre
+
+5 func: pcre_compile
+0 func: pcre_version
+8 func: pcre_exec
+1 func: pcre_free_substring 
+
+
+variable regex-options
+2variable (regex_string)
+100 constant REGEX-RESULTS 
+create regex-vector REGEX-RESULTS 3 * cells allot
+variable last-regex
+~strings
+$0001 constant PCRE_CASELESS
+$0002 constant PCRE_MULTILINE
+$0004 constant PCRE_DOTALL
+$0008 constant PCRE_EXTENDED
+$0010 constant PCRE_ANCHORED
+$0020 constant PCRE_DOLLAR_ENDONLY
+$0040 constant PCRE_EXTRA
+$0080 constant PCRE_NOTBOL
+$0100 constant PCRE_NOTEOL
+$0200 constant PCRE_UNGREEDY
+$0400 constant PCRE_NOTEMPTY
+$0800 constant PCRE_UTF8
+$1000 constant PCRE_NO_AUTO_CAPTURE
+$2000 constant PCRE_NO_UTF8_CHECK
+$4000 constant PCRE_AUTO_CALLOUT
+$8000 constant PCRE_PARTIAL
+
+| A 'regex' is the compiled regular-expression:
+0 value regex_options
+: regex_compile ( a n -- regex )
+	zt regex_options temp temp 0 pcre_compile ;
+: regex:
+	create
+		0 , | compiled regex.  Only compile when necessary (first use)
+		asciiz, | save the actual regex (up to 255 chars)
+		last @ >xt @ last-regex link | link into regex list
+	does>
+		dup @ 0if 
+			| compile the regex
+			dup cell+ count regex_compile over !
+		then
+		@
+	;
+| clean-up regexes:
+:: { @ 5 + dup off } last-regex iterate ; ~sys.onexit
+
+: regex_getmatch ( n -- a n )
+	0 max REGEX-RESULTS 1- min 1 << cells regex-vector +
+	dup @ swap cell+ @ over -  | ofs len
+	(regex_string) 2@ drop | ofs len str
+	rot + swap
+	;
+: regex_find ( a n regex -- 0 | a n #matched )
+	-rot 2dup (regex_string) 2!
+	0 -rot | regex 0 a n
+	0 regex-options @ regex-vector REGEX-RESULTS 3 *
+	pcre_exec dup 0 <if drop false else 0 regex_getmatch rot then
+	;
+
+| same as 'regex_find', but uses a temporary regex
+: regex_find! ( a1 n1 a2 n2 -- 0 | a n #matched )
+	regex_compile dup >r regex_find
+	r> pcre_free_substring drop ;
+
+: regex_split ( a n regex -- a1 n1 a2 n2 1 -- a n 0 )
+	>r 2dup				| a n a n r:rx
+	r> regex_find		| a n 0 | a n a1 n1 N
+	00; drop
+
+	| a n a1 n1 
+	>r 2 pick - r> strsplitat
+	true
+	;
+pop~
+
+|||  
+
+def: regex:
+ctx: ~strings
+stack: a n <name> -- 
+desc: =
+	Create a regex which will
+=
+
+def: regex_compile 
+ctx: ~strings
+stack: a n -- regex 
+desc: =
+	Convert the string (a,n) into a compiled regex
+=
+
+def: regex_find!
+ctx: ~strings
+stack: a1 n1 a2 n2 -- 0 | a n #matched
+desc: =
+	Easy wrapper for regex search.  Find (a2,n2) in (a1,n1), returning either 0
+	for no matches, or the number of matches, followed by the first match.
+=
+
+def: regex_find
+ctx: ~strings
+stack: a1 n1 regex -- 0 | a n #matched
+desc: =
+	Easy wrapper for regex search.  Find regex in (a1,n1), returning either 0
+	for no matches, or the number of matches, followed by the first match.
+=
+
+def: regex_getmatch
+ctx: ~strings
+stack: n -- a n 
+desc: =
+	Retrieve the "n"th match from the most recent regex match.  "0" corresponds
+	to the entire matched string, while "1" etc. correspond to parenthesised
+	matches.
+=
+
+def: regex_split 
+ctx: ~strings
+stack: a n regex -- a1 n1 a2 n2 1 | a n 0 
+ver: 7.0.2
+desc: =
+	Same as "split" but using a regex instead.
+=
+
+def: string/regex 
+ctx: ~strings
+desc: =
+	Wrapper around the PCRE library.  Linux users need to have PCRE
+	installed (most will already have it).  Windows users get
+	'pcre3.dll' in the 'bin' directory, which needs to be distributed
+	with any application which uses PCRE.
+
+	To appreciate the complexities of the regular-expressions
+	permitted, please look at the PCRE documentation on-line at:
+
+		http://www.pcre.org/
+	=
+
+related: string/regex regex_find! regex_find regex_compile regex: ~strings regex_getmatch

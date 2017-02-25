@@ -1,0 +1,137 @@
+| vim: ft=reva :
+| exception handlers for /0 etc...
+
+push~
+~util ~
+context: ~except
+~except
+
+os [IF] | linux
+1 constant SIGHUP
+2 constant SIGINT
+3 constant SIGQUIT
+4 constant SIGILL
+5 constant SIGTRAP
+6 constant SIGABRT
+7 constant SIGBUS
+8 constant SIGFPE
+9 constant SIGKILL
+10 constant SIGUSR1
+11 constant SIGSEGV
+12 constant SIGUSR2
+13 constant SIGPIPE
+14 constant SIGALRM
+15 constant SIGTERM
+
+
+[ELSE] | windows
+0 constant SIGHUP
+0 constant SIGQUIT
+0 constant SIGABRT
+0 constant SIGBUS
+0 constant SIGKILL
+0 constant SIGPIPE
+0 constant SIGALRM
+0 constant SIGTERM
+
+2 constant SIGINT
+$C0000003 constant SIGTRAP
+$C0000094 constant SIGFPE
+$C000001D constant SIGILL
+$C0000005 constant SIGSEGV
+[THEN]
+
+pop~
+||| 
+
+def: SIGHUP
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "HangUP" signal
+-
+def: SIGINT
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "INTerruption" signal
+-
+def: SIGQUIT
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "QUIT" signal
+-
+def: SIGILL
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "ILLegal instruction" signal
+-
+def: SIGTRAP
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "TRAP breakpoint" signal
+-
+def: SIGABRT
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "ABoRT" signal
+-
+def: SIGBUS
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "BUS access error" signal
+-
+def: SIGFPE
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "Floating Point Exception" signal
+-
+def: SIGKILL
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "KILL" signal
+-
+def: SIGSEGV
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "SEGmentation Violation" signal
+-
+def: SIGPIPE
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "PIPE process ended" signal
+-
+def: SIGALRM
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "ALaRM" signal
+-
+def: SIGTERM
+ctx: ~except
+ver: 6.1.6
+stack: -- n
+desc: -
+	Value of the "TERMination" signal
+-

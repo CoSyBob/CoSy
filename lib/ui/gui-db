@@ -1,0 +1,212 @@
+| vim: ft=reva
+|
+| A proposal for GUI elements that get connected to database entities
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file.
+
+push~
+
+needs ui/gui
+~
+context: ~ui-db 
+~strings
+~io
+~iup
+~ui
+~ui-priv
+~ui-db
+
+
+: start-db-form  attr: REVA_DB_TABLE  ;
+: set-db-attr  attr: REVA_DB_ATTR  ;
+: get-db-attr  zt  over swap  IupGetAttribute  zcount  ;
+: dbtable?  " REVA_DB_TABLE" get-db-attr  ;
+: dbattr?  " REVA_DB_ATTR" get-db-attr  ;
+: dbid?  " REVA_DB_ID" get-db-attr  ;
+: dbid  attr: REVA_DB_ID  ;
+
+macro
+: dbform:  p: vbox[ parsews (")  p: start-db-form  ;
+: dbattr:  parsews (")  p: set-db-attr  ;
+: dbid:  parsews (")  p: dbid  ;
+forth
+
+: dbtext[ ( a n -- handle1 handle2 )
+  hboxs[
+    -rot                         | hbox-handle a n
+    label[  " 80x10" size  ]w    | the size ensures good alignment of the edit boxes
+    spacer
+    text[ expand-horizontal      | the edit box is closed within ]dbt
+;
+
+: ]dbt ( parent hbox-handle text-handle -- parent )
+  ]w  | parent hbox-handle
+  ]c  | parent
+;
+
+| Room for SQL statements
+create dbsql  8192 allot
+create dbtmp  1024 allot
+
+
+: is-dbwidget?  ( handle -- flag )
+  z" REVA_DB_ATTR"  IupGetAttribute  00;
+  zcount  swap drop  0 <>
+;
+
+
+: foreach-dbwidget-children ( parent lastchildren xt -- )
+  over 0 <>if
+    over is-dbwidget?  if  2dup execute  then
+
+    2dup 0 swap  foreach-dbwidget-children
+  then
+
+  >r  over swap gui-next-child r>
+  over 0if 2drop drop ;then
+
+  foreach-dbwidget-children
+;
+
+
+| Traverses a dbform and calls the specified word for
+| each database gui widget.
+| The word must have this stack effect diagram:
+| ( handle -- )
+: foreach-dbwidget  ( dbform xt -- )
+  0 swap  foreach-dbwidget-children
+;
+
+
+: +dbattr  ( handle -- )
+  " , "    dbtmp +lplace
+  dbattr?  dbtmp +lplace
+  drop
+;
+
+
+: +dbvalue  ( handle -- )
+  " , '"  dbtmp +lplace
+  getval  dbtmp +lplace
+  " '"    dbtmp +lplace
+  drop
+;
+
+
+: +dbattrval  ( handle -- )
+  " , "    dbtmp +lplace
+  dbattr?  dbtmp +lplace
+  "  = '"  dbtmp +lplace
+  getval   dbtmp +lplace
+  " '"     dbtmp +lplace
+
+  drop
+;
+
+
+| Returns a string such as
+| ", firstName, lastName"
+| (without ") for a given dbform
+: dbattrlist  ( dbform -- dbform a n )
+  dup
+  " "  dbtmp lplace
+  ['] +dbattr  foreach-dbwidget
+  dbtmp lcount
+;
+
+
+| Returns a string such as
+| ", 'Charles', 'Moore'"
+| (without ") for a given dbform.
+: dbvalueslist  ( dbform -- dbform a n )
+  dup
+  " " dbtmp lplace
+  ['] +dbvalue  foreach-dbwidget
+  dbtmp lcount
+;
+
+
+| Returns a string such as:
+| "firstName = 'Charles', lastName = 'Moore'"
+| (without ") for a given dbform
+: dbattrvallist  ( dbform -- dbform a n )
+  dup
+  " " dbtmp lplace
+  ['] +dbattrval  foreach-dbwidget
+  dbtmp lcount
+  2 /string
+;
+
+
+| Create a SQL INSERT statement for a db entry form
+: dbinsert-stmt  ( dbform -- dbform a n )
+  " INSERT INTO "      dbsql lplace
+  dbtable?             dbsql +lplace
+  "  (id"              dbsql +lplace
+  dbattrlist           dbsql +lplace
+  " ) VALUES (null"    dbsql +lplace
+  dbvalueslist         dbsql +lplace
+  " )"                 dbsql +lplace
+
+  dbsql lcount
+;
+
+
+| Create a SQL UPDATE statement for a db entry form
+: dbupdate-stmt  ( dbform -- dbform a n )
+  " UPDATE "       dbsql lplace
+  dbtable?         dbsql +lplace
+  "  SET "         dbsql +lplace
+  dbattrvallist    dbsql +lplace
+  "  WHERE id = "  dbsql +lplace
+  dbid?            dbsql +lplace
+
+  dbsql lcount
+;
+
+
+| Create a SQL SELECT statement for a db entry form
+: dbselect-stmt  ( dbform -- dbform a n )
+  " SELECT "       dbsql lplace
+  dbattrlist       2 /string  dbsql +lplace
+  "  FROM "        dbsql +lplace
+  dbtable?         dbsql +lplace
+  "  WHERE id = "  dbsql +lplace
+  dbid?            dbsql +lplace
+
+  dbsql lcount
+;
+
+
+: dump-db-attr ( handle a n -- handle)
+  2dup >r >r
+  zt over swap IupGetAttribute  zcount
+  dup 0 <>if r> r> type ." : "type cr ;then
+  r> r> 2drop 2drop
+;
+
+macro
+: dump-db-attr:  ( handle <text> -- handle )  parsews (")  p: dump-db-attr  ;
+forth
+
+| Dumps all reva db related attributes.
+| Attention: These attribute can be inherited.
+| So you will reach the table attribute from within
+| every children if you ask for it here!
+: dump-db-widget ( handle -- )
+  dump-db-attr: REVA_DB_ATTR
+  drop
+;
+
+
+: dump-db-form ( handle -- )
+  dump-db-attr: REVA_DB_TABLE
+  dump-db-attr: REVA_DB_ID
+  ['] dump-db-widget foreach-dbwidget
+;
+
+
+pop~
+
+||| 

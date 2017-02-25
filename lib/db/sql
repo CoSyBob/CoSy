@@ -1,0 +1,36 @@
+| vim: ft=reva:
+| db/sql
+|
+| A simple but cool way to create SQL queries with Reva FORTH...
+|
+| Intensively inspired by the great ideas presented
+| by N.J. Nelson B.Sc., C.Eng. M.I.E.T.
+| (Basically called ForthQL by N.J. Nelson...)
+| I found information on these ideas here:
+| http://www.complang.tuwien.ac.at/anton/euroforth2006/papers/nelson.pdf
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file!
+
+context: ~sql
+push~
+
+~sql
+
+: concat ( a1 n2 a2 n2 -- a n )
+  2swap scratch lplace
+  scratch +lplace
+  scratch lcount
+;
+
+
+macro
+: cc ['] concat compile ;
+
+: sql{  '} parse (")  ;
+: s{    p: cc  p: sql{  p: cc ;
+forth
+
+
+pop~
+

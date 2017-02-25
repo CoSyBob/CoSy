@@ -1,0 +1,104 @@
+| vim: ft=reva :
+| iup image library
+| this library allows accessing the standard images
+| (for example for toolbar buttons) that are delivered
+| with IUP (more precisely with the IUP image library).
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file.
+|
+| Please read the tecgraf copyright notice in ui/gui-iup
+| which also applies to the IUP image library!
+
+push~
+needs ui/iup
+~util
+~iup
+
+| load the iup libs
+os [IF]
+ " libiupimglib.so"   lib iup-image
+[ELSE]
+ " iupimglib.dll"     lib iup-image
+[THEN]
+
+
+| We will access these functions.
+| Please don't use them directly in your forth code.
+iup-image drop
+0 func: IupImageLibOpen  as iup-image-open
+0 func: IupImageLibClose as iup-image-close
+
+exit~
+
+~iup
+
+
+: img-text           " IUP_IMGBUT_TEXT"          ;
+: img-new            " IUP_IMGBUT_NEW"           ;
+: img-new-sprite     " IUP_IMGBUT_NEWSPRITE"     ;
+: img-open           " IUP_IMGBUT_OPEN"          ;
+: img-close          " IUP_IMGBUT_CLOSE"         ;
+: img-close-all      " IUP_IMGBUT_CLOSEALL"      ;
+: img-save           " IUP_IMGBUT_SAVE"          ;
+: img-cut            " IUP_IMGBUT_CUT"           ;
+: img-copy           " IUP_IMGBUT_COPY"          ;
+: img-paste          " IUP_IMGBUT_PASTE"         ;
+: img-print          " IUP_IMGBUT_PRINT"         ;
+: img-preview        " IUP_IMGBUT_PREVIEW"       ;
+: img-search         " IUP_IMGBUT_SEARCH"        ;
+: img-help           " IUP_IMGBUT_HELP"          ;
+: img-redo           " IUP_IMGBUT_REDO"          ;
+: img-undo           " IUP_IMGBUT_UNDO"          ;
+: img-one-left       " IUP_IMGBUT_ONELEFT"       ;
+: img-one-right      " IUP_IMGBUT_ONERIGHT"      ;
+: img-ten-left       " IUP_IMGBUT_TENLEFT"       ;
+: img-ten-right      " IUP_IMGBUT_TENRIGHT"      ;
+: img-zoom           " IUP_IMGBUT_ZOOM"          ;
+: img-zoom-in        " IUP_IMGBUT_ZOOMIN"        ;
+: img-zoom-out       " IUP_IMGBUT_ZOOMOUT"       ;
+: img-no-zoom        " IUP_IMGBUT_NOZOOM"        ;
+: img-yz             " IUP_IMGBUT_YZ"            ;
+: img-xy             " IUP_IMGBUT_XY"            ;
+: img-xz             " IUP_IMGBUT_XZ"            ;
+: img-fit            " IUP_IMGBUT_FIT"           ;
+: img-axis           " IUP_IMGBUT_AXIS"          ;
+: img-cube           " IUP_IMGBUT_CUBE"          ;
+: img-tile           " IUP_IMGBUT_TILE"          ;
+: img-cascade        " IUP_IMGBUT_CASCADE"       ;
+: img-stop           " IUP_IMGBUT_STOP"          ;
+: img-play           " IUP_IMGBUT_PLAY"          ;
+: img-previous       " IUP_IMGBUT_PREVIOUS"      ;
+: img-next           " IUP_IMGBUT_NEXT"          ;
+: img-play-backward  " IUP_IMGBUT_PLAYBACKWARD"  ;
+: img-forward        " IUP_IMGBUT_FORWARD"       ;
+: img-rewind         " IUP_IMGBUT_REWIND"        ;
+: img-green-left     " IUP_IMGBUT_GREENLEFT"     ;
+: img-green-right    " IUP_IMGBUT_GREENRIGHT"    ;
+: img-green-up       " IUP_IMGBUT_GREENUP"       ;
+: img-green-down     " IUP_IMGBUT_GREENDOWN"     ;
+: img-configure      " IUP_IMGBUT_CONFIGURE"     ;
+: img-video          " IUP_IMGBUT_VIDEO"         ;
+: img-single-left    " IUP_IMGSML_SINGLELEFT"    ;
+: img-double-left    " IUP_IMGSML_DOUBLELEFT"    ;
+: img-single-right   " IUP_IMGSML_SINGLERIGHT"   ;
+: img-double-right   " IUP_IMGSML_DOUBLERIGHT"   ;
+: img-down           " IUP_IMGSML_DOWN"          ;
+: img-left           " IUP_IMGSML_LEFT"          ;
+: img-right          " IUP_IMGSML_RIGHT"         ;
+: img-up             " IUP_IMGSML_UP"            ;
+
+: img-label-tecgraf       " IUP_IMGLBL_TECGRAF"        ;
+: img-label-br            " IUP_IMGLBL_BR"             ;
+: img-label-lua           " IUP_IMGLBL_LUA"            ;
+: img-label-tecgrafpucrio " IUP_IMGLBL_TECGRAFPUCRIO"  ;
+: img-label-petrobras     " IUP_IMGLBL_PETROBRAS"      ;
+
+~iup
+iup-image-open
+{ iup-image-open } in~ ~sys onstartup
+{ iup-image-close } in~ ~sys onexit
+
+pop~
+
+||| 

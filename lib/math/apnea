@@ -1,0 +1,263 @@
+| apnea.rf		cellarguy, rdm 07/02/10
+|
+| arbitrary precision number engine arena for Reva using strings
+| TODO: fix ut/mod  to get it to even work properly; then add signed / and floating pt /
+|
+| KNOWN ISSUES: ut/mod doesn't work with single digit divisors.
+|		ut/mod doesn't handle situations when divisor is larger than dividend
+|		ut/mod returns remainders of zero with multiple digits of zero
+|		ut/mod doesn't return arbitrary precision remainders yet
+
+needs string/mstrings
+with~ ~sys	| for pop>ebx
+
+
+| --- odds and ends
+32 constant bl
+0 variable, index	0 variable, carry	0 variable, borrow
+mvalue result 	mvalue p	mvalue q 
+mvalue t1	mvalue t2	mvalue t3
+	
+: .= ( mstr -- ) mcount type ;
+: >t	( a1 n1  a2 n2 -- )  t2 mplace  t1 mplace ;
+: >t1	( n -- ) (.) t1 mplace ;	
+: >t2	( n -- ) (.) t2 mplace ;
+: 2>str	 ( mstr1 mstr2 -- mstr1 mstr2  a1 n1  a2 n2 ) 2dup mcount rot mcount ;
+
+| --- preprocessing signs
+0 variable, decimal?	0 variable, swapped?
+0 variable, qneg?	0 variable, pneg?
+: neg!	( mstr -- )	'- swap mprefix ;
+: pos!	( mstr -- )	0 swap mtake drop ;
+: (neg?)  ( mstr -- f )	mstart c@ '- = ( -- f) ;
+: #negative ( mstr variable  -- ) >r (neg?)  if r> on  else r> off then ;
+: -q	( mstr mstr -- mstr mstr ) dup qneg? #negative ;
+: -p ( mstr mstr -- mstr mstr ) over pneg? #negative ;
+: sans-	( mstr'p' mstr'q' -- mstr'p' mstr'q' ) 	
+	-q qneg? @ if  q pos! then
+	-p pneg? @ if  p pos! then ;
+
+| --- preprocessing decimals
+0 variable, pdec	0 variable, qdec	| these are mantissa
+0 variable, pplc	0 variable, qplc	| # if places for the positive # portion
+: pchardecimal? ( char -- ) '. =if index @ pdec ! decimal? on then index ++ ;
+: qchardecimal? ( char -- ) '. =if index @ qdec ! decimal? on then index ++ ;
+: q.place ( mstrp mstrq -- ) dup msize qdec @ - qplc ! ;
+: p.place ( mstrp mstrq -- ) over msize pdec @ - pplc ! ;
+: q.str ( mstr — ) dup decimal? off qdec off index off ['] qchardecimal? over mmap>
+	decimal? @ if qdec @ swap mtake> then drop q.place ;
+: p.str ( mstr2 mstr1 — ) decimal? @ -rot over pdec off index off decimal? off
+	['] pchardecimal? over mmap> decimal? @ 
+	if pdec @ swap mtake> then drop p.place 
+	rot decimal? @ or decimal? ! ;
+: sans. ( -- ) q.str p.str ;
+
+| --- internal arithmetic machinery
+: 0result ( -- ) result ['] result <> 0; drop result mfree ;
+: initresult ( -- ) 0result " " result mplace ;
+: resetmachinery ( -- ) index off carry off borrow off ;
+: resetall ( -- ) resetmachinery 
+	swapped? off decimal? off pdec off qdec off pplc off qplc off ;	
+: >pq	( mstr'p' mstr'q' -- ) mcount  q mplace mcount  p mplace ;
+: qdone? ( -- f ) q mend index @ - dup q mstart 1- dup>r <> swap r> > and ;
+: qdigit ( -- char ) index @ q mpeek> ;
+: qpeek ( -- char|0) qdone? if qdigit else '0 then ;
+: (sort) ( pmstr qmstr -- 'pmstr 'qmstr ) 
+	2dup msize swap msize >if swapped? on swap else swapped? off then ;
+: sort (sort) >pq ;
+: resort ( p q -- ) (sort) swapped? @ if dup ['] q val ! cell- ['] q swap !
+	dup ['] p val !	cell- ['] p swap ! then ;
+: initarithmetic ( mstr1 mstr2 -- ) 
+	resetall sort p q sans. sans- resetmachinery initresult ;
+
+| --- preprocessing alignment of decimals
+: ppadsit ( n -- ) 0do '0 p msuffix loop ;
+: qpadsit ( n -- ) 0do '0 q msuffix loop ;
+: padpq ( p q -- p q )
+	pdec @ qdec @ - dup
+	0 >if pdec @ qdec @ -  qpadsit then
+	0 <if qdec @ pdec @ -  ppadsit then 
+	( p q ) ;
+: init(+-) ( mstr mstr -- p q ) padpq resort ;
+
+| --- postprocessing signs and decimals
+: +result! ( -- ) result (neg?) if  result pos! then ;
+: -result! ( -- ) result (neg?) not if  result neg! then ;
+: ufix.	( -- ) decimal? @ if '. pdec @ qdec @ max  result minsert> then ;
+
+| --- addition primitives
+| ====================================================================
+: (add)	( char1 char2|0 -- sumchar ; carry updated ) 
+	carry @ pop>ebx  inline{  83 E0 0F 8B 0E 83 E1 0F 00 D8 00 C8 37 
+	89 06 83 E0 0F 83 C8 30 66 C1 2E 08  }	swap carry ! ;
+: addchar ( char1 -- ) 	qpeek (add)  result ( sum ) mprefix 	index ++ ;
+| ====================================================================
+
+| --- natural addition
+: (nt+)	( -- sum ) ['] addchar p mmap> 
+	carry @ if '1  result mprefix then ufix. 2drop p mfree q mfree result  ;
+: nt+	( mstr mstr -- sum ) resetmachinery
+	0result sort p q (nt+) ;
+
+| --- unsigned addition (may have decimal point)
+: (ut+)	( -- sum ) init(+-) (nt+) ;
+: ut+	( mstr mstr -- sum ) initarithmetic (ut+) ;
+
+| --- subtraction primitives
+| ====================================================================
+: (sub) ( char1 char2 -- differencechar)
+	borrow @ pop>ebx inline{ 89 C1 8B 06 83 E0 0F 83 E1 0F 28 D8 28 C8 3F 89 
+	06 83 E0 0F 83 C8 30 66 C1 2E 0F 89 C3 8B 06 89 1E } borrow ! ;
+: subtractchar ( char -- ) qpeek (sub)  result ( difference ) mprefix index ++ ;
+| ====================================================================
+
+| --- natural and unsigned subtraction
+: (nt-)	( -- sum ) ['] subtractchar 2 pick mmap> 
+	borrow @ if '-  result mprefix then ufix. 
+	2drop p mfree q mfree result ;
+: (floorednt-)	( -- sum ) ['] subtractchar 2 pick mmap> 
+	borrow @ if " 0"  result mplace then | If q > p then nt- returns only 0
+	ufix. 2drop p mfree q mfree result ;
+: nt-	( mstr mstr -- difference ) resetmachinery
+	resort (floorednt-) ;
+: (t-) ( mstr mstr -- difference ) resetmachinery
+	resort (nt-) ;
+: (ut-)  ( -- ) init(+-) (t-) ;	
+: ut-	( mstr mstr -- sum ) initarithmetic (ut-) ;
+
+| --- signed addition and subtraction
+: t+ ( mstr mstr -- sum) initarithmetic  pneg? @
+	if qneg? @ if (ut+) -result! else (ut-) -result! then
+	else qneg? @ if (ut-) +result! else (ut+) +result! then  then ;
+: t- ( mstr mstr -- sum ) initarithmetic swapped? @
+	if   pneg? @ 
+		if qneg? @ 
+			if (ut-) +result! 
+			else (ut+) +result! 
+			then
+		else qneg? @ 
+			if (ut+) -result! 
+			else (ut-) -result! 
+			then  
+		then
+	else pneg? @ 
+		if qneg? @	
+			if (ut-) -result! 
+			else (ut+) -result! 
+			then
+		else qneg? @ 
+			if (ut+) +result! 
+			else (ut-) +result! 
+			then  
+		then  
+	then ;
+
+| --- multiplication
+| ====================================================================
+| --- initialization for multiplication
+
+0 variable, pq0
+: 0?	( mstr -- f) 	mend c@ '0 = ;
+: p-0	( -- )	p 0? if 0 p mtake> pq0 ++ then drop ;
+: q-0	( -- )  q 0? if 0 q mtake> pq0 ++ then drop ;
+: sans0  ( -- )	pq0 off p-0  q-0  ;
+
+: pad0s ( n -- ) 0do '0  p mprefix loop ;
+: init(*) ( -- ) sans0 q msize pad0s ( resort ) ;
+: *setup ( t1 t2 -- ) initarithmetic init(*) ;
+
+| --- unsigned multiplication
+0 variable, pp		| partial product
+0 variable, qi		| q index
+0 variable, pi		| this is the address of the current p
+
+: fix00	pq0 @ dup if 0do '0  result msuffix loop else drop then ;
+: fix0	0 result mpeek '0 =if 0  result mtake drop then ;
+: fix.	decimal? @ if '. pdec @ qdec @ + ( -- n )  result minsert> then ;
+: fix- qneg? @ pneg? @ xor if -result! then ;
+: fixresult fix0 fix- fix. fix00 ;
+: >n 	'0 - ;
+: digitsplit 	10 /mod swap ;
+: >digit 	digitsplit '0 + swap carry ! ;
+: stillp? 	dup dup p mend = swap p mend < or ;
+: traverseq	>n 2 pick qi @ + stillp? if c@ >n * pp +! else 2drop then qi ++ ;
+: >result	pp @ carry @ + >digit  result mprefix ;
+: traversep	pp off qi off ['] traverseq q mmap> >result drop ;
+
+| --- natural number multiplication (no signs, no decimal point)
+: nt*		( mstr mstr -- ) *setup ( 2drop ) carry off ['] traversep p mtouch> fix0 result ;
+
+| --- unsigned multiplication
+: ut*		( mstr mstr -- ) *setup ( 2drop ) carry off ['] traversep p mtouch> 
+	p mfree q mfree fix0 fix. result ;
+
+| --- signed multiplication
+: t*		( mstr mstr -- ) *setup ( 2drop ) carry off ['] traversep p mtouch> 
+	p mfree q mfree fixresult result ;
+
+| === Division: =======================================================
+
+mvalue dividend		mvalue divisor
+: 0dividend dividend ['] dividend <> 0; drop dividend mfree ;
+: 0divisor divisor ['] divisor <> 0; drop dividend mfree ;
+: initdivs 0dividend 0divisor p mcount dividend mplace q mcount divisor mplace ;
+
+mvalue pd
+: 0pd ( -- ) pd ['] pd <> 0; drop pd mfree ;
+: initpd ( -- )	0pd 0 1 p mdice	pd mplace
+	0 pd mpeek 0 q mpeek <if 1 p mpeek pd msuffix 0 p mtake drop then 0 p mtake drop ;
+
+mvalue wf
+: 0wf ( -- ) wf ['] wf <> 0; drop wf mfree ;
+: initwf 0wf "   " wf mplace ; | always 2 chars in wf
+
+mvalue remainder
+: 0remainder ( -- ) remainder ['] remainder <> 0; drop remainder mfree ;
+: initremainder 0remainder ; | " " remainder mplace ( not needed for slowmod )
+
+mvalue quotient
+: 0quotient ( -- ) quotient ['] quotient <> 0; drop quotient mfree ;
+: initquotient 0quotient ;
+
+0 variable, (ut) 	0 variable, NTdivT	0 variable, NTdivU	
+0 variable, /boundary	0 variable, q[0]	0 variable, remdrop
+
+: initNT ( -- ) 0 q mpeek digit> NTdivT ! 1 q mpeek dup 0if 0 else digit> then NTdivU ! ;
+: NTdiv ( -- Tn Un )	NTdivT @ NTdivU @ ;
+: >nt ( -- qn resultdigitn) NTdiv 0 result mpeek> digit> ;
+: (nt) ( qn1 qn2 resultdigitn -- ) dup rot * 10 / -rot * + ;
+: nt	( -- n ) >nt (nt) dup pd mcount >single drop swap - 0 <if 
+	0 result mtake> 1- result msuffix >nt (nt) then ;
+: UT ( addr1 addr2 -- ) c@ digit> swap dup 1+ c@ digit> swap c@ digit> 
+	rot dup>r *  10 mod swap r> * 10 / + (ut) +! ;
+: PD 	pd mcount >single drop dup ;
+: Q[0] q[0] @ ;
+: =result[n]	>digit result msuffix ;
+: (wf)  wf mcount >single drop	;
+: (>WF) >digit 0 wf mpoke ( nextpchar ) 0 wf mpoke> ;
+: >WF	(>WF) (wf) ;
+: >PD	(.) pd mfree pd mplace ;
+: UT>	0 q mtake >r '0 q msuffix (ut) off ['] UT q result m>touchwith>
+	0 q mtake> drop	r> q mprefix (ut) @ ;
+: initbounds	p mend q msize 3 - -  /boundary ! ;
+: /boundary?	( addr -- f )	/boundary @ < ;
+: initq[0]	0 q mpeek digit> q[0] ! ;
+: initremdrop	1 remdrop ! ;
+: init/ ( mstr mstr -- ) 
+	>pq initdivs initpd initresult initNT initwf initremainder initquotient
+	initbounds initq[0] initremdrop	;
+: quot ( addr -- ) c@ PD Q[0] / =result[n] ( pd ) nt - >WF ( wf ) UT> - >PD ;
+: initslowmod	p ['] p <>if p mfree then  q ['] q <>if q mfree then 
+		result ['] result <>if result mfree then ;
+: slowmod	divisor quotient t* 	dividend swap t- mcount remainder mplace ;
+: rem ( addr -- ) c@ NTdiv or if result mcount quotient mplace NTdivT off NTdivU off drop 
+	else drop then ;
+: (div) ( addr -- ) dup /boundary? if quot else rem then ;
+
+: ut/mod init/ ['] (div) p mtouch initslowmod slowmod result mfree
+	remainder quotient ;
+
+| cr ." setting up t1 and t2: " 
+| 13671514 >t1 4217 >t2
+| t1 .= space t2 .=
+|||

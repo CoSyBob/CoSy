@@ -1,0 +1,186 @@
+| vim: ft=reva :
+
+\ sun 05.08.11 NAB
+\ Sunrise/sunset calculations.
+
+needs calendar
+needs ftrig2
+needs opg
+needs tester
+
+module sun
+private:
+
+\ Local latitude and longitude
+\ (west and south are negative,
+\ east and north are positive):
+fvariable latitude
+fvariable longitude
+
+\ Sun's zenith for sunrise/sunset:
+fvariable zenith
+
+\ Other working variables:
+fvariable lngHour
+fvariable T
+fvariable L
+fvariable M
+fvariable RA
+fvariable sinDec
+fvariable cosDec
+fvariable cosH
+fvariable H
+
+public:
+
+: set-location ( F: long lat -- )
+  latitude f!  longitude f! ;
+
+: set-zenith ( F: zenith -- )  zenith f! ;
+
+private:
+
+: zenith: ( F: f -- )
+\ Builds zenith-setting words.
+  create  here f!  1 floats allot
+  does> ( -- )  f@ set-zenith ;
+
+public:
+
+90.83333e zenith: official-zenith
+96e zenith: civil-zenith
+102e zenith: nautical-zenith
+108e zenith: astronomical-zenith
+
+: day-of-year ( d m y -- day )
+\ Calculate the day-of-year number
+\  of a given date (January 1=day 1).
+\  Uses the calendar library.
+  dup >r  dmy>date
+  1 January r> dmy>date d- drop 1+ ;
+
+{ 20 July 1984 day-of-year -> 202 }
+
+private:
+
+\ The algorithm works in degrees,
+\ so we need private versions of the
+\ trig functions that operate on
+\ degrees rather than radians:
+: fsin  deg>rad fsin ;
+: fcos  deg>rad fcos ;
+: ftan  deg>rad ftan ;
+: fasin  fasin rad>deg ;
+: facos  facos rad>deg ;
+: fatan  fatan rad>deg ;
+
+\ Floating-point helper words:
+: f> ( F: f1 f2 -- ) ( -- bool )  fswap f< ;
+: ftuck ( F: a b -- b a b )  fswap fover ;
+: f>s ( F: f -- ) ( -- n )  f>d d>s ;
+
+: range360 ( F: f1 -- f2 )
+\ Adjust so the range is [0,360).
+  fdup f0< if  360e f+
+  else  fdup 360e f> if  360e f-  then
+  then ;
+
+{ 383e range360 f>s -> 23 }
+{ -17e range360 f>s -> 343 }
+
+: floor90 ( F: f1 -- f2 )
+\ Round down to the nearest multiple
+\  of 90.
+  90e ftuck f/ floor f* ;
+
+{ 97e floor90 f>s -> 90 }
+
+public:
+
+: time>mh ( F: h.m -- ) ( -- min hour )
+\ Convert a floating-point h.m time
+\  into integer minutes and hours.
+  fdup floor  fover fswap  f-
+  60e f*  f>s  floor  f>s ;
+
+{ 3.5e time>mh -> 30 3 }
+
+false constant rising
+true constant setting
+
+: UTC-suntime
+( d m y set? -- ) ( F: -- h.m )
+\ Calculate the UTC sunrise or sunset
+\  time for a given day of the year,
+\  using the location set in the
+\  longitude and latitude fvariables.
+  >r  \ preserve rise/set value
+  day-of-year  0 d>f  T f!
+  let lngHour=longitude/15:
+  r@ rising = if
+    let T=T+((18-lngHour)/24):
+  else \ setting
+    let T=T+((6-lngHour)/24):
+  then
+  let M=(0.9856*T)-3.289:
+  let L=range360(
+    M+(1.916*sin(M))
+    +(0.020*sin(2*M))+282.634):
+  let RA=range360(
+    atan(0.91764*tan(L))):
+  let RA=(RA+
+    (floor90(L)-floor90(RA)))/15:
+  let sinDec=0.39782*sin(L):
+  let cosDec=cos(asin(sinDec)):
+  let cosH=(cos(zenith)
+    -(sinDec*sin(latitude)))
+    /(cosDec*cos(latitude)):
+  let abs(cosH): 1e f> -11 and  throw
+  let H=acos(cosH)/15:
+  r> rising = if  let H=24-H:  then
+  let H+RA-(0.06571*T)-6.622
+    -lngHour:
+;
+
+{  \ Toronto, Canada: 43.6N 79.4W
+    -79.4e 43.6e set-location
+    official-zenith
+    20 July 1989 setting UTC-suntime
+    time>mh -> 53 0 }
+{ 20 July 1989 rising UTC-suntime
+    time>mh -> 54 9 }
+
+private:
+
+: local-offset ( -- local-offset. )
+\ Return the total offset in minutes
+\  of the timezone and DST settings.
+\ Requires PalmOS 4 and above.
+  PrefTimeZone >byte
+  PrefGetPreference
+  PrefDaylightSavingAdjustment
+  >byte  PrefGetPreference  d+ ;
+
+: range24 ( F: f1 -- f2 )
+\ Adjust so the range is [0,24):
+  fdup  24e f> if  24e f-  then
+  fdup  f0< if  24e f+  then ;
+
+: local-suntime
+( d m y set? -- ) ( F: -- h.m )
+\ Calculate sunrise or sunset time
+\  for the specified date, adjusting
+\  for the local timezone & DST.
+  UTC-suntime
+\ Convert UTC value to local time:
+  local-offset d>f 60e f/ f+ range24 ;
+
+public:
+
+: sunrise ( d m y -- ) ( F: -- h.m )
+  rising local-suntime ;
+: sunset ( d m y -- ) ( F: -- h.m )
+  setting local-suntime ;
+
+end-module
+

@@ -1,0 +1,55 @@
+| vim: ft=reva :
+| Implementation of US holidays
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+push~
+needs date/calendar
+~date
+|  *******************************************************************
+|  *     "Holidays"                                                  *
+|  *******************************************************************
+
+: independence-day ( greg-year -- fixed-date ) Jul 4 rot  gregorian>fixed ;
+: labor-day  ( year -- fixed-date ) >r  FIRST Mon Sep 1 r> nth-weekday ;
+: memorial-day   ( year -- fixed-date ) >r  LAST Mon May 31 r> nth-weekday ;
+: election-day  ( year -- fixed-date ) >r FIRST Tue Nov 2 r> nth-weekday ;
+: thanksgiving  ( year -- fixed-date ) >r 4 Thu Nov 1 r> nth-weekday ;
+: christmas  ( year -- fixed-date ) Dec 25 rot gregorian>fixed ;
+pop~
+||| 
+def: independence-day
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Independence Day on the given year.
+@
+def: labor-day
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Labor Day on the given year.
+@
+def: memorial-day
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Memorial Day on the given year.
+@
+def: election-day
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Election Day on the given year.
+@
+def: thanksgiving
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Thanksgiving Day on the given year.
+@
+def: christmas
+stack: year -- fixed
+ctx: ~date
+desc: @
+	 Returns fixed date for Christmas Day on the given year.
+@

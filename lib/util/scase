@@ -1,0 +1,118 @@
+| vim: ft=reva
+| alg/scase
+|
+| Constant time implementation for small case statements.
+| It works with selectors in the range [0,255].
+|
+| Attention:
+| It works only if you define your cases in ascending order!
+|
+| Author: Danny Reinhold / Reinhold Software Services
+| Reva's license terms also apply to this file.
+
+push~
+
+variable default_xt
+
+macro
+
+: scase
+| compilation: ( -- address-of-the-relative-jump 0 )
+| runtime stack: ( -- address-of-the-table )
+  0 default_xt !
+  ahead    | Jump to the coresponding endscase
+  0
+  p: [     | Leave compilation mode
+;
+
+forth
+
+| This word implements the runtime behavior of endscase
+: do-endscase ( selector table -- selector )
+  2dup @ >if cell+ @ 0; execute ;then
+  cell+ dup @ -rot cell+ | default_xt selector table+2cells
+  over cells +  @  | default_xt selector xt
+  dup 0if drop swap else rot drop then
+  0;
+  execute
+;
+
+variable table
+: fill-table ( i_1 xt_1 ... i_n xt_n n table -- table )
+  table !
+
+  0do
+    swap 2 + cells table @ + !
+  loop
+
+  table @
+  dup
+  cell+ default_xt @ swap !
+;
+
+macro
+
+| compilation: ( jmp-address i_1 xt_1 i_2 xt_2 ... i_n xt_n n -- )
+| with i_a < i_b for a < b
+| runtime: ( selector table -- )
+: endscase
+  p: ]        | Reenter compilation mode
+  >r over     | jmp-address i_1 xt_1 ... i_n xt_n i_n
+  here        | jmp-address i_1 xt_1 ... i_n xt_n i_n table
+  swap 3 + cells dup allot over swap 0 fill
+  r> swap     | jmp-address i_1 xt_1 ... i_n xt_n n table
+  >r >r >r dup r> swap r> swap r> swap over !  | store i_n into the first cell of the table
+  fill-table  | jmp_address table
+
+  swap
+  p: then     | The jmp from scase shall go to here
+
+  literal,                 | Push the address of the table (at runtime)
+  ['] do-endscase compile  | compile a call to the runtime behavior
+  ['] drop compile         | Cause the runtime code to drop the selector
+;
+
+
+: scaseof ( i_n xt_n n selector -- i_n' xt_n' i_m' xt_m' n' )
+  swap 1+
+  here   | Push the current address (where compilation will start)
+  swap
+  p: ]   | Enter compilation mode
+;
+
+: sendof ( selector xt n -- selector xt n )
+  p: ;                | Compile a return statement
+  p: [                | Leave compilation mode
+;
+
+
+: sdefault ( -- xt )
+  here p: ]
+;
+
+: senddefault ( xt -- )
+  p: ; p: [ default_xt !
+;
+
+forth
+pop~
+
+0 [IF]
+| Example code:
+: a 
+    scase
+        1 scaseof  ." case 1   " sendof
+        2 scaseof  ." case 2   " sendof
+        4 scaseof  ." case 4   " sendof
+       12 scaseof  ." case 12  " sendof
+          sdefault ." default  " senddefault
+    endscase  
+    ." common " cr
+    ;
+
+: test 0do i a loop ;
+
+15 test
+[THEN]
+
+||| 

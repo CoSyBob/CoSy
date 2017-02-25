@@ -1,0 +1,50 @@
+| clipboard access
+| vim: ft=reva :
+
+push~
+~priv
+os [IF]
+[ELSE]
+u32 drop
+1 func: OpenClipboard
+0 vfunc: CloseClipboard
+2 func: SetClipboardData
+k32 drop
+2 func: GlobalAlloc
+1 func: GlobalLock
+2 constant GMEM_MOVEABLE
+1 constant CF_TEXT
+: acquire-clipboard ( -- f ) 0 OpenClipboard ;
+: release-clipboard ( -- ) CloseClipboard ;
+: copy-to-clipboard ( a n -- )
+	| copy  data to a global handle
+	dup 1+ 1+  GMEM_MOVEABLE over GlobalAlloc
+	| a n N h
+	dup >r
+	swap 0 fill
+	r@ swap move
+	r> dup GlobalLock
+	CF_TEXT swap SetClipboardData drop
+	;
+[THEN]
+~os
+: >clipboard ( a n -- true| a n false )
+	acquire-clipboard dup >r if 
+		copy-to-clipboard
+		release-clipboard
+	then
+	r>
+	;
+
+pop~
+
+|||
+
+def: >clipboard
+stack: a n -- true|a n false
+ver: 7.0.6
+ctx: ~os
+desc: *
+	Puts the string (a,n) onto the clipboard.  Returns a flag indicating success
+	or failure.
+*

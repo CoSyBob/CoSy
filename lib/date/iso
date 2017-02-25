@@ -1,0 +1,45 @@
+| vim: ft=reva :
+| Implementation of ISO calendar
+| Adapted for Reva from Wil Baden's port of Dershowitz and Reingold's
+| "Calendrical Calculations" code.
+push~
+needs date/calendar
+~priv ~doubles ~date
+|  *******************************************************************
+|  *     ISO Calendar                                                *
+|  *******************************************************************
+
+|  iso>fixed   ( week day year -- fixed-date )
+|     _fixed-date_ equivalent to ISO (week day year).
+
+|  fixed>iso   ( fixed-date -- week day year )
+|     ISO (week day year) corresponding to the _fixed-date_.
+
+: iso>fixed  ( week day year -- fixed-date )
+    >r          ( week day)( R: year)
+    swap Sun Dec 28 r> 1- ( day week sun month day year)
+    nth-weekday + ;
+
+: fixed>iso  ( fixed-date -- week day year )
+    dup >r                       ( R: date )
+    3 - fixed>gregorian-year    ( approx)
+    1 1 third 1+ iso>fixed r@ > not -  ( year)
+    1 1 third iso>fixed r@ swap - 7 /_ 1+  ( year week)
+    r> 1- 7 _mod 1+                         ( year week day)
+    rot ( week day year) ;
+pop~
+|||
+def: iso>fixed
+stack: week day year -- f
+ctx: ~date
+desc: @
+	Converts ISO W/D/YYYY to a fixed date
+@
+def: fixed>iso
+stack: f -- week day year
+ctx: ~date
+desc: @
+	Converts fixed date to ISO W/D/YYYY 
+@
+
+related: fixed>iso iso>fixed

@@ -1,0 +1,243 @@
+| vim: ft=reva :
+|
+| Common words for data structures and algorithms
+
+push~
+
+needs alg/quicksort
+needs util/misc
+
+context: ~struct
+~priv ~struct
+
+| operators
+defer th
+defer end
+defer all
+defer size
+defer num
+defer ins
+defer -ins
+defer ins$
+defer -ins$
+defer fnd
+defer fnd$
+defer srt
+defer prt
+defer del
+defer del$
+defer rmv
+defer itr
+
+| inner words
+defer fetch  ' @ is fetch
+defer match  ' = is match
+defer print  :: @ . ; is print
+defer in?    :: dup @ ; is in?
+defer sort   ' qsort is sort
+
+
+| null for arrays and hash table
+variable null
+defer nuls
+
+
+pop~
+
+
+|||
+def: fetch
+stack: ptr -- data
+ctx: ~struct
+desc: =
+    Deferred fetch word for use by the data structure libraries.
+    '@' is default behaviour.
+=
+def: match
+stack: n1 n2 -- flag
+ctx: ~struct
+desc: @
+    Deferred comparison word for use by the data structure lib-
+    raries. '=' is default behaviour.
+@
+def: print
+stack: ptr --
+ctx: ~struct
+desc: =
+    Deferred print word for use by the data structure libraries.
+    '@ .' is default behaviour.
+=
+def: in?
+stack: key bucket | a-str u bucket -- t
+ctx: ~struct
+desc: =
+    Deferred search word for use by the data structure libraries.
+    'dup @' is default behaviour.
+=
+def: sort
+stack: buffer size --
+ctx: ~struct
+desc: =
+    Deferred sort algorithm for use by the data structure libraries.
+    'qsort' is default behaviour.
+=
+def: ins
+ctx: ~struct
+stack: data ... --
+desc: =
+    Insert 'data' into the active data structure, with the following
+    arguments:
+
+    list, htable, bintree ( data --)
+    array, darray ( data a --)
+    2array ( data x y --)
+    3array ( data x y z --)
+    
+    Sub-word: (ins)
+=
+def: ins$
+ctx: ~struct
+stack: a-str u --
+desc: =
+    A 'ins' for strings.
+
+    Sub-word: (ins$)
+=
+def: -ins
+ctx: ~struct
+stack: data --
+desc: =
+    Insert 'data' at the end of the active data structure.
+
+    Sub-word: (-ins)
+=
+def: -ins$
+ctx: ~struct
+stack: a-str u --
+desc: =
+    A '-ins' for strings.
+
+    Sub-word: (-ins$)
+=
+def: del
+ctx: ~struct
+stack: data --
+desc: *
+    Find and delete the element 'data' from the active data structure.
+    Indirection may be handled by redefining the deferred words 'fetch'
+    (default '@') and 'match' (default '=').
+
+    Sub-word: (del)
+*
+def: del$
+ctx: ~struct
+stack: a-str u --
+desc: =
+    A 'del' for strings.
+
+    Sub-word: (del$)
+=
+def: num
+ctx: ~struct
+stack: -- n
+desc: =
+    Return the number of elements in the active data structure..
+
+    Sub-word: (num)
+=
+def: rmv
+ctx: ~struct
+stack: --
+desc: =
+    Remove the entire active data structure from allocated memory.
+
+    Sub-word: (rmv)
+=
+def: fnd
+ctx: ~struct
+stack: data -- data-ptr... | false
+desc: *
+    Search for 'data' in the active data structure, returning all
+    matching data pointers, or zero if none found. The deferred
+    word 'match' (default '=') may be redefined. Indirection may
+    be handled by redefining the deferred word 'fetch' (default '@').
+
+    Sub-word: (fnd)
+*
+def: fnd$
+ctx: ~struct
+stack: a-str u -- data-ptr... | false
+desc: =
+    A 'fnd' for strings.
+
+    Sub-word: (fnd$)
+=
+def: itr
+ctx: ~struct
+stack: xt --
+desc: =
+    Execute 'xt' for each element in the active data structure. 'xt' must return
+    'false' to stop iteration, or 'true' to continue.
+
+    Sub-word: iterate
+=
+def: srt
+ctx: ~struct
+stack: --
+desc: =
+    Sort the active data structure using the algorithm defined in
+    the deferred word 'srt' (default quicksort) with test 'compare'
+    (default '<').
+
+    Sub-word: (srt)
+=
+def: prt
+ctx: ~struct
+stack: --
+desc: =
+    Print the contents of the active data structure. Indirection may
+    be handled by redefining the deferred word 'fetch' (default '@').
+    
+    Sub-word: (prt)
+=
+def: prt$
+ctx: ~struct
+stack: --
+desc: =
+    A 'prt' for strings.
+=
+def: size
+ctx: ~struct
+stack: -- size
+desc: =
+    Return the size of the active data structure (in cells).
+
+    Sub-word: (size)
+=
+def: all
+ctx: ~struct
+stack: -- last first
+desc: =
+    Return the address of the first and last cells in the active data
+    structure. Useful for providing a do-loop's index and limit.
+    
+    Sub-word: (all)
+=
+def: end
+ctx: ~struct
+stack: -- a
+desc: =
+    Return the address of the last cell in the active data structure.
+=
+def: th
+ctx: ~struct
+stack: n -- a
+desc: =
+    Return the address of the cell 'n' deep in the active data
+    structure. '0 th' is the first cell.
+
+    Sub-word: (th)
+=
+
+related: compare fetch match print in? sort ins ins$ -ins -ins$ del del$ num rmv fnd fnd$ itr srt prt prt$ size all end th
+related: 0do ?do do loop cellskip skip

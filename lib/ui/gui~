@@ -1,0 +1,1254 @@
+| vim: ft=reva :
+|
+| IUP wrapper for REVA forth
+|
+| This wrapper was done by Danny Reinhold / Reinhold Software Services
+| Contact me at: info@reinhold-software-services.de
+|
+| Reva's license terms also apply to this file.
+| But notice:
+|
+| The copyright and license conditions of the IUP
+| GUI toolkit:
+|
+| ----
+| Copyright © 1994-2005 Tecgraf / PUC-Rio and PETROBRAS S/A.
+|
+| Permission is hereby granted, free of charge, to any person
+| obtaining a copy of this software and associated documentation
+| files (the "Software"), to deal in the Software without restriction,
+| including without limitation the rights to use, copy, modify, merge,
+| publish, distribute, sublicense, and/or sell copies of the Software,
+| and to permit persons to whom the Software is furnished to do so,
+| subject to the following conditions: 
+|
+| The above copyright notice and this permission notice shall be
+| included in all copies or substantial portions of the Software. 
+|
+| THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+| EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+| OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+| IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+| DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+| OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+| THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+| ----
+
+push~
+
+needs callbacks
+needs ui/iup
+~util ~os ~io ~strings ~
+context: ~ui
+~ui
+context: ~ui-priv
+
+with~ ~iup
+with~ ~ui-priv
+
+
+os [IF]
+
+~
+alias (save) (save-gui)
+alias save save-gui
+exit~
+
+[ELSE]
+
+~
+| From Ketmar - found in the Reva forum
+: patch-exe  ( a n -- )
+  open/rw dup -1 =if ." no file %-("
+  else
+    >r
+    | read _newlfa
+    $3C r@ seek scratch 4 r@ read drop  | !!
+    | move to PE header and patch it
+    scratch @ $5C + r@ seek
+    2 scratch !  scratch 1 r@ write
+    r> close
+  then
+;
+to~ ~ui-priv patch-exe
+
+: (save-gui)  ( a n -- )
+  2dup (save)  patch-exe
+;
+
+: save-gui ( <text>-- )
+  parsews  (save-gui)  cr  bye
+;
+exit~
+
+[THEN]
+
+
+| Fill up the ~ui-priv context with some definitions that
+| are private to this module.
+| Usually you should not need to use these words.
+| The ~ui-priv context is private to the ~ui context.
+
+~ui-priv
+
+20 stack: pending-callbacks
+
+: cleanup-callback-stack
+  pending-callbacks  stack-empty?  if ;; then
+  pending-callbacks  pop
+  cleanup-callback-stack
+;
+
+: prepare-attr ( handle a n -- handle handle str )  zt over swap  ;
+: store-attr ( handle valuestr attrstr -- )  swap  IupStoreAttribute  drop  ;
+: doattrstr
+  r> count over |  (a+1) n (a+1)
+  +             |  (a+1) (a+n+1)
+  1+ >r         |  (a+1) retaddr: (a+n+2)
+;
+
+macro
+: attr-internal   parsews [']  doattrstr  compile  asciiz,  ;
+forth
+
+exit~
+
+: gui-init  ( -- )
+  IupOpen
+  dup 0 =if
+    drop  IupControlsOpen
+    dup 0 =if
+      drop IupGLCanvasOpen
+    then
+  then
+  drop  ;
+
+: gui-release  ( -- )  IupControlsClose drop  IupClose drop  cleanup-callback-stack  ;
+: gui-map  ( handle -- handle )  dup  IupMap  drop  ;
+: gui-next-child ( handle lastchild -- nextchild )  IupGetNextChild  ;
+
+: default-position  -1 -1  ;
+: show  ( handle -- handle )  dup  IupShow  drop  ;
+: hide  ( handle -- handle )  dup  IupHide  drop  ;
+: popup  ( handle -- handle )  dup  default-position IupPopup drop  ;
+: popup-xy  ( handle x y -- handle )  >r >r  dup  r> r>  IupPopup drop  ;
+: show-xy ( handle x y -- handle )  >r >r  dup  r> r>  IupShowXY drop  ;
+
+: spacer   ( parent -- parent )  IupFill  IupAppend  ;
+
+: vbox[  ( -- handle )  0 IupVbox  ;
+: vboxs[ ( -- handle )  vbox[  spacer  ;
+
+: hbox[  ( -- handle )  0 IupHbox  ;
+: hboxs[ ( -- handle )  hbox[  spacer  ;
+
+: zbox[  ( -- handle )  0 IupZbox  ;
+: zboxs[ ( -- handle )  zbox[  spacer  ;
+
+
+macro
+: attri:  p: over p: swap  p: attr-internal  p: store-attr  ;
+: attr: p: prepare-attr  p: attr-internal  p: store-attr ;
+: attr?: p: dup  p: attr-internal  p: IupGetAttribute  p: zcount  ;
+forth
+
+: fgcolor ( handle a n -- handle )  attr: FGCOLOR  ;
+: bgcolor ( handle a n -- handle )  attr: BGCOLOR  ;
+: title   ( handle a n -- handle )  attr: TITLE  ;
+: size    ( handle a n -- handle )  attr: SIZE  ;
+: expand  ( handle -- handle )      " YES"  attr:  EXPAND  ;
+: expand-horizontal  ( handle -- handle )  " HORIZONTAL"  attr: EXPAND  ;
+: expand-vertical    ( handle -- handle )  " VERTICAL"    attr: EXPAND  ;
+: tip     ( handle a n -- handle )  attr: TIP  ;
+: setval  ( handle a n -- handle )  attr: VALUE  ;
+: getval  ( handle -- handle a n )  attr?: VALUE  ;
+: image   ( handle a n -- handle )  attr: IMAGE  ;
+: cx      ( handle n -- handle )  (.) attr: CX  ;
+: cy      ( handle n -- handle )  (.) attr: CY  ;
+: conid?  ( handle -- handle a n )  attr?: CONID  ;
+: set-time    ( handle n -- handle ) attr: TIME  ;
+: start-timer ( handle -- handle ) " YES" attr: RUN  ;
+: stop-timer  ( handle -- handle ) " NO" attr: RUN  ;
+: topmost  ( handle -- handle )  " YES" attr: TOPMOST  ;
+: caret?  ( handle -- handle a n )  attr?: CARET  ;
+: selected-text?  ( handle -- handle a n )  attr?: SELECTEDTEXT  ;
+: selection?  ( handle -- handle a n )  attr?: SELECTION  ;
+: rastersize? ( handle -- handle a n )  attr?: RASTERSIZE  ;
+
+: line-text? ( handle n -- handle a n )
+  (.) 2dup pad place
+  " ,1:" pad +place
+  pad +place
+  " ,1000" pad +place
+  pad count
+  attr: SELECTION
+  attr?: SELECTEDTEXT
+;
+
+
+| (a, n) must have the form <number>c<number>
+: split-it ( a n c -- n1 n2 -1 | 0 )
+  split  0if 2drop 0 ;then
+  >single 0if 2drop 2drop 0 ;then
+  >r
+  >single 0if 2drop 0 ;then
+  r>
+  -1
+;
+
+| (a, n) must have the form <number>,<number>
+: split-position ( a n -- n1 n2 -1 | 0 )
+  ', split-it
+;
+
+| (a, n) must have the form <number>x<number>
+: split-size ( a n -- n1 n2 -1 | 0 )
+  'x split-it
+;
+
+
+: caret-x? ( handle -- handle n )
+  caret?  split-position  00;
+  drop
+  drop
+;
+
+: caret-y? ( handle -- handle n )
+  caret?  split-position  00;
+  drop
+  swap drop
+;
+
+: rasterwidth ( handle -- handle n )
+  rastersize? split-size 00;
+  drop
+  drop
+;
+
+: rasterheight ( handle -- handle n )
+  rastersize? split-size 00;
+  drop
+  swap drop
+;
+
+
+: label[   ( a n -- handle )  zt IupLabel  ;
+: button[  ( a n -- handle )  zt  z" buttonAction"  IupButton  ;
+: editbox[ ( -- handle )  z" multilineAction"  IupMultiLine  ;
+: canvas[  ( -- handle )  z" canvasAction"  IupCanvas  ;
+: text[    ( -- handle )  z" textAction"  IupText  ;
+: matrix[  ( -- handle )  z" matrixAction"  IupMatrix  ;
+: toggle[  ( a n -- handle )  zt z" toggleAction"  IupToggle  ;
+: timer   ( -- handle )  IupTimer  ;
+: image[  ( width height pixmap -- handle )  IupImage  ;
+: handle  ( handle a n -- handle )  zt  over IupSetHandle  drop  ;
+
+: menu[ ( a n -- handle )  0 IupMenu  -rot  handle ;
+: ]m  ( handle -- )  drop  ;
+: menu-separator  ( menuhandle -- menuhandle )  IupSeparator  IupAppend  ;
+: menu-item[  ( a n -- handle )  zt  z" menuItemAction"  IupItem  ;
+: ]submenu ( parenthandle childhandle a n -- parenthandle )  zt swap IupSubmenu  IupAppend  ;
+
+: dialog[  ( -- tmphandle )  vbox[  ;
+: dialogs[ ( -- tmphandle )  vboxs[  ;
+: ]ds ( tmphandle -- dialoghandle )  spacer  | fall through...
+: ]d  ( tmphandle -- dialoghandle )  IupDialog  topmost  ;
+
+: type-open  " OPEN" attr: DIALOGTYPE  ;
+: type-save  " SAVE" attr: DIALOGTYPE  ;
+: type-dir   " DIR"  attr: DIALOGTYPE  ;
+
+: file-dialog[  ( -- handle )  IupFileDlg  ;
+: file-open-dialog[  ( -- handle )  file-dialog[  type-open  ;
+: file-save-dialog[  ( -- handle )  file-dialog[  type-save  ;
+: dir-dialog  ( -- handle )  file-dialog[  type-dir  ;
+: ]fd  ( handle -- handle )  noop  ;
+
+
+: ]c  ( parent handle -- parent )  spacer
+: ]w  ( parent handle -- parent )  IupAppend  ;
+
+: toolbar[  ( -- handle )  hbox[  ;
+: ]t  ( parent handle -- handle )  ]w  canvas[ expand-horizontal  " 2x2" size  " 130 130 130" bgcolor  ]w  ;
+
+: frame[  ( a n -- a n handle handle )  hbox[ vbox[  ;
+: ]fr  ( parent a n handle handle -- parent )
+  ]w              | parent a n hbox-handle
+  IupFrame        | parent a n frame-handle
+  -rot            | parent frame-handle a n
+  title           | parent frame-handle
+  ]w              | parent
+;
+
+: radio[  ( -- handle handle )  hboxs[ vboxs[  ;
+: ]r  ( parent handle handle -- parent )  ]c spacer  IupRadio  ]w  ;
+
+: cbox[  ( -- handle )  vbox[  ;
+: ]cbox  ( parent handle -- parent )  0 IupCbox  " 150x150" attr: SIZE  ]w  ;
+
+
+: gl-canvas[ ( -- handle )  0 IupGLCanvas ;
+: gl-make-current ( handle -- handle )  dup IupGLMakeCurrent ;
+: gl-swap-buffers ( handle -- handle )  dup IupGLSwapBuffers ;
+
+| : gui-main-loop  ( -- )  IupMainLoop  drop  ;
+: gui-loop-step  ( -- continuationcode )  IupLoopStep  ;
+
+: destroy ( handle -- )  IupDestroy  drop  ;
+
+
+-1 constant gui-ignore
+-2 constant gui-default
+-3 constant gui-close
+-4 constant gui-continue
+
+
+| Please remember to reproduce this copyright notice according to the IUP license!
+: ui-copyright  " Copyright (C) 1994-2006 Tecgraf/PUC-Rio and PETROBRAS S/A"  ;
+
+
+| Allow callbacks to be handled in the main Forth environment
+
+: add-callback ( xt -- )
+  pending-callbacks push
+;
+
+: handle-pending-events
+  pending-callbacks stack-empty?  if  gui-default ;; then
+
+  pending-callbacks pop execute  gui-close =if gui-close ;; then
+
+  handle-pending-events
+;
+
+
+: gui-main-loop
+  repeat
+    1 ms
+
+    handle-pending-events gui-close <>
+    gui-loop-step  gui-close <>  and
+  while
+;
+
+
+| Normal callbacks are executed in the main FORTH environment
+: set-callback ( handle xt cstr -- handle )  >r >r dup r> r> swap  IupSetCallback  drop  ;
+: action     ( handle xt -- handle )  z" ACTION"     set-callback  ;
+: action-cb  ( handle xt -- handle )  z" ACTION_CB"  set-callback  ;
+: resize-cb  ( handle xt -- handle )  z" RESIZE_CB"  set-callback  ;
+: key-any-cb ( handle xt -- handle )  z" K_ANY"      set-callback  ;
+macro
+: action:     ' literal,  p: action  ;
+: action-cb:  ' literal,  p: action-cb  ;
+: resize-cb:  ' literal,  p: resize-cb  ;
+: key-any-cb: ' literal,  p: key-any-cb ;
+forth
+
+| Allow inline callbacks
+| Inline callbacks are executed in the callback environment
+| (Limited stack size!)
+macro
+: cb[  ahead  p: callback  ;
+: ]cb  dup  p: ;then  literal,  ;
+
+: action[  p: cb[  p: drop  ;
+: ]a  p: ]cb  p: action  ;
+forth
+
+gui-init
+' gui-init in~ ~sys onstartup
+' gui-release in~ ~sys onexit
+
+
+pop~
+
+
+|||
+
+
+def: (save-gui)
+ctx: ~
+stack: a n --
+desc: =
+Creates an executable (turnkey) GUI application and exits the current Reva session.
+=
+
+def: save-gui
+ctx: ~ui
+stack: <file> --
+desc: =
+Creates an executable (turnkey) GUI application and exits the current Reva session. On UNIX you could also use save directly.
+On Windows this word does the same as save does, but it also patches the created PE file to be a real GUI only application. So Windows doesn't create a DOS window when you start your GUI application.
+=
+
+def: pending-callbacks
+ctx: ~ui-priv
+stack: -- pending-callbacks-stack-handle
+desc: =
+The GUI library collects all events that need to be processed until you actually process them in this stack.
+Usually you will not need to access this stack directly. It is managed automatically by gui-main-loop.
+=
+
+def: cleanup-callback-stack
+ctx: ~ui-priv
+stack: --
+desc: =
+Cleans the pending callbacks stack. If you call this word all events that may be collected in that stack get lost.
+Usually you will not call this word directly.
+=
+
+def: gui-init
+ctx: ~ui
+stack: --
+desc: =
+This word initializes the GUI library. You absolutely need to call this word before you use any other GUI related word from the ~ui context!
+You can reinitialize the GUI library also after a call to gui-release.
+Once you included the ui/gui library (with "needs ui/gui") this word becomes a startup handler. So when you create a turnkey GUI application with save-gui or (save-gui) this word will automatically be called at application startup.
+=
+
+def: gui-release
+ctx: ~ui
+stack: --
+desc: =
+Releases all resources that are obtained by the GUI library.
+You MUST NOT use any other GUI related words from the ~ui context after a call to gui-release.
+But you can reinitialize the GUI library with gui-init.
+Once you included the ui/gui library (with "needs ui/gui") this word becomes a shutdown handler. So when you create a turnkey GUI application with save-gui or (save-gui) this word will automatically be called at application shutdown.
+=
+
+def: gui-map
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Maps a widget defined with one of the widget creation words from the ~ui context to a native widget.
+Usually you will not use this word directly - widgets get automatically mapped when you call show on them or their parent widgets.
+Some attributes of some widgets cannot be changed once the widgets are mapped to native widgets. Please look into the IUP documentation for details.
+=
+
+def: gui-next-child
+ctx: ~ui
+stack: handle lastchild -- nextchild
+desc: =
+You can use this word to traverse a widget tree.
+Start with a container widget (for example a dialog or an hbox, vbox, zbox etc.).
+The first call looks like "parent 0 gui-next-child" and returns a child widget if there is at least one.
+Then you call it repeatedly like: "parent last-child gui-next-child" until it returns 0.
+=
+
+def: default-position
+ctx: ~ui
+stack: -- default-x default-y
+desc: =
+Returns -1 -1 on the stack. This is what IUP interpretes as the default position for dialogs.
+=
+
+def: show
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Shows the widget at the default position that is configured for your system.
+Also recursively shows all subwidgets of the widget.
+So you only need to call show for a dialog and it gets visible with all widgets placed on it.
+Showing a widget automatically maps it to its native widget representation. So you don't need to call gui-map explicitly to widgets that you make visible with show
+
+Show is used to display modeless dialogs - use popup to handle modal window handling...
+=
+
+def: hide
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Makes a widget and all its subwidgets (recursively) invisible. The widgets are not destroyed nor unmapped from their native representations, so you can make them visible again whenever you want with show.
+=
+
+def: popup
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Makes a widget and all its subwidgets (recursively) visible. Basically popup does the same as what is documented for show.
+
+Use popup to display modal widgets and show to display modeless widgets...
+=
+
+
+def: popup-xy
+ctx: ~ui
+stack: handle x y -- handle
+desc: =
+The same as popup but displays the widget at a specific coordinate (screen coordinates).
+=
+
+def: show-xy
+ctx: ~ui
+stack: handle x y -- handle
+desc: =
+The same as show but displays the widget at a specific coordinate (screen coordinates).
+=
+
+
+def: spacer
+ctx: ~ui
+stack: parent -- parent
+desc: =
+A spacer is a specific kind of widgets. It is a virtual widget without a native representation.
+
+A spacer allows you to control where and how many empty space is placed when a dialog gets resized.
+=
+
+def: vbox[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a vbox widget. A vbox is a list of widgets that are arranged vertically.
+All widgets you create after vbox[ are placed within the vbox.
+You can "close" a vbox widget definition with ]w.
+=
+
+def: vboxs[
+ctx: ~ui
+stack: -- handle
+desc: =
+Similarly to vbox[ this word creates a vbox widget. A spacer is automatically put at the beginning of the vbox's widget list.
+"Close" a vbox definition with ]c.
+=
+
+def: hbox[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates an hbox widget which is a list of widgets that are arranged horizontally.
+All widgets you create after hbox[ are placed within the hbox.
+You can "close" an hbox widget definition with ]w.
+=
+
+def: hboxs[
+ctx: ~ui
+stack: -- handle
+desc: =
+Similar to hbox[ this word creates an hbox widget. A spacer is automatically inserted at the beginning of the hbox's widget list.
+"Close" an hbox definition with ]c.
+=
+
+def: zbox[
+ctx: ~ui
+stack: -- handle
+desc: =
+A zbox contains a list of widgets. One of these widgets is the active widget and visible, the others are hidden.
+Use zbox's when you want to manage a changing area.
+"Close" a zbox definition with ]w
+=
+
+
+def: attri:
+ctx: ~ui
+stack: a n <name> --
+desc: =
+This word is internal - you will probably not want to use it. It is a helper word set attribute values.
+=
+
+def: attr:
+ctx: ~ui
+stack: handle a n <name> -- handle
+desc: =
+Sets the attribute <name> to the value (a, n) in the widget specified by handle.
+Attributes are the most important way in the gui library to control the application's gui behavior.
+For many special attributes there are specific words to access them more simpler.
+Please have a look at the IUP documentation for detailed descriptions on which attributes are provided by several kinds of widgets.
+=
+
+def: attr?:
+ctx: ~ui
+stack: handle <name> -- handle a n
+desc: =
+Returns in (a,n) the value of the attribute <name> in the widget specified by handle.
+For many specific widgets the gui library provides specific words to access them more easily.
+=
+
+def: fgcolor
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Set the foreground color of the widget specified by handle.
+This is valid for example for text widgets or labels etc.
+The string must have the format: "red green blue" with red, green and blue being a decimal value in the range [0,255] each.
+So for example " 255 255 255" encodes white " 255 0 0" encodes red and so on.
+=
+
+def: bgcolor
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Similar to fgcolor, but sets the background color of the widget specified by handle.
+=
+
+def: title
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Use title to set the title string of a dialog. So handle should be a dialog widget.
+=
+
+def: size
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Sets the size of the specified widget.
+The widget string has the format " 200x100" where 200 is the width and 100 the height (decimal).
+You can also leave out either the width or the height (but not both), so " 200x" changes the width to 200 but leaves the height unchanged.
+=
+
+def: expand
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Allows a widget to be resized both horizontally and vertically.
+Example:
+  dialog[
+    " quit" button[ expand  action[ ." bye" gui-close]a ]w
+  ]d title " my dialog"
+This code creates a dialog containing a button widget. When you resize the dialog, the button also gets resized in both directions.
+=
+
+def: expand-horizontal
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Same as expand but allows only expansion in horizontal direction.
+=
+
+def: expand-vertical
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Same as expand but allows only expansion in vertical direction.
+=
+
+def: tip
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Specifies a tool tip for the widget specified by handle. The tooltip is shown when the user holds the mouse pointer for a while on the widget without moving it too much.
+=
+
+def: setval
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Sets the attribute VALUE to the value specified by (a,n). Many widgets provide a VALUE attribute. Please look at the IUP documentation for details on this.
+=
+
+def: getval
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the value of the attribute VALUE.
+=
+
+def: image
+ctx: ~ui
+stack: handle a n -- handle
+desc: =
+Sets the attribute IMAGE. Shortcut for " attr: IMAGE".
+=
+
+def: cx
+ctx: ~ui
+stack: handle n -- handle
+desc: =
+Sets the attribute CX which is used in conjunction with cboxes.
+=
+
+def: cy
+ctx: ~ui
+stack: handle n -- handle
+desc: =
+Sets the attribute CY which is used in conjunction with cboxes.
+=
+
+def: conid?
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the value of the CONID attribute which is the ID of the native widget. This attribute is only valid after a widget has been mapped to a native widget.
+=
+
+def: set-time
+ctx: ~ui
+stack: handle n -- handle
+desc: =
+Sets the timer interval of the timer widget specified by handle. The timer event will occur every nth millisecond.
+=
+
+def: start-timer
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Starts the timer specified by handle. This allows the timer to fire timer events.
+=
+
+def: stop-timer
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Stopd the timer specified by handle. After a timer is stopped it will no longer fire timer events.
+=
+
+def: topmost
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Pushes the dialog specified by handle to the top of the window stack. This will ensure that the dialog gets visible.
+=
+
+def: caret?
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the position of the caret in an editbox. The result string looks like " XxY" where X is the x position and y the y position.
+=
+
+def: selected-text?
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the text of a text or editbox widget that is currently being marked.
+=
+
+def: selection?
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the block that is currently being marked in an editbox widget.
+The result string has the format " lin1,col1:lin2,col2"
+=
+
+def: rastersize?
+ctx: ~ui
+stack: handle -- handle a n
+desc: =
+Returns the current size of the widget in pixels. The string has the format " widthxheight".
+=
+
+def: line-text?
+ctx: ~ui
+stack: handle n -- handle a m
+desc: =
+Used on an editbox widget this word returns the text currently stored in line n.
+=
+
+def: split-it
+ctx: ~ui
+stack: a n c -- n1 n2 -1 | 0
+desc: =
+This word is internally used to split a string into integer values separated by a specific character.
+(a, n) must have the form <number>c<number>.
+
+Used internally and probably of low interest for you.
+=
+
+def: split-position
+ctx: ~ui
+stack: a n -- n1 n2 -1 | 0
+desc: =
+(a, n) must have the form <number>,<number>
+
+Used internally and probably of low interest for you.
+=
+
+def: split-size
+ctx: ~ui
+stack: a n -- n1 n2 -1 | 0
+desc: =
+(a, n) must have the form <number>x<number>
+
+Used internally and probably of low interest for you.
+=
+
+def: caret-x?
+ctx: ~ui
+stack: handle -- handle n
+desc: =
+Returns the current x position of the caret in a text or editox widget.
+=
+
+def: caret-y?
+ctx: ~ui
+stack: handle -- handle n
+desc: =
+Returns the current y position of the caret in a text or editbox widget.
+=
+
+def: rasterwidth
+ctx: ~ui
+stack: handle -- handle n
+desc: =
+Returns the current width of the widget specified by handle in pixels.
+=
+
+def: rasterheight
+ctx: ~ui
+stack: handle -- handle n
+desc: =
+Returns the current height of the widget specified by handle in pixels.
+=
+
+def: label[
+ctx: ~ui
+stack: a n -- handle
+desc: =
+Creates a label widget initially showing the label (a,n). After label[ you can set several additional attributes for the label (for example the foreground or background color by using fgcolor or bgcolor resp.) and then close the label definition with ]w.
+=
+
+def: button[
+ctx: ~ui
+stack: a n -- handle
+desc: =
+Creates a button widget initially showing the label (a,n). Close a button definition with ]w.
+Between button[ and ]w you can set attributes and specify callbacks for the button widget etc.
+=
+
+def: editbox[
+ctx: ~ui
+stack: -- handle
+desc: =
+Create an editbox widget. An editbox widget is a text input widget with several lines.
+For editboxes it is common to allow expansion (see expand) so that the editbox gets resized together with your dialog window.
+Close an editbox definition with ]w.
+=
+
+def: canvas[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a canvas widget. Canvas are mighty widgets to draw stuff on.
+You can use canvas widgets as the basis for your own widgets.
+You can also use a canvas to contain a cd canvas in which you can draw using primitives for lines, points, circles etc.
+You can also connect a canvas to an OpenGL buffer canvas and draw 3D stuff into it.
+
+Close the canvas widget with ]w.
+
+As you see canvas widgets are quite complicated. Please look into the IUP documentation for more details on IUP canvas and study the examples carefully to understand how to work with them with Reva.
+=
+
+def: text[
+ctx: ~ui
+stack: -- handle
+desc: =
+A text widget is a simple one line text editing widget. Close the text widget definition with ]w.
+=
+
+def: matrix[
+ctx: ~ui
+stack: -- handle
+desc: =
+A matrix widget is a table with rows and columns. Matrix widgets are controlled via lots of attributes. Please look into the IUP documentation and into the examples for more details.
+=
+
+def: toggle[
+ctx: ~ui
+stack: a n -- handle
+desc: =
+Creates a checkbox widget. Close the definition with ]w.
+=
+
+def: timer
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a timer widget. You don't need to close timer widgets with ]w or ]c or so because timer widgets don't need to be added to parent widgets.
+=
+
+def: image[
+ctx: ~ui
+stack: width height pixmap -- handle
+desc: =
+Creates an image. For the specific format of the data please refer to the IUP documentation.
+=
+
+
+def: menu[
+ctx: ~ui
+stack: a n -- handle
+desc: =
+Create a menu with label (a,n). Close a menu definition with ]m.
+=
+
+def: ]m
+ctx: ~ui
+stack: handle --
+desc: =
+Closes a menu definition.
+=
+
+def: menu-separator
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Add a separator to a given menu.
+=
+
+def: menu-item[
+ctx: ~ui
+stack: a n -- handle
+desc: =
+Create an item (a,n).
+=
+
+def: ]submenu
+ctx: ~ui
+stack: parenthandle childhandle a n -- parenthandle
+desc: =
+Create a submenu (a,n) in the parent menu.
+=
+
+def: dialog[
+ctx: ~ui
+stack: -- handle
+desc: =
+Create a dialog widget. Close a dialog definition width ]d.
+=
+
+def: dialogs[
+ctx: ~ui
+stack: -- handle
+desc: =
+Create a dialog widget and add a spacer to it. Close a dialogs definition width ]ds.
+=
+
+def: ]ds
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Closes a widget definition and adds a terminating spacer to it. Used in conjunction with dialogs[.
+=
+
+def: ]d
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Closes a widget definition. Used in conjunction with dialog[.
+=
+
+def: type-open
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Turns a file-dialog into a file open dialog.
+Usually you will not need to use this word directly. Use file-open-dialog[ instead.
+=
+
+def: type-save
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Turns a file-dialog into a file save dialog.
+Usually you will not need to use this word directly. Use file-save-dialog[ instead.
+=
+
+def: type-dir
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Turns a file-dialog into a directory selection dialog.
+Usually you will not need to use this word directly. Use dir-dialog[ instead.
+=
+
+def: file-dialog[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a file dialog. You will usually not use this general word, but one of the more specific words: Close the dialog definition with ]fd.
+file-open-dialog[, file-save-dialog[ or dir-dialog[
+=
+
+def: file-open-dialog[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a file selection dialog. Close the dialog definition with ]fd.
+=
+
+def: file-save-dialog[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a file dialog to select a name of a new file. Close the dialog definition with ]fd.
+=
+
+def: dir-dialog[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a directory selection dialog. Close the dialog definition with ]fd.
+=
+
+def: ]fd
+ctx: ~ui
+stack: handle -- handle
+desc: =
+Closes the definition of a file or directory dialog.
+=
+
+def: ]c
+ctx: ~ui
+stack: parenthandle handle -- parenthandle
+desc: =
+Adds a spacer to the widget specified by handle and adds the handle widget to the widget specified by parenthandle.
+]c is used for container widgets that are created with an initial spacer widget, for example widgets that are created via vboxs[ or hboxs[ etc.
+=
+
+def: ]w
+ctx: ~ui
+stack: parenthandle handle -- parenthandle
+desc: =
+Closes a widget definition (of the handle widget) and adds the handle widget to the parenthandle widget.
+=
+
+def: toolbar[
+ctx: ~ui
+stack: -- handle
+desc: =
+Create a toolbar widget. Close the definition with ]t.
+A toolbar widget is in fact only a vertical widget that is placed on the top of a dialog. Thus the toolbar must be the first widget created within a dialog. Don't use dialogs[ (but only dialog[) if you want to use toolbars.
+=
+
+def: ]t
+ctx: ~ui
+stack: parenthandle handle -- parenthandle
+desc: =
+Closes the definition of a toolbar widget.
+=
+
+def: frame[
+ctx: ~ui
+stack: a n -- a n handle handle
+desc: =
+Creates a group box with the label (a,n) around the widgets that it contains. Close the frame group definition with ]fr.
+=
+
+def: ]fr
+ctx: ~ui
+stack: parent a n handle handle -- parent
+desc: =
+Closes the definition of a frame widget.
+=
+
+def: radio[
+ctx: ~ui
+stack: -- handle handle
+desc: =
+Creates a radio box. Close the definition with ]r.
+=
+
+def: ]r
+ctx: ~ui
+stack: parent handle handle -- parent
+desc: =
+Closes the definition of a radio box and adds it to the parent widget.
+=
+
+def: cbox[
+ctx: ~ui
+stack: -- handle
+desc: =
+Creates a cbox which is a container that contains widgets with fixed x and y coordinates.
+Each child widget must contain a CX and a CY attribute before it gets mapped to its native representation.
+=
+
+def: ]cbox
+ctx: ~ui
+stack: parent handle -- parent
+desc: =
+Closes the definition of a cbox and adds it to the parent widget.
+=
+
+def: gl-canvas[
+ctx: ~ui
+stack: -- handle
+desc: =
+=
+
+def: gl-make-current
+ctx: ~ui
+stack: handle -- handle
+desc: =
+=
+
+def: gl-swap-buffers
+ctx: ~ui
+stack: handle -- handle
+desc: =
+=
+
+def: gui-loop-step
+ctx: ~ui
+stack: -- continuationcode
+desc: =
+Processes the next event in the event loop if there is any. Returns gui-close when an event handler returned gui-close and gui-default otherwise.
+=
+
+def: destroy
+ctx: ~ui
+stack: handle --
+desc: =
+Destroys the specified widget and all of its subwidgets (recursively).
+=
+
+def: gui-ignore
+ctx: ~ui
+stack: -- -1
+desc: =
+A return code used within callbacks to flag that the event shall be ignored and not further processed.
+=
+
+def: gui-default
+ctx: ~ui
+stack: -- -2
+desc: =
+A return code used within callbacks to flag that the event loop shall be processed as usual.
+=
+
+def: gui-close
+ctx: ~ui
+stack: -- -3
+desc: =
+A return code used within callbacks to flag that the event loop should be stopped.
+=
+
+def: gui-continue
+ctx: ~ui
+stack: -- -4
+desc: =
+A return code used within callbacks to flag that the event shall be propagated to the next event handler.
+=
+
+
+def: ui-copyright
+ctx: ~ui
+stack: -- a n
+desc: =
+Returns a string that reproduces a valid copyright notice from tecgraf, the owner of the IUP gui toolkit. You must reproduce this copyright notice somewhere in your program and your documentation. Please refer to the IUP license for details.
+=
+
+def: add-callback
+ctx: ~ui
+stack: xt --
+desc: =
+Used internally to manage callbacks that are executed within the normal forth environment.
+=
+
+def: handle-pending-events
+ctx: ~ui
+stack: --
+desc: =
+Used internally to manage callbacks that are executed within the normal forth environment.
+=
+
+def: gui-main-loop
+ctx: ~ui
+stack: --
+desc: =
+Blocks the application and repeatedly processes events until one event handler (callback) returns gui-close.
+=
+
+def: set-callback
+ctx: ~ui
+stack: handle xt cstr -- handle
+desc: =
+Used internally to set a callback.
+=
+
+def: action
+ctx: ~ui
+stack: handle xt -- handle
+desc: =
+Sets the ACTION callback. This is the default callback for the canonical operation on most widgets (for example for a button click).
+=
+
+def: action-cb
+ctx: ~ui
+stack: handle xt -- handle
+desc: =
+Sets the ACTION_CB callback for the specified widget.
+=
+
+def: resize-cb
+ctx: ~ui
+stack: handle xt -- handle
+desc: =
+Sets the RESIZE_CB callback for the specified widget.
+=
+
+def: key-any-cb
+ctx: ~ui
+stack: handle xt -- handle
+desc: =
+Sets the KEY_ANY_CB callback for the specified widget.
+=
+
+def: action:
+ctx: ~ui
+stack: handle <name> -- handle
+desc: =
+Sets the ACTION callback of the specified widget.
+=
+
+def: action-cb:
+ctx: ~ui
+stack: handle <name> -- handle
+desc: =
+Sets the ACTION_CB callback of the specified widget.
+=
+
+def: resize-cb:
+ctx: ~ui
+stack: handle <name> -- handle
+desc: =
+Sets the RESIZE_CB callback of the specified widget,
+=
+
+def: key-any-cb:
+ctx: ~ui
+stack: handle <name> -- handle
+desc: =
+Sets the KEY_ANY_CB callback of the specified widget.
+=
+
+def: cb[
+ctx: ~ui
+stack: <text> --
+desc: =
+Internal helper word for inline callbacks.
+=
+
+def: ]cb
+ctx: ~ui
+stack: --
+desc: =
+Internal helper word for inline callbacks.
+=
+
+def: action[
+ctx: ~ui
+stack: <text> --
+desc: =
+Starts the definition of an inline callback for the ACTION event. Stop the definition with ]a.
+Used like this:
+  dialog[
+    " quit" button[ action[ ." ok, bye!" gui-close ]a ]w
+  ]d title " myDialog"
+=
+
+def: ]a
+ctx: ~ui
+stack: --
+desc: =
+Ends the definition of an inline ACTION callback started with action[.
+=
+
+
+related: ~ui ~ui-priv ~iup iup dialog[ ]d gui-mainloop show hide destroy save-gui gui-init gui-release
+related: save-gui (save-gui) save onappstart
+
+

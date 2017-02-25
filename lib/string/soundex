@@ -1,0 +1,55 @@
+| vim: ft=reva :
+| soundex - implement the 'soundex' algorithm for string similarity
+
+push~
+needs string/misc
+~strings
+~priv
+variable temp
+
+variable offset
+: soundextable ( nr -- code ) 
+	 uc 65 - " ABKDEFGHEGKLMNOPQRSTOVVKIS01230120022455012623010202"  
+	rot clamp + offset @ + c@ ;
+
+: addcode
+	>r r@ 24 << temp @
+	8 >> or temp ! r> ;
+
+: next ( str cnt previous -- str' cnt' code )
+	>r
+	repeat
+		| str cnt (r:prev)
+		over c@ soundextable	| str cnt code
+		dup '0 <>if | not zero
+			dup r@ <>if | it's unique!  keep this one
+				>r s++ r>  addcode rdrop ;;
+			then
+		then
+		drop s++ dup
+	while
+	'0 addcode rdrop ;
+
+: first ( str cnt -- str' cnt' soundex )
+	0 offset !
+    dup 0if 48 dup else 
+        over c@ soundextable dup >r | save initial code
+        >r s++ r> r> 
+    then
+	26 offset ! 
+	addcode nip
+	;
+~strings
+: soundex ( str cnt -- str cnt )
+	first 3 0 do next loop drop
+	2drop temp 4 ;
+pop~
+
+|||
+
+def: soundex
+stack: a n -- a' n'
+ctx: ~strings
+desc: =
+	Give soundex code for a string
+=

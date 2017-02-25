@@ -1,0 +1,51 @@
+| vim: ft=reva :
+| justify text
+push~
+~strings
+needs string/misc
+
+| display c-addr u right-justified in field width u2
+: rjust ( c-addr u u2 ) over - spaces type ;
+: ljust ( c-addr u u2 ) over - >r type r> spaces ;
+: 0pad ( a n m -- a' n' )
+	2dup <if 
+		pad over '0 fill | a n m
+		>r swap over r@ swap -	| n a m-n
+		pad + rot move
+		pad r> dup
+	then 
+	drop
+	;
+
+pop~
+
+|||  
+
+def: rjust
+stack: a n m -- 
+ctx: ~strings
+desc: =
+	Display (a,n) right-justified in a field "m" wide.
+=
+
+def: ljust
+stack: a n m -- 
+ctx: ~strings
+desc: =
+	Display (a,n) left-justified in a field "m" wide.
+=
+
+def: 0pad
+stack: a n m -- a' n'
+ctx: ~strings
+desc: =
+	Pad (a,n) on the left with "0" to fill a field "m" wide.
+=
+
+def: string/justify 
+ctx: ~
+desc: =
+	Justify and pad strings.
+	=
+
+related: 0pad ljust rjust ~strings string/justify

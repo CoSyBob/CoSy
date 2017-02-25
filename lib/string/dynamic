@@ -1,0 +1,166 @@
+| dynamic string class - "infinite strings"
+| vim: ft=reva :
+
+push~
+~strings
+
+| dstring has layout:
+|     +00 - max length
+|     +04 - string data, NUL terminated, separately allocated
+
+-5 constant THROW_DSTRING
+: roundup cell+ 1+ ;
+: dstr ( n -- a ) 
+	>r 2 cells allocate		| a r:n  -- one for max size, one for data
+	r@ over !				| a r:n  -- store max size in place
+	r> roundup allocate over cell+ ! | a -- store data area
+	| and fall-through to ensure a 'blank' string:
+: dclear ( a -- )
+	dup cell+ @ off ;
+: dfree ( a -- ) >r r@ cell+ @ free r@ cell+ off r> free ;
+
+~priv
+: >dbody ( a -- a' ) cell+ @ ;
+: ?dleft ( a -- n ) dup @ swap >dbody @ - ;
+: dgrow ( a +n -- a ) 
+	over +!					| increased max size
+	dup >r 
+	@ roundup r@ >dbody 
+	swap resize
+[ os  not ] [IF] 
+	| a --- might be '0', so check for that eventuality
+	?dup 0if
+		r@ @ roundup allocate
+		?dup 0if
+			THROW_DSTRING throw
+		else
+			dup r@ >dbody dup >r lcount 
+			rot lplace
+			r> free | the old buffer is not useful
+		then
+	then
+ [THEN] 
+	r> cell+ ! ;
+: ?dspace ( n a -- n a )
+	2dup	| n a n a
+	?dleft	| n a n N
+	swap cell- 1-
+	<if
+		| need to add space 
+		2dup swap 3 <<  dgrow 
+	then
+	;
+~strings
+: dcount ( a -- a n ) >dbody lcount ;
+: dplace ( a n a' -- ) ?dspace >dbody lplace ;
+: +dplace ( a n a' -- ) ?dspace >dbody +lplace ;
+: c+dplace ( c a -- ) 1 swap ?dspace nip  >dbody c+lplace ;
+pop~
+
+[IFTEST]
+| 1 to ~test.verbose
+
+0 value s
+test: dstr construct
+	10 dstr ;
+
+test: dcount
+	10 dstr  dup
+	" abcdef" rot dplace
+	dcount 6 = ;
+
+test: +dplace
+	10 dstr >r
+	" 123456" r@ dplace
+	" 7890" r@ +dplace
+	" abcdef" r@ +dplace
+	r> dcount  " 1234567890abcdef" cmp 0 = ;
+
+test: dstr resize
+	10 dstr >r
+	" 1234567" r@ dplace
+	" 890ABCD" r@ +dplace
+	r> dcount 
+	" 1234567890ABCD" cmp 0 = ;
+
+: packit ( -- )
+	200000 0do
+		" 1234567890" temp @ +dplace	
+	loop ;
+
+
+10 dstr temp !
+2000000 allocate drop
+test: dstr stress
+	start-time
+	packit
+	temp @ dcount 2000000 =
+	elapsed blab 
+	temp @ dfree
+	;
+
+test: c+dplace
+	10 dstr >r
+	" hi" r@ dplace
+	'! r@ c+dplace
+	" hi!" r> dcount cmp 0 =  ;
+
+[THEN]
+
+|||
+
+def: dstr
+stack: n -- a
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Allocate a new dynamic string with space for 'n' characters.  The string
+	will grow as needed when "dplace" and "+dplace" are used to add content to
+	it.  Remember to call "dfree" on the string to release the memory allocated.
+*
+def: dcount
+stack: a -- a n
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Convert the dynamic string to an (a,n) pair
+*
+def: dplace
+stack: a n a' -- 
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Same as 'place' but for dynamic strings
+*
+def: +dplace
+stack: a n a' -- 
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Same as '+place' but for dynamic strings
+*
+def: c+dplace
+stack: c a' -- 
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Same as 'c+place' but for dynamic strings
+*
+def: dclear
+stack: a  -- 
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Empties the dynamic string of content, but does not free the memory.
+*
+def: dfree
+stack: a  -- 
+ctx: ~strings
+ver: 7.0.6
+desc: *
+	Frees the memory of the dynamic string; after this word, the string is no
+	longer valid and accessing it might cause a crash.  Likewise, the dstr
+	itself - so don't try to access it.
+*
+
+related: dstr dcount dplace +dplace strings count place +place c+place lplace +lplace lcount dclear dfree c+dplace

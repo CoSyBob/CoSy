@@ -1,0 +1,20 @@
+| vim: ft=reva :
+| Interface to SDL library
+
+push~
+context: ~sdl
+~sdl
+
+os [IF] " libSDL.so" [ELSE] " sdl.dll" [THEN] lib sdl
+
+$0001 constant SDL_INIT_TIMER
+$0010 constant SDL_INIT_AUDIO
+$0020 constant SDL_INIT_VIDEO
+$0100 constant SDL_INIT_CDROM
+$0200 constant SDL_INIT_JOYSTICK
+$FFFF constant SDL_INIT_EVERYTHING
+
+1 func:  SDL_Init		| ( flags - result )
+0 vfunc: SDL_Quit		
+0 func:  SDL_Linked_Version
+pop~

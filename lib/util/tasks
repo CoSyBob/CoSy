@@ -1,0 +1,38 @@
+| vim: ft=reva :
+| Simple tasker written by Charles, modified by Ron
+push~
+~util
+~priv
+create which 0 , 0 , 0 , 0 , 0 , 0 , 0 ,
+variable n
+: cycle? n @ 6 >if 0 n ! then n @ dup 1+ n ! ;
+: >task n @ cells which + ! n ++ n @ 6 =if 0 n ! then ; ' >task
+:: p: :: >task ;
+:: cycle? cells which + @ 0; execute ; 
+~
+alias yield 
+alias task: 
+alias >task 
+pop~
+|||
+
+def: task:
+stack: --
+ctx: ~
+desc: @
+	Create a new unnamed "task".  It will execute the code following until ";"
+@
+def: >task
+stack: xt --
+ctx: ~
+desc: @
+	Create a new task which executes the 'xt' passed in.
+@
+def: yield
+stack: --
+ctx: ~
+desc: @
+	Allows the task controller to switch to another task.
+@
+
+related: yield >task task:

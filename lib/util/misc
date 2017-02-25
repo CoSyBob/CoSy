@@ -1,0 +1,137 @@
+| vim: ft=reva
+
+push~
+
+~strings ~sys ~io
+~util
+
+: (.ip) 0 pad c! temp ! temp 3 + 3 0 do dup c@ (.) pad +place '. pad c+place 1- loop c@ (.) pad +place pad count ;
+
+: .ip (.ip) type space ;
+
+: dup>r    inline{ 50 } ;inline
+: 3cell-   inline{ 8d 40 f4 } ;inline
+: 4cell-   inline{ 8d 40 f0 } ;inline
+: 4drop    inline{ 8b 46 0C 8d 76 0f } ;inline
+: 02drop;  inline{ 09 c0 75 08 ad 8b 46 04 8d 76 08 c3 } ;inline  | dup 0if 3drop ;then
+: 03drop;  inline{ 09 c0 75 08 ad 8b 46 08 8d 76 0c c3 } ;inline  | dup 0if 3drop drop ;then
+: if;      inline{ 83 f8 01 19 c0 09 c0 75 02 ad c3 ad } ;inline  | if ;then
+
+: cellskip inline{ 8d 76 fc 89 06 b8 03 00 00 00 29 04 24 ad } ;inline  | 3 skip
+
+macro
+: times ' ~sys.then,> inline{ 50 ad 89 c1 ad e3 08 51 ff 54 24 04 59 e2 f8 5b } ;
+forth
+
+| Implementation of 'mark'. Define a word with:
+|    mark mywords
+| and when you invoke 'mywords', the dictionary is cleaned up
+| to the state it had just before you created 'mywords'
+: mark ( <name> -- )
+    last @
+    create , dict @ , here cell+ ,
+    does> dup @ last !
+        cell+ dup @ dict !
+        cell+ @ (here) ! ;
+~
+| creates the specified word with this stack signature:
+| ( arg1 arg2 ... argn n -- return-code )
+macro
+: args[ p[ depth >r ]p ;
+: ]args p[ depth r> - ]p ;
+forth
+: afunc: ( <name> -- )
+  0 ~priv.(func-create)
+  does>
+	~priv.(func-data-does)  | ensure that the proc address is initialized
+	@ swap            | arg1 arg2 ... argn proc-address n
+	(call)
+;
+
+: func:>xt ( " name" -- xt ) find ?dup 0if 2drop 0 ;then @ ;
+pop~
+
+
+
+|||
+def: func:>xt
+stack: " name"  -- xt
+ctx: ~
+ver: 7.0.6
+desc: =
+	Given the name of a word created with "func:", will return the code address
+	of the function it loads, or 0.  The 0 return result can occur for two
+	reasons:
+
+		1) The 'func:' doesn't exist, or
+		2) The function it loads has not yet been loaded
+
+	Since "func:" words are demand-loaded, scenario (2) is fairly likely.
+=
+
+related: func:>xt func: vfunc: find ' [']
+
+def: if;
+stack: flag --
+ctx: ~
+desc: =
+    If 'flag' is true, exit word, otherwise continue.
+=
+def: cellskip
+ctx: ~struct
+stack: n -- a
+desc: =
+    In a 'do-loop' where the index and limit are the bounds of an array,
+    skip to the next cell at the end of the current iteration.
+=
+def: times
+stack: n <word> --
+ctx: ~
+desc: =
+    Execute 'word' 'n' times.
+=
+def: mark 
+ctx: ~util
+stack:  <name> -- 
+desc: =
+	Creates a word which when executed, will revert the system to the
+	state it had before that word was created.  This is very useful
+	when you want to "play around" with things and remove their
+	side-effects.
+
+	Note: the word will affect only the context in which it was run.
+	=
+
+def: afunc:
+ctx: ~
+stack: <name> --
+ver: 6.1.11
+desc: =
+	Like "func:" but for arbitrary argument list (cdecl).
+
+	The argument list needs to be finished off with the number of
+	arguments to the function in TOS, like:
+
+		arg1 arg2 arg3 arg4 4 func: ...
+
+	The function will return a value in TOS
+=
+
+def: args[
+ctx: ~
+stack: --
+ver: 6.1.11
+desc: =
+	Used with "afunc" and "]args" to automate the counting of
+	arguments.
+=
+
+def: ]args
+ctx: ~
+stack: -- n
+ver: 6.1.11
+desc: =
+	Used with "afunc" and "args[" to automate the counting of
+	arguments.
+=
+

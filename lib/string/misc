@@ -1,0 +1,310 @@
+| vim: ft=reva :
+| various string utilities
+
+push~
+~strings
+: uc $df and ; | uppercase a character
+: strlwr ( a n -- a n ) 2dup bounds do i c@ lc i c! loop noop ;
+: strupr ( a n -- a n ) 2dup bounds do i c@ uc i c! loop noop ;
+: ws? 0 32 between ;
+: s++ 1 /string ;
+
+: strbreakat ( a n off -- a1 n1 a2 n2 )
+	| a2 = a + off
+	| n1 = off
+	| n2 = n - off
+	2dup - >r				| a n off (r:n2)
+	nip
+	2dup + r>
+	;
+: strsplitat ( a n off len -- a1 n1 a2 n2 )
+	| n1 = off
+	| a2 = a + off + len
+	| n2 = n - off - len
+	|	 = n - (a-off-len) + a
+	over + 3 pick + >r		| a n off (r: a2)
+	swap					| a n1 n
+	2 pick + r> swap over -
+	;
+: strnew: ( <name> -- )
+	create 0 , 252 allot
+	does>
+	;
+: zcat ( src dest --) | append string src to dest (both \0 terminated strings
+	| assumes dest has enough room!
+    zcount + >r
+    zcount 1+
+    r>
+    swap move ;
+: strcatf ( a1 n1 a2 n2 -- a3 n3 )
+	2swap scratch lplace
+	scratch +lplace
+	scratch lcount
+	;
+: strcat  ( a1 n1 a2 n2 -- a3 n3 )
+	| append (a2,n2) to (a1,n1) returning an "allocate"d (a3,n3)
+	| NOTE: the user must "free" a3 to be well-behaved.
+	>r over r@ + 1+ | a1 n1 a2 n3 (r:n2)
+	dup allocate swap | a1 n1 a2 a3 n3 ( r:n2 )
+	>r 2swap dup >r 	| a2 a3 a1 n1 (r:n1 n3 n2)
+	2 pick swap move | a2 a3 (r:n3 n2)
+	swap over r> + r> r> swap >r | a3 a2 a3 n2 (r:n3)
+	move r> | a3 n3
+	2dup + 1- 0 swap c! 1-
+	;
+: search2 ( a1 n1 a2 n2 -- a3 n3 -1 | a1 n1 a2 n2 0 )
+	4dup search 00;
+	>r 2nip 2nip r>
+	;
+
+| contributed by Bob Armstrong:
+: splitws  ( a n -- a1 n1 a2 n2 true | a n false )    
+	dup 0if false ;then 
+	2dup 0do    | a n a n a    
+	count ws? if leave then loop  
+	dup >r 2 pick - 2dup -
+	dup 0if 2drop 2dup + 1- c@ ws? if 1- then  r> drop false ;then
+	>r 1- nip r> r> swap true ;
+
+| remove all instances of 'c' from string:
+: -char ( a n c -- a n' ) | thanks to Helmar
+	-rot over >r bounds tuck ?do
+		2dup i c@ rot of drop else swap c! 1+ then
+	loop nip r@ - r> swap ;
+
+| allocate a new string containing the original contents:
+: strdup ( a n -- a' n' )
+	dup 1+ allocate 0; >r
+	r@ swap dup >r 1+ move
+	r> r> swap
+	;
+: strdupl ( a n -- a' ) 
+	dup cell+ 1+ allocate 0;
+	dup >r lplace r>
+	;
+: strsplit ( a1 u1 a u -- a2 u2 a3 u3 flag )
+	dup >r
+	2over 2swap search 0if rdrop false ;then
+	drop 2 pick - r> strsplitat true
+	;
+
+: strcut ( a n off len -- a1 n1 )
+	| source: (a,n)
+	| cut: (a+off,len)
+	| tail: (a+off+len, n-(off+len))
+	| result: (a, n-len)
+	| move n-(off+len) bytes from (a+off+len) to (a+off)
+	dup 3 pick swap - >r		| a n off len r:n1
+	over +	>r					| a n off (r: off+len n1 )
+	swap r@ - -rot				| n-(off+len) a off 
+	over r> + -rot				| N a+off+len a off 
+	over >r + rot
+	cmove>
+	r> r>
+	;
+
+: getix ( a n c -- a n c ix | a n c -1 )
+	3dup | a n c a n c
+	-rot 0do	| c a
+		count 2 pick =if 2drop i unloop ;then
+	loop
+	2drop true
+	;
+: tr ( a n a1 n1 a2 n2 -- )
+	rot min		| a n a1 a2 min(n1,n2)
+	>r swap 2swap r> -rot | a2 a1 n12 a n
+	bounds do
+		| a2 a1 n12 ('i' is str ptr)
+		i c@	| a2 a1 n12 c
+		getix	| a2 a1 n12 c ix (or -1 if nothing)
+		dup -1 =if
+			| no go, character isn't in the list
+			2drop
+		else
+			| beauty!  we found a suspect
+			nip
+			3 pick + c@ 
+			i c!
+		then
+	loop
+	3drop
+	;
+
+pop~
+
+|||  
+def: strnew:
+stack: <name> --
+ctx: ~strings
+ver: 6.1
+desc: =
+	Allocate a named buffer capable of holding either a small counted string or
+	a NUL terminated string smaller than 255 bytes.
+=
+
+def: zcat
+stack: src dest --
+ctx: ~strings
+ver: 6.1
+desc: =
+	Append NUL terminated string at "src" to "dest".  It is up to the programmer
+	to ensure that "dest" has enough space to accommodate all the string data.
+=
+def: strcatf
+stack: a1 n1 a2 n2 -- a3 n3
+ctx: ~strings
+ver: 6.1
+desc: =
+	Append (a2,n2) to (a1,n1) resulting in the string (a3,n3).  The string
+	(a3,n3) is always in the "scratch" buffer, and so using this more than once
+	will overwrite previous strings (or anything else in "scratch").  It is,
+	however, much faster than "strcat".  On the other hand, one may not use
+	strings larger than 4091 bytes total.
+=
+def: strcat
+stack: a1 n1 a2 n2 -- a3 n3
+ctx: ~strings
+ver: 6.1
+desc: =
+	Append (a2,n2) to (a1,n1) resulting in the string (a3,n3).  The memory at
+	"a3" is "allocate"d, so a properly behaving application will take care to
+	"free" it.  The resultant string may be as large as memory permits.
+=
+
+
+def: uc
+stack: c -- c
+ctx: ~strings
+desc: =
+	Convert the character to uppercase
+=
+
+def: strlwr
+stack: a n --  a n
+ctx: ~strings
+desc: =
+	Convert string to lowercase, inplace
+=
+
+def: strupr
+stack: a n --  a n
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Convert string to uppercase, inplace
+=
+def: ws?
+stack: c -- flag
+ctx: ~strings
+desc: =
+	Return "true" if the character is "whitespace"
+=
+
+def: s++
+stack: a n -- a' n'
+ctx: ~strings
+desc: =
+	Increment the string by one character
+=
+
+def: string/misc 
+ctx: ~
+desc: =
+	Various and sundry string routines:
+	=
+def: search2
+ctx: ~strings
+stack: a1 n1 a2 n2 -- a3 n3 -1 | a1 n1 a2 n2 0 
+desc: =
+	Same as "search", but on failure returns the original arguments as well.
+=
+
+def: splitws
+stack:  a n -- a1 n1 a2 n2 true | a n false
+ctx: ~strings
+ver: 6.1.5
+desc: =
+    Split string on first occurrence of whitespace. Returns empty strings for initial, trailing,
+        or consecutive whitespace. If no whitespace in string, returns unchanged with flag false.
+=
+def: -char 
+stack: a n c -- a n
+ctx: ~strings
+ver: 6.1.9
+desc: =
+	Remove all instances of character 'c' from the string (a,n)
+=
+
+| allocate a new string containing the original contents:
+def: strdup 
+stack: a n -- a' n'
+ctx: ~strings
+ver: 6.1.9
+desc: =
+	Create a duplicate of the passed-in string, in allocated memory.  The caller
+	has the rsponsibility of freeing the memory used by the duplicate.
+=
+
+def: strdupl 
+stack: a n -- a' 
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Same as 'strdup', except the returned value is a 'long counted string'
+=
+
+def: strsplit 
+stack: a1 n1 a2 n2 -- a3 n3 a4 n4 true | a1 n1 false
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Similar to "split", except it splits (a1,n1) on the first occurrence of
+	(a2,n2).
+=
+def: tr 
+stack: a n a1 n1 a2 n2 -- 
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Like the unix 'tr' utility.  Take source string (a,n) and convert each
+	character in (a1,n1) into the corresponding one in (a2,n2).
+
+	Example:
+
+		" (abc)" " ()" " []" tr
+
+	will result in the original string being converted (in-place) into " [abc]"
+=
+def: strsplitat  
+stack: a n off len -- a1 n1 a2 n2 
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Split the string at offset "off" for "len" characters.  
+	Example:
+		" abcdefg" 2 3 strsplitat
+	gives:
+		" ab" and " fg"
+
+	NOTE: This word does *no* checking of the arguments, so if you give it
+	garbage you will likely crash.  It is intended to be used by higher level
+	words, but is useful on its own.
+=
+def: strbreakat  
+stack: a n off -- a1 n1 a2 n2 
+ctx: ~strings
+ver: 7.0.2
+desc: =
+	Break the string into two strings, at the offset given.
+	Example:
+		" abcdefg" 2 strbreakat
+	gives:
+		" ab" and " cdefg"
+
+	NOTE: This word does *no* checking of the arguments, so if you give it
+	garbage you will likely crash.  It is intended to be used by higher level
+	words, but is useful on its own.
+=
+
+related: ~strings string/misc s++ ws? strlwr strcat strcatf scratch zcat strnew search search2 splitws -char strdup strdupl
+related: split strsplit strsplitat strbreakat

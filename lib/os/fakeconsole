@@ -1,0 +1,20 @@
+push~
+~os
+
+1 constant black 
+2 constant red 
+3 constant green 
+4 constant yellow 
+5 constant blue 
+6 constant magenta 
+7 constant cyan 
+8 constant white
+
+: title 2drop ;
+: fullscreen drop ;
+: normal ;
+: concealed ; : underscore ; : reverse ; : dim ; : bright ; : blink ;
+: bold ; : unbold ;  : cls ; : fg drop ; : bg drop ; : color 2drop ;
+: gotoxy 2drop ; : cursor drop ; : getpos 0 0 ; : savepos ; : restorepos ;
+: pos@ here ;
+pop~

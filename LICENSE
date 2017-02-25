@@ -1,0 +1,25 @@
+			     Reva 6.1 - 23 Oct 2006
+                        by Ron Aaron (ron@ronware.org)
+
+LICENSE:
+
+Reva is dedicated by the author, Ron Aaron, to the Public Domain.   In the event
+your country does not recognize my ability to so dedicate it, I also grant
+unconditional, non-revocable permission to anyone who obtains a copy of this
+software, to use, modify and to redistribute it without limitation.
+
+That means: you may use Reva however you like, for commercial or non-commercial
+uses.  You may charge money for it.  You may modify it as much as you like.
+Nevertheless, I would appreciate your giving credit if you find it useful in
+your projects or products by providing my contact information and credit as the
+original author.
+
+Reva is provided "AS IS", with no warranty of any kind.  It may or may not work
+as you would like, and might even damage your computer or data.  Still, it
+pleases me to provide it anyway.  Since it is produced in my spare time, and
+since you don't have to pay for it, that seems reasonable.
+
+OTHER COMPONENTS:
+
+The included "pcre3.dll" is under the BSD license.  For further details go to
+http://www.pcre.org/

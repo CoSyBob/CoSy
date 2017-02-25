@@ -1,0 +1,24 @@
+			     Reva 6.1 - 23 Oct 2006
+                        by Ron Aaron (ron@ronware.org)
+
+CREDITS:
+
+Reva is not a one-man project, even though I do write most of the code and make
+the releases.  It is proper to show gratitude for the many who came before me
+and those who help me along.  My deepest gratitude and sincere thanks to:
+
+ - The Win32Forth team, particularly Alex McDonald - for "cutting my teeth" in
+   Forth and providing a useful platform.  They are also to be commended for
+   giving me the impetus to strike out on my own path.
+ - The folks on "comp.lang.forth" for providing much food for thought and
+   (on occasion) answers.
+ - Elizabeth Rather et. al. for publishing excellent reference material.
+   Likewise Leo Brodie.
+ - Charles Moore for having started the Forth ball rolling so many years ago.
+ - Tomasz Grysztar for creating the superb FASM assembler, without which Reva
+   would be unlikely.
+ - Most of all, the RetroForth team - especially Charles Childers, for his
+   generous spirit and wonderful technical insights.  Reva truly would not have
+   happened without his support.  Also (in no particular order) William Cook,
+   Helmar Wodtke, Danny Reinhold and many others.  You guys are an incredible
+   support team, and I really appreciate your help and input.

@@ -1,0 +1,272 @@
+| XML-RPC library
+| vim: ft=reva :
+| see: http://www.xmlrpc.com/spec
+
+
+| Example header:
+| POST /RPC2 HTTP/1.0
+| User-Agent: Frontier/5.1.2 (WinNT)
+| Host: betty.userland.com
+| Content-Type: text/xml
+| Content-length: 181
+
+| Content:
+| <?xml version="1.0"?>
+| <methodCall>
+|   <methodName>examples.getStateName</methodName>
+|   <params>
+|      <param>
+|         <value><i4>41</i4></value>
+|      </param>
+|   </params>
+| </methodCall>
+
+| Scalar values:
+|  <i4> or <int>			-12
+|  <boolean>				1
+|  <string>					hello world
+|  <double>					-12.214
+|  <datetime.iso8601>		20080102T14:08:55
+|  <base64>					e9234...
+|
+| or a struct:
+| <struct>
+|   <member>
+|		<name>x</name>
+|		<value><i4>34</i4></value>
+|	</member>
+|	...
+| </struct>
+|
+| or an array:
+|
+| <array>
+|	<data>
+|		<value><i4>12</i4></value>
+|		<value><string>Egypt</string></value>
+|	</data>
+| </array>
+|
+| Response format:
+|
+| HTTP/1.1 200 OK
+| Connection: close
+| Content-Length: 158
+| Content-Type: text/xml
+| Date: Fri, 17 Jul 1998 19:55:08 GMT
+| Server: UserLand Frontier/5.1.2-WinNT
+| 
+| <?xml version="1.0"?> 
+| <methodResponse> 
+| 	<params> 
+| 		<param> 
+| 			<value><string>South Dakota</string></value>
+| 		</param> 
+| 	</params> 
+| </methodResponse> 
+|
+| Fault response:
+| HTTP/1.1 200 OK
+| Connection: close
+| Content-Length: 426
+| Content-Type: text/xml
+| Date: Fri, 17 Jul 1998 19:55:02 GMT
+| Server: UserLand Frontier/5.1.2-WinNT
+| 
+| <?xml version="1.0"?> 
+| <methodResponse> 
+|	<fault> 
+|		<value> 
+|			<struct> 
+|				<member> 
+|					<name>faultCode</name> 
+|					<value><int>4</int></value> 
+|				</member> 
+|				<member> 
+|					<name>faultString</name> 
+|					<value><string>Too many parameters.</string></value> 
+|				</member> 
+|			</struct> 
+|		</value> 
+|	</fault> 
+| </methodResponse> 
+
+needs net/sockets
+needs net/xml
+needs string/dynamic
+
+0 value callbuffer
+0 value resultbuf
+0 value cbSizeOffs
+0 value contentSize
+
+: +content  ( a n -- ) dup +to contentSize	| fall through...
+: +buffer callbuffer +dplace ;
+: nl crlf +content ;
+
+: (tag) +content +content " >" +content ;
+: <tag> ( a n -- ) " <" (tag) ;
+: </tag> ( a n -- ) " </" (tag) ;
+: tag ( a n a' n' -- a'' n'' )
+	2swap 2over <tag> 
+	+content
+	</tag> nl
+	;
+
+: param[ " param" <tag> " value" <tag> ;
+: ]param " value" </tag> " param" </tag> ;
+
+: intval ( n -- ) param[ (.) " i4" tag ]param ;
+: strval ( a n -- ) 
+	.s cr
+	~xml.escape 
+	tuck
+	param[ " string" 
+	tag ]param 
+	drop
+	.s cr
+	;
+: method ( a n -- ) 
+	" methodCall" <tag> nl
+	" methodName" tag
+	" params" <tag> 
+	;
+
+create xmlserver 256 allot
+create xmlpath 256 allot
+0 value xmlport
+
+: splituri ( uri,n -- )
+	xmlserver off   xmlpath off    80 to xmlport
+	': split if
+		2swap | server,n PORT/PATH
+		'/ split if
+			>single drop to xmlport
+			xmlpath place
+		then
+	else
+		| no port designation
+		| SERVER/PATH
+		'/ split if
+			2swap xmlpath place
+		then
+	then
+	xmlserver place
+	;
+
+| note: the ^M characters are required in the string:
+: xmlrpc[ ( method,n uri,n -- )
+	| split out server, path and port:
+	| server.company.com:234/RPC
+	| -> server 'server.company.com'
+	| -> path '/RPC'
+	| -> port '234'  (default to 80 if not present)
+	splituri
+	
+	0 to cbSizeOffs 0 to contentSize 
+	callbuffer 0if 5000 dstr to callbuffer then 
+	callbuffer dclear drop
+	
+	" POST /" callbuffer dplace
+	xmlpath count  +buffer
+	quote *
+ HTTP/1.0
+User-Agent: Reva net/xmlrpc
+Host: *
+	+buffer
+	xmlserver count +buffer
+	quote * 
+Content-Type: text/xml
+Content-length: *
+	+buffer
+	callbuffer dcount + 1+ to cbSizeOffs
+
+	quote *            
+
+*	+buffer
+
+quote * <?xml version="1.0"?>
+*
+	+content 
+	method
+	;
+
+
+0 value sock
+: rpcexec ( -- result,n )
+	resultbuf 0if 5000 dstr to resultbuf then
+	resultbuf dclear drop
+
+	xmlserver count xmlport connectsocket dup to sock
+	-1 =if THROW_GENERIC throw ;then 
+	sock callbuffer dcount 0 send 
+	repeat
+		sock scratch 4096 0 recv 
+		dup 0 <if 
+			." Socket error: " sockerror . . cr 
+			false
+		else
+			scratch over resultbuf +dplace
+		then
+	while
+	closesocket
+	resultbuf dcount 
+	;
+
+: ]xmlrpc ( -- )
+	" params" </tag> nl
+	" methodCall" </tag> nl
+	contentSize (.) cbSizeOffs swap move
+	rpcexec
+	;
+
+with~ ~util
+
+variable parse-result-code
+variable fault_code
+create faultstring 256 allot
+
+defer int 
+defer string 
+
+: i4 : intNormal >single drop ;
+: stringNormal ." a string " cr ;
+
+: normalize ['] intNormal is int ['] stringNormal is string ;
+
+: intIsFault >single drop fault_code ! ;
+: stringIsFault 255 min faultstring place ;
+
+: methodResponse 2drop ;
+: fault 2drop parse-result-code off ['] intIsFault is int ['] stringIsFault is string ;
+: value 2drop ;
+: struct 2drop ;
+: member 2drop ;
+: array 2drop ;
+: name 2drop ;
+: params 2drop ;
+: param 2drop ;
+: array 2drop ;
+: float 2drop ;
+: data 2drop ;
+: myeval 2dup type_ ;
+: parse-result ( a n -- a n 0 | a1 a2 ... aN N -1 )
+	normalize
+	depth 1- 1- >r
+	parse-result-code on
+	['] myeval -rot ~xml.parse
+	depth r> -
+	;
+
+[IFTEST]
+
+test: call geocode 
+	" geocode"
+	" rpc.geocoder.us/service/xmlrpc"
+	xmlrpc[ 
+		" 1005 Gravenstein Hwy, Sebastopol, CA 95472" strval
+	]xmlrpc 
+	resultbuf dcount 100 > ;
+	
+[THEN]
+

@@ -1,0 +1,29 @@
+| vim: ft=reva :
+| Helmar's sort
+push~
+needs alg/sort-common
+~priv
+: half        2/ -3 and ;
+: bsearch ( p c n -- p' )
+              over if >r 
+                2dup half + @ r@ compare 0if half
+                else dup half cell+ tuck - -rot + swap then
+              r> bsearch ;then 2drop ;                     
+: insert ( p c n -- )
+              >r 2dup r@ bsearch
+              >r + r@ tuck cell+ tuck - cell+ cmove>
+              r> r> swap ! ;                        
+: isort ( p c -- )
+              cells >r 4
+: (sort)      r@ over <>if
+                2dup 2dup + @ insert
+              cell+ (sort) ;then 2drop rdrop ;
+to~ ~ isort
+pop~
+||| 
+def: isort
+stack: buf size --
+ctx: ~
+desc: =
+	Sort the buffer "buf" of "size" cells, using the Insert-sort algorithm.
+=
