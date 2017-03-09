@@ -215,6 +215,8 @@ alias: Type@ @		alias: Type! !
 
  alias: ii@ ic@		alias: ii! ic!	| index fetch and store , integer
 
+ 0 intVecInit refs+> value evI 	| empty integer vec . 
+
 : _i : _i ( cell -- 1_item_intvec ) 
    1 intVecInit >r> 0 ii! r> ;
  
@@ -243,7 +245,7 @@ alias: Type@ @		alias: Type! !
  
 : encatom ( CSob -- CSob )      | Enclose iff not enclosed .
   dup @ if enc then ;       | An atom is anything other than a general list .
-
+ 
 : enc>1 ( CSob -- CSob )        | Enclose iff i# > 1
   dup i# 1 <>if enc then ;
 
@@ -982,13 +984,37 @@ variable indentv   : indent indentv @ spaces ;
      0 ?do 2 pick i i@ 2 pick execute loop
    >r drop ref0del r> ;
  
+1 [IF] 
 : across  ( RA fn -- r ) | result returning "/"
    over i# 0=I z" nonce : empty , needs prototype " * throw 
    dup fntype TypeFl =if acrossf ;then
    over 0 i@ >aux
    over i# 1 ?do aux> 2 pick i i@ 2 pick execute >aux loop
    drop ref0del aux> ;
+
+: across  ( RA fn -- r ) | result returning "/" | empty simply returns
+   
+   over i# 0if drop ;then | 0=I  z" nonce : empty , needs prototype " * throw 
+   dup fntype TypeFl =if acrossf ;then
+   over refs+> 0 i@ >aux
+   over i# 1 ?do aux> 2 pick i i@ 2 pick execute >aux loop
+   drop refs- aux> ;
+
+| [ELSE]
+
+: acrossN ( RA fn -- r ) $.s  swap 1p $.s cr 
+   R@ i# 0if ." empty  " $.s cr drop R@ 1P> ;then 	| if empty , just returns .
+
+   R@ Type@ case $.s cr 
+   Type0 $.s ."  | " of $.s cr R@ swap across endof  
+   TypeI  of ['] + acrossI endof 
+   TypeFl of ['] f+ acrossf	endof 
+   drop refs- z" invalid type " throw
+  endcase 
+   $.s cr 1P> ;   
  
+[THEN]
+
 : across^  ( RA fn -- r ) | result returning "/"  on CoSy obs
    over i# 0if drop ref0del z" nonce : empty , needs prototype " throw ;then 
    over refs+> >r> i0 at\ r> i1 at\ --abca execute >aux
@@ -1010,15 +1036,6 @@ variable indentv   : indent indentv @ spaces ;
    TypeFl of ['] f+ acrossf	endof 
    drop refs- z" invalid type " throw
   endcase ;
-
-0 [IF]
-   over Type@ 
-   	case
-		TypeI  of endof
-		TypeC  of byteVecInit	endof
-		TypeFl of floatVecInit	endof
-  endcase 
-[THEN]
 
 | -------- 
 
@@ -1317,9 +1334,12 @@ alias: _ cut
  
 : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
    | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
-   2p LR@ swap cL o cr >aux+> dup R@ css cut 
+   2p LR@ swap cL >aux+> dup R@ css cut 	| appends 
    aux- R@ rho ['] cut eachleft  2P> ;
  
+| Finessing bomb on 0 occurances of tok . See Mon.Mar,20170306 |
+| : toksplt 2p> swap cL R@ prior toksplt 1 _cut 2P> ; 
+
 |  name from APL " Vector to Matrix " 
 : VMbl : nlfy  "bl toksplt ;	| using Rick Trice's fn name .
  
@@ -1329,8 +1349,13 @@ alias: _ cut
 : VMlf ( str -- list_of_strings_split_on_cr ) "lf toksplt ;
 
 : ssr ( str  s0 s1 ,L -- str ) | replaces occurences in str of s0 with s1   
-  2p L@ R@ 0 i@ toksplt R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut 2P> ;
-  | Quick ( to think ) and dirty . Could be highly optimized .
+  2p L@ R@ 0 i@ toksplt dup i# 1 =if refs- L@ 2P> ;then  
+  R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut 2P> ;
+
+|  2p L@ R@ 0 i@ ss dup i# 0if L@ 2P> ;then 
+|  R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut 2P> ;
+
+| Quick ( to think ) and dirty . Could be highly optimized .
 
 : eachleftI --bac : eachrightI ( LA RA fn -- R ) | Lets get integer working 
    >aux 2p ev R@ i# 0 ?do L@ R@ i _at\ aux@ execute cL loop aux> drop 2P> ; 
@@ -1401,10 +1426,12 @@ cr cr  ." | /\ Fns /\ | \/ Dic \/ | Stk : "  $.s  cr cr
 ." \\/ DICTIONARY  \\/ " $.s cr 
 | \/ ============================================ \/
 | 20110814 | have determined that really do need explicit type . Was just 3 vec
-| $006346964 value TypeDic		| " dic"  | 20170304 ; still ambiguous abt this
 
-| empty dictionary : 2 empty vecs . 
- 
+$006346964 value TypeDic		| " dic" 
+
+| empty dictionary : 3 empty vecs . 
+: ed ( -- LegacyemptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
+
 : () ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
  ed  refs+> value R	 | initialize empty Root dictionary
