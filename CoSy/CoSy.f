@@ -1317,7 +1317,7 @@ alias: _ cut
  
 : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
    | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
-   2p LR@ swap cL >aux+> dup R@ css cut 
+   2p LR@ swap cL o cr >aux+> dup R@ css cut 
    aux- R@ rho ['] cut eachleft  2P> ;
  
 |  name from APL " Vector to Matrix " 
@@ -1401,12 +1401,10 @@ cr cr  ." | /\ Fns /\ | \/ Dic \/ | Stk : "  $.s  cr cr
 ." \\/ DICTIONARY  \\/ " $.s cr 
 | \/ ============================================ \/
 | 20110814 | have determined that really do need explicit type . Was just 3 vec
+| $006346964 value TypeDic		| " dic"  | 20170304 ; still ambiguous abt this
 
-$006346964 value TypeDic		| " dic" 
-
-| empty dictionary : 3 empty vecs . 
-: ed ( -- LegacyemptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
-
+| empty dictionary : 2 empty vecs . 
+ 
 : () ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
  ed  refs+> value R	 | initialize empty Root dictionary
