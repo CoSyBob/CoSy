@@ -61,38 +61,11 @@ cr ." | SaveRestore begin | " type cr
 : savelist ( lst str -- ) | Write list to file 
   2p>  van (savelst) 2P ;
 
-
-| defer CoSyDir  make CoSyDir " \\reva\\CoSy\\" ;
-| defer CoSyFile  make CoSyFile " CoSy" ;
-
-|  instdir " CoSy" add-path scratch place
-|  scratch count add-separator str refs+> value CoSyDir
- 
-|  s" CoSy" refs+> value CoSyFile
- 
-| : CoSyDirFile CoSyDir CoSyFile cL ; 
-
 : savedic ( -- ) | save dictionary	|
   R storelst str  | computed 1st , the left on stack  
   s" del " CoSyDirFile cL s" .bk" cL { shell nil } onvan drop  
   s" ren " CoSyDirFile cL s" .csy CoSy.bk" cL >r> van shell r> ref0del 
    CoSyDirFile s" .csy"  cL Foverwrite  ;
-
-0 [IF]
-: savedic ( -- ) | save dictionary	|
-  R storelst str  | computed 1st so if bombs does so before deletion of .bk 
-  s" del " CoSyFile s" .bk" cL cL o cr { shell nil } onvan drop  
-  s" ren " CoSyFile s" .csy " cL >aux+>  
-   CoSyFile s" \\" toksplt -1 _at s" .bk " cL cL 
-    o >r>  van shell r> ref0del 
-  cr ." here " aux-ok> >F  ;
-[THEN]
-
-| : savedic ( -- ) | save dictionary	|  
-|  " del " CoSyDir van strcatf CoSyFile strcatf " .bk2" strcatf shell 
-|  " ren " CoSyDir van strcatf CoSyFile strcatf " .bk CoSy.bk2" strcatf shell 
-|  " ren " CoSyDir van strcatf CoSyFile strcatf " .csy CoSy.bk" strcatf shell 
-|  R CoSyDir van CoSyFile strcatf " .csy" strcatf (savelst) ;
 
 | ======== |
  |  CoSyDir 

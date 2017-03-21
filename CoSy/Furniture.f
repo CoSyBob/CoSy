@@ -10,6 +10,14 @@ cr ." | Furniture begin | "
 : str>pad_ ( str -- a n ) { pad place } onvan pad count ;
 | Move string < 1024 bytes to pad and free if ref count 0 . 
 
+: dae ( v -- v ) >aux+> dup ['] rho 'm ,/ i0 <>i & at aux- ; 
+| Delete All Empties . Deletes all empty , items of a list . 
+| translated from K | { x @ & 0 < #:' x } |
+
+: MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
+| Matrix to Vector . Ravels , eg : lists of strings LA inserting token RA
+| , eg : "bl or "lf , as a delimiter | in K | { ( # x ) _ ,/ x ,/: y }
+
 | |/\| MISC UTILS |/\|
 
 | |\/| FILE & OS FNS |\/| with CoSy args
@@ -18,8 +26,8 @@ cr ." | Furniture begin | "
  
 : />\\  s" /" s" \\" ,L ssr ; 	| probably what you want vs dosslash^ 
 
-: "lf>"nl "lf "nl ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
- 
+: \>/ s" \\" s" /" ,L ssr ; 	| replaces DOS \ w RoW / .
+
 : "lf>"nl "nl "lf ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
 
 : include^ ( fname -- flag ) { (include) ioerr @ _i } onvan ; | returns 0 on success
@@ -193,27 +201,6 @@ variable AFptr
    dup while   
    2drop ;
 
-0 [IF]
-: p2	( n -- next-higher-power-of-2 )		| for finding mem slots .
-  | from  http://ronware.org/reva/viewtopic.php?pid=5865#p5865
-  asm{
-    shl eax, 1		; multiply by 2
-    bsr eax, eax	; get exponent
-  }
-;
-[THEN]
-
-: 2^n? ( n -- bool )	| returns non-zero ( 1 or -1 ) if n power of 2 .
-	| from Helmar ; http://ronware.org/reva/viewtopic.php?pid=5871#p5871
-  asm{ 	
-  cmp eax, 2
-  jc .q
-  lea ecx, [eax - 1]
-  xor ecx, eax
-  cmp eax, ecx
-  sbb eax, eax
-.q:
- } ; 
 
 needs random/gm
  

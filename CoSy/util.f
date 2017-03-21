@@ -412,14 +412,30 @@ forth
 : anfn ( arg[s] word -- word_on_<arg[s]> ) 
   xt>name "  " strcatf 2swap strcatf eval ;
 
-| =============================================== |
-   
+| MATH \/ | =============================================== |
+
+0 [IF]
 : p2	( n -- next-higher-power-of-2 )		| for finding mem slots .
   | from  http://ronware.org/reva/viewtopic.php?pid=5865#p5865
   asm{
     shl eax, 1		; multiply by 2
     bsr eax, eax	; get exponent
-  } ; 
+  }
+;
+
+: 2^n? ( n -- bool )	| returns non-zero ( 1 or -1 ) if n power of 2 .
+	| from Helmar ; http://ronware.org/reva/viewtopic.php?pid=5871#p5871
+  asm{ 	
+  cmp eax, 2
+  jc .q
+  lea ecx, [eax - 1]
+  xor ecx, eax
+  cmp eax, ecx
+  sbb eax, eax
+.q:
+ } ; 
+
+[THEN]
 
 ." | UTIL end | "
 

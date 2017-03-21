@@ -1332,7 +1332,7 @@ alias: _ cut
 : tokcut ( str tok -- CV )	| cuts string at occurances of string `tok but includes segment before first token 
   2p LR@ css i0 swap ,I L@ swap cut 2P> ;
  
-: toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
+: VM : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
    | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
    2p LR@ swap cL >aux+> dup R@ css cut 	| appends 
    aux- R@ rho ['] cut eachleft  2P> ;
@@ -1475,15 +1475,15 @@ $006346964 value TypeDic		| " dic"
 | Match 2 objects .  Returns 1 iff LA identical to RA .
 : match_ ( la ra -- bool ) 
   2refs+> ( ." match_ " $.s cr 2dup ,L lst )
-  2dup =if 2refs- 1  ." same addr " cr ;then 	| refer to same object 
-  Type@@ <>if 2refs- 0 ." ~= types " cr ;then 	| Types don't match 
-  ['] i# on2> <>if 2refs- 0 ." ~= rho " cr ;then 	| lengths don't match
+  2dup =if 2refs- 1  ( ." same addr " cr ) ;then 	| refer to same object 
+  Type@@ <>if 2refs- 0 ( ." ~= types " cr ) ;then 	| Types don't match 
+  ['] i# on2> <>if 2refs- 0 ( ." ~= rho " cr ) ;then 	| lengths don't match
   dup Type@ if | simple 
    dup Type@ dup TypeS = swap TypeC = or if 2dup strmatch --cab 2refs- ;then
-   $.s ( la ra )
+  ( $.s ) ( la ra )
    dup Type@ TypeI =if 2dup =i ['] and acrossI >_ --cab 2refs- ;then
    dup Type@ TypeFl =if 2dup =f ['] and acrossI >_ --cab 2refs- ;then
-  then  ." nested , same count " cr $.s cr
+  then  ( ." nested , same count " cr $.s cr )
    dup i# 0do over i i@ over i i@ $.s 2dup ,L lst cr match_ 0if  0 leave then loop  
    dup if 1 then --cab 2refs- 
 ;
@@ -1611,6 +1611,7 @@ needs Furniture.f	| Furniture : fns to flesh out the living area .
 cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 
  " COSYSTARTFILE" getenv str >value CoSyDirFile 
+ CoSyDirFile dup s" \\" ss -1 _at i1 +i take >value CoSyDir
  
 : curdrive s" cd " shell> 2 _take ; 
 : fullCoSyFile curdrive CoSyDirFile cL ; 
@@ -1629,6 +1630,8 @@ needs SaveRestore.f
 	    duplst  ;
 
 : >at!> rep dup at! ; 
+
+: sym>str> rep dup sym>str ; 	: str>sym> rep dup str>sym ; 
 
 | \/ | Result returning version on shallow lists 
 : sym>str>' rep { dup sym>str } 'm ; 
@@ -1654,7 +1657,7 @@ needs SaveRestore.f
 | loaded instead . 
 | CoSyFile dsc o restorefile ' R rplc
  
- CoSyDirFile s" .csy" cL restorefile ' R rplc    
+ CoSyDirFile s" .csy" cL ." CoSyDirFile " o cr restorefile ' R rplc    
 
 
 | restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  

@@ -1,31 +1,59 @@
  |  ToDo | --------------------------------------- |
+| 20170131.1045 | NOW AWARDING A SHARE IN CoSy FOR FIXES AND EXTENSIONS OF CoSy |
 
              | -------- | 4thCoSy | -------- |
- o APL grade and sort .
+Bugs : 
+| The debilitating bug with the IUP interface is worth 5 shares |
+
+
+| Below not necessarily in order of importance 
+ o Extend  ' v@ and ' v! to simple lists . currently works just on general .
+   | eg |  ` Types Dv@ ` TypeS v@  | bombs
+ o s" ... " limit 255 bytes 
+ o Max float formatting 1.e18 . no exponential format 
+ o Can't save when R0 is { ' Fact v@ } 
+ o ' i! needs to check ref counts 
+ o could be optimization by reversing order of args  of VecInit  
+ o | AF1 t1 { s@ m@ } eachm AF0  | res>  Caught: can't index empty 
+   | not ref- ed right
+ o cannot create definition named ' --ca  . Some weird bug w IUP | 20150516
+ o cF6 seems not to work
+ o ' across  needs fixing . See 20161019
+
+ o Dappnd encing  
+ o eachD | whole "mapping" vocab | see | Mon.Jan,20170116 |
+ o APL grade and sort .  mostly done 201604
+ o F3  " |>| " result output fix looks easy 
  o parsing of  ` (  lists .
  o Functionalize ` lst | remove top nesting layer so reads as written .
  o Floating exponential output .
  O words>  into real fn
  o make (spool) nestable .
  o make  {  }  true nestable quotations .
+ o ' ilst ' Ilst names confusing
+ o make ctrl-S ( shift S ) save timestamped copy of R 
+ o need to change defs of ' cut ' cut*  to match ' at ' at\
+ o make sF11 enclosed comment like F11 , eg : | 20170215.1503 | see that date .
 
-Bugs : 
- o Can't save when R0 is { ' Fact v@ } 
- o ' i! needs to check ref counts 
- o could be optimization by reversing order of args  of VecInit  
- o | AF1 t1 { s@ m@ } eachm AF0  | res>  Caught: can't index empty 
-   | not ref- ed right
+( | VOCABULARY NEEDED | APL concepts ~ yet implemented )
+ unique aka nub  and there relatives 
+ sort
+ match 
 
+
+
+Other :
+ o ' _perm  not uniform algo . Not good for serious work 
 
 Fixed (?) :
- o ( bomb : s"  _ " CShelp ; s" ax " CShelp )
+ o ( bomb : s"  _ " ?? ; s" ax " ?? )
 
-Done |
  | o finish  match | 20150504 |
 
-
-example lists : | SHOP | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
-					
+ | ###################################################################### |
+example lists :
+ | SHOP | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
+| Crude as it is , I just use 					
  	milk 	*butter	cheese	+eggs	+icecream	sourCream
 	*bread	cereal	pasta	*potatoes	popcorn	ramen	crackers
 
@@ -45,3 +73,17 @@ example lists : | SHOP | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/  |
 ( greek grocery ; 1843 Briargate Blvd. , w of N Academy )
 ( Schnitzel Fritz ; 4037 Tutt Blvd Colorado Springs CO 80922 ;
  Phone: (719) 573-2000 ; Website: http://www.SchnitzelFritz.com ) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
