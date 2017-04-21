@@ -1,6 +1,7 @@
  | ###################################################################### |
  | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | revaver str |>| 7.0.10 
  | ###################################################################### | 
+ Tap F1 	| Key Help
                                  First lesson :
  On a blank line below : tap F12 . tap  Enter . tap F11 . 
 			 write something . tap ctrl_S
@@ -9,20 +10,21 @@
 
  
 
-
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
  | ====================================================================== |
- | \/ \/ \/ |  F6 executes the line under the cursor 	       | \/ \/ \/ |
- | \/ | Put the cursor on lines below and tap F6 | \/ |
+ | A ` word in Forth is any non blank string of characters |
+ | \/ \/ \/ |  F6 executes the line under the cursor 	   | \/ \/ \/ |
+ | The syntax of Forth is  { parse-a-word doIt repeat }    |
+ | \/ | Put the cursor on lines below and tap F6      | \/ |
 
   s" Hello World " 
   
   s" Hello World " reverse
 
-  s" Hello World " rho
-
+  s" Hello World " rho 		| ` rho is APL for ` count   number of items .
+ 
 | In Forth , a "word" can be any non-blank string of characters delimited by white space
 |  That's why ' s" has to have a blank separating it from the quoted phrase 
 | Forth syntax is simply read-a-word   do-it 
@@ -1684,15 +1686,175 @@ git merge 4thCoSy
 | '70s and said we should meet . APLs were , and mainly still are , the 
 | antithesis of free . They tend to be elite and expensive . 
 
+| Decided it would be useful to have on GitHub individual files of each 
+| major window text since hidden in .csy "binary" file .
  `( ToDo text state LanguageLinks )` sym>str>' >t0> 
-  t0  { dup Dv@ swap CoSyDir swap s" .txt" cL cL ,L } 'm >t1> rho
-  t1 { 0 _at } 'm ' rho 'm
+ t0  { dup Dv@ swap CoSyDir swap s" .txt" cL cL ,L } 'm >t1> rho
+ t1 3 _at dup 0 _at swap  1 _at swap o swap o >F 	| work for each 4 _iota
+| why does this | \/ | bomb ? 
  t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL swap o swap o cr  >F } 'm 
- t1 0 _at  t1 1 _at 
->F
+| Note the use of  ' o for tracing . When F6'd outputs to cmd window .
+ | ======================== | Wed.Mar,20170322 | ======================== |
+| last night I realized the reason the loop bombed is that main <i>each</i>
+| operators 'm 'd 'L 'R  ( monadic , dyadic , Left , Right ) all require results
+| simply adding an empty vector fixed .
+ t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
+| now updates of these main text files will be separately available on GitHub
+
+ | ======================== | Mon.Mar,20170327 | ======================== |
+  ` Fact Dv@ ` Fact v@ | VMlf s" speed" con
+( 
+ : c  : 2.99792458e8                / "speed" of light / MpS  ( definitional )
+ )
+  2.99792458e8 _f 1.e-9 _f *f >t0> 
+ t0 39.370 _f *f  |>| 11.80  | length in inchs of a 1 nanosecond wire . See SV-FIG mail
+ | ======================== | Tue.Mar,20170328 | ======================== |
+( I've revived the File dyalog button which may exacerbate the bomb of the
+ IUP TUI which is uber Irritating (  http://cosy.com/y16/CS%28OS%292_1107.html#Scr4 ) )
+ s" C:/CoSy/tmp.txt " F>
+| 1406 | | 1418 | 
+ `( ToDo text state LanguageLinks )` sym>str>' >t0>
+ t0 0 _at >t1>
+ CoSyDir t1 s" .txt" cL cL
  
-   ` text Dv@ CoSyDir s" text.txt" cL >F
- t0 ` ToDo Dv@ CoSyDir s" ToDo.txt" cL >F
+  t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm
+
+   t0 { CoSyDir swap s" .txt" cL cL  } 'm
+ 
+ ` ToDo Dv@ 
+ s" ToDo 
+ CoSyDir 
+ | ======================== | Fri.Mar,20170331 | ======================== |
+ s" .... ..  .... .." >t0> c>i  |>| 46 46 46 46 32 46 46 32 32 46 46 46 46 32 46 46 
+ t0 "bl toksplt >t0>
+( 
+ ....
+ ..
+ 
+ ....
+ ..
+ )
+ ` morse Dv@ >t1> flip
+| \/ |  changed ' ?sym to ?sym_ in CoSy.f  | \/ | 
+: ?sym_ ( lst str  -- i | _n )	['] strmatch f? ;   : ?sym ?sym_ _i ;
+  t1 0 _at  
+  t1 1 _at t0 ' ?sym 'R
+ | ======================== | Mon.Apr,20170403 | ======================== |
+ t0 >T0  t1 >T1
+ T1 1 _at T0 { ['] strmatch f?^ 
+ T1 1 _at T0 0 _at  ' strmatch_ f?^ _i
+| \/ | -------- | Added trap on output to ' f6 | -------- | \/ |
+: f6 { getcurln eval } catch ?dup if ['] caught type>res ;then 
+    depth 0 =if nil then >R0> ['] lst type>res 
+
+: f6 { getcurln eval } catch ?dup if ['] caught type>res ;then 
+    depth 0 =if nil then
+    { >R0> ['] lst type>res } catch ?dup if ['] caught type>res ;then 
+| -------- |
+ | ======================== | Tue.Apr,20170404 | ======================== |
+| Just added ' oo to ' o for debugging of expressions . When in an expression
+| which gets executed it outputs the top CoSy object(s) to the command shell .
+: oo over o drop o ; 
+| Used in debugging \/ | 
+ T1 1 _at T0 0 _at  { oo strmatch o } f?^ 
+| A current limitation in CoSy is that  f6  executes lines . Thus there is no 
+| mechanism for defining multiline definitions . So I've made a script text
+| 20170405.1618 | to edit & clean up ' f? fns .
+ ` tstScript ->
+ ` tstScript Dv@ | ^eval
+ | ======================== | Thu.Apr,20170406 | ======================== |
+| renamed ' f? to _f?  and  redefined to be completely at the CoSy level .
+: f? ( lst RA boolF -- index )
+	| index of first item in LA on which { RA boolF }
+	| returns true . Returns LA rho ( bad idea : Returns _n ) if not found . 
+	| This is a generalization of APL's dyadic iota , and
+	| K's ? both of which are functions which assume the boolF : ` = | 
+   >aux 2p
+    L@ i# 0 ?do L@ i _at R@ aux@ execute i_ 
+     if auxdrop 2P i _i unloop ;then loop
+	auxdrop L@ rho 2P>  ;  
+: ?sym ['] strmatch f? ; 	| redefined in CoSy.f
+ T1 1 _at T0 ' ?sym 'R ,/ >t0>
+ T1 0 _at "bl cL t0 at
+
+  s" .... ..  .... .." >t0> c>i  |>| 46 46 46 46 32 46 46 32 32 46 46 46 46 32 46 46 
+  t0 "bl toksplt >T0>
+( 
+ ....
+ ..
+ 
+ ....
+ ..
+ )
+ R ` morse v@ >T1> flip 2 _take
+( 
+ ( 
+  A
+  .-
+ ) ( 
+  B
+  -...
+ ) )
+: ?sym ['] strmatch f? ; 	| redefined in CoSy.f
+ T1 1 _at  T0 ' ?sym 'R ,/ >t0>  |>| 7 8 44 7 8 
+ T1 0 _at "bl cL  t0 at 
+( 
+ H
+ I
+  
+ H
+ I
+ )
+ R0 ,/  |>|  HI HI
+
+ ` morse Dv@ reverse ` morse Dv!
+ | ======================== | Fri.Apr,20170407 | ======================== |
+
+| ( assTbl keys -- xlate ) translates 
+: xlate 2p L@ 1 _at "bl cL  L@ 0 _at R@ ['] ?sym 'R ,/ at 2P> ;
+ ` morse Dv@ T0 xlate
+ T1 0 _at "bl cL
+ ` morse Dv@ T0 ' v@ 'R
+ T0
+ res> >t0> rho |>| 5329 
+ t0 VMlf rho
+ | ======================== | Sat.Apr,20170415 | ======================== |
+| 1648 | w be presenting @ SV-FIG nxt week | 2031 | 
+ R ` sys v@ 
+   s" /4thCoSy/CoSy/AltStackOps.f" 
+   /4thCoSy/CoSy/util.f
+   /4thCoSy/CoSy/CSauxstack.f
+
+ | ======================== | Thu.Apr,20170420 | ======================== |
+ ` ASCIIbrowser Dv@ VMlf s" ac" con
+ ` LanguageLinks -> 
+ | ======================== | Fri.Apr,20170421 | ======================== |
+| 1042 | | 1300 | ' rep bombs on 0 refs arg 
+   `( ToDo text state LanguageLinks )` >t0>
+  t0 duplst 
+ DMP
+ t0 refs@ _i
+ t0 sym>str>' >t0> 
+  s" : refs@" ??
+: rep ( ob -- newob ) | replicate object . totally new
+	dup Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
+	             $.s cr dup refs0 r> ref0del ;then
+	    duplst  ;
+  s" : duplst " ?? 
+  /4thCoSy/CoSy/SaveRestore.f 
+  
+: duplst ( lst -- nwlst )
+  storelst drop dup restorelst swap free ;
+ 
+ s" asdf" enc >t0> duplst 
+ DMP
+--
+ http://www.aplcloud.com/
+ CoSy far more Forth like than Python 
+ I want my email composition live in CoSy just for F11 .
+ CoSy SmartF 
+ Tweeting a sentence to do it . a ` sentence is a round trip to an empty stack
+
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
 
  | ######################## | e o current work | ######################## | 
@@ -1718,7 +1880,7 @@ git merge 4thCoSy
  s" 23 12 2016 30 daylns " forth> 	| insert res in text using  F5 
 
  | ======================== | Wed.Apr,20180411 | ======================== |
-
+ 
  
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  

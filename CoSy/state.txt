@@ -2,13 +2,13 @@
                     | ----- |\/| Useful phrases |\/| ----- |
 
   Dnames  | names of items in _d dictionary ( initially ' R , the Root ) 
-
-  s" : >F " ?? 	| Help on any phrase in CoSy scripts
-  s" names" words>	| defined words containg  ph rase  . use "bl for all words
+ 
+  s" : pick " ?? 	| Help on any phrase in CoSy scripts
+  s" eval" words>	| defined words containg  ph rase  . use "bl for all words
   
   | ' forth>  executes raw Forth capturing and returning output |
-  s" see across "  forth> 	| see x86 code for word  	
-  s" help =if " forth> 		| Reva Forth help for word . empty for overview
+  s" see f6 "  forth> 	| see x86 code for word  	
+  s" help pick help put " forth> 		| Reva Forth help for word . empty for overview
   s" res> Help " forth> 	| useful for looking at list of related words 
 
   ` text
@@ -16,6 +16,7 @@
   ` Addrs 
   ` ToDo 	 ->
   ` script0 	->
+  ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
   R0 ->
   R0 Dv@ VMlf s" ssr" con 
   R0 Dv@ s" ( " toksplt s" morse" con 
@@ -27,11 +28,19 @@
  
   saveTSclone 	| Save timestamped clone of current environment | 
 
- ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
   ` Fact Dv@ dnames 
- s" " ??
+ s" : Dv@" ??
   
-| --  -- |
+| ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
+| \/ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ---- | \/ | 
+
+  `( ToDo text state LanguageLinks )` >t0> sym>str>' >t0> 
+  t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
+
+| /\ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ----    | /\ |  
+| ~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
+
+ s" sym>str>' " ??
 
   ` sys Dv@  ` CoSySource v@
   s" /4thCoSy/CoSy/AltStackOps.f"  F>
@@ -45,7 +54,7 @@
    t0 s" sort " con
 
   s" dir examples " shell>
-~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~
+| ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
 |\/| |\/| |\/|  DOS & NETWORK COMMUNICATION & SYNCHRONIZATION  | |\/| |\/| 
 
@@ -164,8 +173,6 @@ revaver str  |>|
  | ###################################################################### |
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
                               Example Daily Log
-|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
-
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
 
  |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 

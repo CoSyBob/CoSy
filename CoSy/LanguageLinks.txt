@@ -1,6 +1,11 @@
 
 | Links particularly on the languages moshed into CoSy  |
 
+ http://cosy.com/y16/CS%28OS%292_1107.html
+ http://cosy.com/y16/CS%28OS%292_1107.html#Scr4	
+  | APL . Object Header |
+
+| --- 
 | APL | 
 
  APL Idiom Library . Many useful algorithms 
@@ -27,7 +32,7 @@
   Conway's Game Of Life in APL ; https://youtu.be/a9xAKttWgP4
   A Sudoku Solver in APL ; https://youtu.be/DmT80OseAGs
 
- Morten Kromberg, CTO, Dyalog Ltd. Talks at Google ; https://youtu.be/PlM9BXfu7UY
+ Morten Kromberg, CTO, Dyalog Ltd. Talks at Google | https://youtu.be/PlM9BXfu7UY
 
  Bob A | abt learning APL in NU Psych Dept grad school in 1970s |
  https://disqus.com/home/discussion/thedailycaller/suit_asian_professor_forced_to_teach_math_because_asian_the_daily_caller/#comment-3080323092
@@ -77,6 +82,15 @@ Some Thoughts on Forth , Samuel A. Falvo II
   [svfig] [NSF] Interesting historical review of computing; recommended reading.
  http://davidad.github.io/blog/2014/03/12/the-operating-system-is-out-of-date/
 
+ Peter Norvig's "Python for Lisp Programmers"
+ http://norvig.com/python-lisp.html
+
+| My friend Steve Apter's "No Stinking Loops | 
+ http://www.nsl.com/ 
+ 
+
+
+
 20170102.1624 | Given that I learned APL in the first place ,
  AI algorithms like this which are making news :
   Google’s Multilingual Neural Machine Translation System: Enabling Zero-Shot Translation 
@@ -99,6 +113,10 @@ Hamming, "Error-Correcting Codes" (April 21, 1995)
    Yes Pythagoras is right about the physical world . 
    NO about the mental world .  The difference between 2 strings of bits is
    the sum of the differences . It is NOT the sum of the squares . "
+
+
+
+
 
 
 
