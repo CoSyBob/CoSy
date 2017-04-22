@@ -1,7 +1,7 @@
  | ###################################################################### |
  | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | revaver str |>| 7.0.10 
  | ###################################################################### | 
- Tap F1 	| Key Help
+ | Tap F1 to see Key Help | 
                                  First lesson :
  On a blank line below : tap F12 . tap  Enter . tap F11 . 
 			 write something . tap ctrl_S
@@ -55,6 +55,7 @@ I use these a short hand in refering to words . Eg :
 | NB : vocabulary is case sensitive |
 		 
   Dnames	| names in current dictionary intially the Root ( ` R ) dictionary . 
+
   ` script0 -> 	| display final startup script for editing . 
 
 | Historical note :  ` NB , short for Nota Bene == Note Well , was a favorite of Ken Iverson |
@@ -1845,16 +1846,74 @@ git merge 4thCoSy
   
 : duplst ( lst -- nwlst )
   storelst drop dup restorelst swap free ;
- 
  s" asdf" enc >t0> duplst 
- DMP
+| screw it . just buffering thru t0 for now . needs to work for 0 ref lists .
+ | ======================== | Sat.Apr,20170422 | ======================== |
+| 0941 | 
+1130 | 
+ https://svfig.github.io/
+
+| 1138 | Ting IoT | Lua . ESPlorer . MicroPython . WebREPL browser interface
+ UDP Hercules . LUA very competitive w Forth 
+
+  IUP big on Lua | 
+ http://webserver2.tecgraf.puc-rio.br/iup/
+ 
+| 1235 | | 1427 | 
+ 5110 | APL 
+ http://www.cosy.com/language/cosyhard/cosyhard.htm
+
+
+| Now the other end of Forth's domain | 
+14:10  --- CoSY Stack Frame Vocabulary --- Bob Armstrong
+| 1524 | 
+
+ Quick intro to CoSy 
+
+ http://CoSy.com
+
+  Bob quickly goes thru the alternative stack vocabulary at
+
+ https://github.com/CoSyBob/CoSy/blob/4thCoSy/CoSy/AltStackOps.f
+
+  which provides little stack pictures , eg :
+       alias: --aba over
+
+ s" 1 2 --aba .s 3drop " forth>
+ ' 3drop _i
+ 
+  s" local[ " ?? 	| Help on any phrase in CoSy scripts
+  s" see _2nip "  forth> 	| see x86 code for word    
+
+  the stack frame vocabulary ...
+
+ https://github.com/CoSyBob/CoSy/blob/4thCoSy/CoSy/CSauxstack.f 
+
+  which Sam made some comments about being a hallmark of most other languages .
+  I could compare this vocabulary with the locals vocabulary...
+
+ https://github.com/CoSyBob/CoSy/blob/4thCoSy/lib/util/locals
+
+  included with Reva Forth which I think is a more typical approach.
+
+MAIN SCRIPT : 
+ https://github.com/CoSyBob/CoSy/blob/4thCoSy/CoSy/CoSy.f
+  
+UTILITIES WAITING FOR SOMEONE TO INTEGRATE W CoSy :
+ https://github.com/CoSyBob/CoSy/tree/4thCoSy/lib
+
+| 1630 | 
+ res> >T0>
+  T0 100 _take >aux+> c>i aux-ok> ,L flip
+  T0
+ http://www.nuttx.org/ | RTOS 
 --
  http://www.aplcloud.com/
- CoSy far more Forth like than Python 
- I want my email composition live in CoSy just for F11 .
- CoSy SmartF 
- Tweeting a sentence to do it . a ` sentence is a round trip to an empty stack
-
+ CoSy far more FORTH like than Python . Because it IS .
+ I want my email composition live in CoSy just for F11 .  CoSy SmartFoen filtering
+ "Tweeting a sentence to do it " . a ` sentence is a round trip to an empty stack
+  Ron Aaron's site :
+ http://8th-dev.com/
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
 
  | ######################## | e o current work | ######################## | 
@@ -1879,9 +1938,6 @@ git merge 4thCoSy
  
  s" 23 12 2016 30 daylns " forth> 	| insert res in text using  F5 
 
- | ======================== | Wed.Apr,20180411 | ======================== |
- 
- 
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  
   help '
