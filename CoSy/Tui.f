@@ -131,7 +131,8 @@ variable btnswdo
 	  depth 0 =if nil then ;
 
 : f6 { getcurln eval } catch ?dup if ['] caught type>res ;then 
-    depth 0 =if nil then >R0> ['] lst type>res 
+    depth 0 =if nil then
+    { >R0> ['] lst type>res } catch ?dup if ['] caught type>res ;then 
 	llUpdate  $.sUpdate ;
 
 : sf6 { getcurln ['] eval type>res } catch ?dup if ['] caught type>res then
@@ -208,6 +209,8 @@ variable d1
        attr: FONT 
  
     { s" res.help" >resvar> R swap v@ >res } key-F1-cb
+    
+ 	{ reswdo curln str www } z" K_cF9" set-callback 
     { reswdo ins-hm } key-F11-cb
 	{ reswdo ins-ymd.hm } z" K_sF11" set-callback
 	
@@ -282,7 +285,8 @@ variable d1
 	 { { savestate save `res `resvar Dv! statewdo f6  gui-default } add-callback gui-default } key-F6-cb
 	 
 	{ { statewdo sf6  gui-default } add-callback gui-default } key-sF6-cb 
- 
+
+	{ statewdo curln str www } z" K_cF9" set-callback 
     { statewdo ins-hm } key-F11-cb
 	{ statewdo ins-ymd.hm } z" K_sF11" set-callback
 	
@@ -302,7 +306,7 @@ variable d1
 	  
       | " Eval Selection!" button[ action: eval-selected-text  " Evaluate selected text!" tip  ]w
 	   
-|	  " Get file name(s)" button[ { fileDialog >t0> ['] lst type>res } action |	   " fileDialog >t0> lst" tip ]w
+	  " Get file name(s)" button[ { fileDialog >t0> ['] lst type>res } action " fileDialog >t0> lst" tip ]w
 	  
 	  " Reset stack " button[ { { reset $.sUpdate gui-default } add-callback gui-default } action " reset" tip ]w
 	  
@@ -322,7 +326,7 @@ variable d1
       
 	   " Save " button[ action: save " save everything " tip  ]w
 	  
-	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
+|	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
 	  " bye" button[  action: gbye " ( exit Reva.CoSy )" tip  ]w
 	  
     ]c

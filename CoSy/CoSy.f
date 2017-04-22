@@ -515,7 +515,7 @@ macro
 : ` : sym ( <word> -- sym | )	| takes next word input and creates symbol 
   p: parsews (sym) compiling? if refs+> literal, then  ;
  
-: `(		| input symbols up til " )`" -- vecOfSyms |
+: `( 		| input symbols up til " )`" -- vecOfSyms |
   10 K* dup cellVecInit 
    swap 0do parsews 2dup " )`" cmp if (sym) refs+> over i ic!
     else 2drop i Vresize leave then loop compiling? if refs+> literal, then ; 
@@ -952,11 +952,10 @@ variable indentv   : indent indentv @ spaces ;
 	 dup @ _n     =if drop indent ."  _n " ;then
      drop indent ." ( " ." nonce " ."  )" cr ;
  
-: o ( list -- list ) | show CoSy obj leaving unchanged .
+: o ( list -- list ) | show CoSy obj leaving unchanged . useful for debugging
 	dup refs+> dup lst refs-ok ;
- 
- 
-: lst0ok> dup refs+> dup lst refs-ok ; | Useful for inserting in  code for debugging .
+  
+: oo over o drop o ; 	| show top 2 items on stack . 
 
 |  Best to handle typing outside of loops .
 
@@ -1068,7 +1067,7 @@ variable indentv   : indent indentv @ spaces ;
  
 | -------- 
 
-: f? ( lst RA boolF -- index | _n )
+: _f? ( lst RA boolF -- index | _n )
 	| index of first item in LA on which { RA boolF }
 	| returns true . Returns _n if not found . 
 	| This is a generalization of APL's dyadic iota , and
@@ -1077,17 +1076,18 @@ variable indentv   : indent indentv @ spaces ;
     i# 0 ?do over i i@ over aux@ execute		 
      if auxdrop 2refs- i unloop ;then loop
 	auxdrop 2refs- _n ;
- 
-: f?^ ( lst RA boolF -- index )
+
+: f? ( lst RA boolF -- index )
 	| index of first item in LA on which { RA boolF }
 	| returns true . Returns LA rho ( bad idea : Returns _n ) if not found . 
 	| This is a generalization of APL's dyadic iota , and
 	| K's ? both of which are functions which assume the boolF : ` = | 
    >aux 2p
-    L@ i# 0 ?do L@ i _at\ R@ aux@ execute i_ 
+    L@ i# 0 ?do L@ i _at R@ aux@ execute i_ 
      if auxdrop 2P i _i unloop ;then loop
 	auxdrop L@ rho 2P>  ;  
- 
+
+0 [IF]
 : _f? ( lst RA boolF -- index | _n )
 	| version for naked RA 
    >aux over refs+ over i# 0 ?do
@@ -1096,14 +1096,15 @@ variable indentv   : indent indentv @ spaces ;
 	auxdrop drop refs- _n ;  
 
 : f?m ( lst rawBoolF -- index )
-	| index of first item in LA on which ' boolF 
-	| returns true . Returns LA rho if not found . 
+	| index of first item in RA on which ' boolF 
+	| returns true . Returns RA rho if not found . 
 	| This is a generalization of APL's dyadic iota , and
 	| K's ? both of which are functions which assume the boolF : ` = | 
    >aux 1p
     R@ i# 0 ?do R@ i i@ aux@ execute 
      if auxdrop 1P i _i unloop ;then loop
 	auxdrop R@ rho 1P>  ;  
+[THEN]
 
 | /\ OPERATORS /\ ============================================ /\
 
@@ -1393,7 +1394,7 @@ alias: _ cut
     i# 0 ?do dup i _nth refs+> aux@ i i! loop 
     refs- aux> ; 
 
-: symin_ ( symb sl -- flg ) swap ['] str~_ f? _n <>I ;
+: symin_ ( symb sl -- flg ) swap ['] str~_ _f? _n <>I ;
 | Like K's _in for symbols . Returns 1 if symb is in sym list
 	
 : symin ( symb sl -- flg ) symin_ _i ;
@@ -1430,9 +1431,8 @@ cr cr  ." | /\ Fns /\ | \/ Dic \/ | Stk : "  $.s  cr cr
 $006346964 value TypeDic		| " dic" 
 
 | empty dictionary : 3 empty vecs . 
-: ed ( -- LegacyemptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
-: () ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
+: () : ed ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
  ed  refs+> value R	 | initialize empty Root dictionary
 
@@ -1469,8 +1469,8 @@ $006346964 value TypeDic		| " dic"
 [THEN]
 
 | match obj str , I-logic .
-: strmatch ( s0 s1 -- 0|1 )	
-  2dup van rot  van str= -rot 2ref0del ;
+: strmatch_ ( s0 s1 -- 0|1 )	
+  2dup van rot  van str= -rot 2ref0del ;  : strmatch strmatch_ _i ;
 
 | Match 2 objects .  Returns 1 iff LA identical to RA .
 : match_ ( la ra -- bool ) 
@@ -1479,7 +1479,7 @@ $006346964 value TypeDic		| " dic"
   Type@@ <>if 2refs- 0 ( ." ~= types " cr ) ;then 	| Types don't match 
   ['] i# on2> <>if 2refs- 0 ( ." ~= rho " cr ) ;then 	| lengths don't match
   dup Type@ if | simple 
-   dup Type@ dup TypeS = swap TypeC = or if 2dup strmatch --cab 2refs- ;then
+   dup Type@ dup TypeS = swap TypeC = or if 2dup strmatch_ --cab 2refs- ;then
   ( $.s ) ( la ra )
    dup Type@ TypeI =if 2dup =i ['] and acrossI >_ --cab 2refs- ;then
    dup Type@ TypeFl =if 2dup =f ['] and acrossI >_ --cab 2refs- ;then
@@ -1491,11 +1491,13 @@ $006346964 value TypeDic		| " dic"
 : match match_ _i ; 
 
 | returns index of first occurance of sym in list or _n if not found .
-: ?sym ( lst str  -- i | _n )	['] strmatch f? ;
+: ?sym_ ( lst str  -- i | _n )	['] strmatch_ _f? ;   
+
+: ?sym ['] strmatch f? ;
 
 | returns index of first occurance of sym in dic names , else _n .
 : (wheresym) ( dic sym -- i | _n )
-   swap dsc swap ?sym ; 
+   swap dsc swap ?sym_ ; 
  
 : wheresym (wheresym) _i ;
 
@@ -1566,7 +1568,7 @@ $006346964 value TypeDic		| " dic"
 	swap enc swap enc enc cL ; 
 
 : symrplc ( dic oldsym newsym -- )
-  >r swap 0 i@ --bba  ?sym   dup _n =if 2drop z" undefined " throw then
+  >r swap 0 i@ --bba  ?sym_   dup _n =if 2drop z" undefined " throw then
    ix r> swap rplc ;
 
 : TaddCol ( mat proto -- mat ) | Adds a list of prototype to a table of equal
@@ -1623,11 +1625,6 @@ cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 | CoSyDirFile lst
 
 needs SaveRestore.f
-
-: rep ( ob -- newob ) | replicate object . totally new
-	dup Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
-	             $.s cr dup refs0 r> ref0del ;then
-	    duplst  ;
 
 : >at!> rep dup at! ; 
 

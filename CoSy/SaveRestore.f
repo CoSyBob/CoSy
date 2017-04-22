@@ -109,6 +109,12 @@ defer (rstrlst)
 : duplst ( lst -- nwlst )
   storelst drop dup restorelst swap free ;
 
+
+: rep ( ob -- newob ) | replicate object . totally new
+	dup Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
+	             $.s cr dup refs0 r> ref0del ;then
+	    duplst ;
+
 | /\ SAVE LIST  /\ ========================================== /\
 
 ." | SaveRestore end | "  cr
