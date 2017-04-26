@@ -1447,6 +1447,10 @@ $006346964 value TypeDic		| " dic"
   swap >r> 0 ix swap cLr r> 1 ix swap cLr ; 
   | 2 ix nil cLr  ;
 
+
+| combine a name and a value into a 1 item dictionary 
+: >d> ( sym val -- dic ) () >aux+> --bca dicapnd aux-ok> ;
+
  ." !!! " $.s cr
 
 | : reasgn ( addr name vadr0 -- )       
@@ -1522,9 +1526,6 @@ $006346964 value TypeDic		| " dic"
 | \/ | look up symbol in dictionary , return address of corresponding val or _n 
 : vx_ ( dic sym -- adr of value | _n )
     --aab (wheresym) dup _n =if nip ;then swap 1 i@ swap ix ; 
- 
-: vx vx_ _i ;
-| /\ | look up symbol in dictionary , return address of corresponding val or _n 
 
 : sx_ ( dic sym -- adr of symbol | _n ) 
    --aab (wheresym) dup _n =if nip ;then swap 0 i@ swap ix ; 
@@ -1667,9 +1668,9 @@ needs SaveRestore.f
 
 : Dwheresym ( str -- i | _n ) _d swap (wheresym) ;
 
-: Dvx ( sym -- adr of value | _n )	| takes symbol , or symbol vec
+: Dvx_ ( sym -- adr of value | _n )	| takes symbol , or symbol vec
 	| look up symbol in dictionary and return address of corresponding val or _n 
-	_d swap vx ;
+	_d swap vx_ ;
  
 : Dv@ ( sym -- val | error ) _d swap v@ ; 
 
