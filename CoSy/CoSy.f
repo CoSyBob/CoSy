@@ -217,7 +217,7 @@ alias: Type@ @		alias: Type! !
 
  0 intVecInit refs+> value evI 	| empty integer vec . 
 
-: _i : _i ( cell -- 1_item_intvec ) 
+: _i ( cell -- 1_item_intvec ) 
    1 intVecInit >r> 0 ii! r> ;
  
 : 2_i ( i i -- iv iv )  _i swap _i swap ;
@@ -295,39 +295,10 @@ alias: Type@ @		alias: Type! !
 | 	| contents , eg , ' reverse . 
 
 | \/ \/ | PARAMETER PUSHING | \/ \/ | | See p stack fns in CSauxstack.f 
-
-: >aux+> dup : >aux+ refs+> >aux ;
-: aux-ok> aux> dup refs-ok ;
-: aux- aux> refs- ;
-
-: 1p ( RA -- ) | pushs 1 arg from stack to param stack and ref incs .
-	| use on entrance to 1 arg fn .
-	SF+ R@ refs+ ;
  
-: 1p> ( RA -- ) | pushs 1 arg from stack to param stack and ref incs .
-	| use on entrance to 1 arg fn .
-	SF+ R@ refs+> ;
- 
-: 1P ( -- )	| decrements refs and clears param stack . Use leaving 1 arg fn .  
-	R@ refs- 1 SF- ;
-
-: 1P> ( r -- r )  >aux+> 1P aux-ok> ;
-
-: 2p ( LA RA -- ) | pushs 2 args from stack to param stack 
-	| and ref incs . Use on entrance to 2 arg fn .
-	SF+ LR@ 2refs+ ;
- 
-: 2p> ( LA RA -- LA RA ) | pushs 2 args from stack to param stack 
-	| and ref incs . Use on entrance to 2 arg fn .
-	SF+ LR@ 2refs+> ;
-
-: 2P ( -- )	| decrements refs and clears param stack . Use leaving 2 arg fn .  
-	RA 2@ 2refs- 2 SF- ;
-
-: 2P> >aux+> 2P aux-ok> ; 
+ needs ParameterPushing.f
 
 | /\ /\ | PARAMETER PUSHING | /\ /\ | 
-
 
 | \/ | appears to be a bad idea   | \/ |
 | ev refs+> value ^R 	| CoSy Result holder . Makes results evaporate 
@@ -454,7 +425,7 @@ i( )i refs+> constant zild	| 0 iota
 
 : ib@ ix c@ ;		: ib! ix c! ;	| index fetch & store , byte
 
-: _bv 1 byteVecInit >r> 0 ib! r> ;
+: _b 1 byteVecInit >r> 0 ib! r> ;
 
 : _str ( a better name ) : str ( c-addr n -- OBadr )     | store a string
   dup byteVecInit dup >r        | c-ad n Oadr
@@ -726,7 +697,7 @@ $40000 constant TypeFv		| FORTH verb
 
 | ======================================== |
 
-choices: ifetch	( dic idx type -- val )
+choices: ifetch	( vec idx type -- val )
  ' ic@ Type0 choice		' ii@ TypeI choice
  ' ib@ TypeC choice		' if@ TypeFl choice
  ' ic@ default 
@@ -738,7 +709,7 @@ choices: ifetch	( dic idx type -- val )
 
 : 0i@ dup 0 i@ swap ref0del ;	
 
-: rplc ( new p0 -- )   | ref- and replace pointer at ` p0
+: rplc ( new p0 -- )   | ref- and replace pointer at ' p0
   dup @ refs- swap refs+> swap ! ;
  | swapped order : over @ refs- refs+ swap ! 
 
@@ -813,14 +784,9 @@ cr ."  \\/ ops \\/ " $.s cr
 
 | cr cr  ." 0000 " ." Stk : "  $.s  cr cr 
 
-| \/ Depricated \/
-
-defer eachM
-::  over refs+> i# 0 ?do over i i@     | CSob fn item
+: eachM ( v fn -- ) over refs+> i# 0 ?do over i i@     | CSob fn item
    over execute loop drop refs- ;
- is eachM ( v fn -- )	| `each Monadic , no result , eg , printing
-
-| /\ Depricated /\
+| primative `each Monadic , no result , eg , printing | 
 
 : ^eval ( str -- ? ) >r> van eval r> ref0del ;
 
@@ -875,14 +841,11 @@ a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a
      R@ i# 0do L@ i i@ aux@ R@ i i@ i! loop 2P auxdrop ;
 
 : 'm : eachM> ( RA fn -- R )	| each monadic
-   dup fntype TypeFl =if eachMfr ;then		| Floating , sui generis 
+   over TypeFl =if eachMfr ;then		| Floating , sui generis 
    over i# over fntype VecInit >aux		| RA fn 
    over refs+
 	aux@ i# 0 ?do over i i@ over execute aux@ i i! loop
 	aux@ v?refs+ drop refs- aux>  ;
-
-| : 'm swap 1p R@ i# 0 ?do 
-
 
 : each ( LA RA fn -- R )
    over Type@ TypeFl =if eachDfr ;then 	| Floats are sui generis
@@ -954,7 +917,7 @@ variable indentv   : indent indentv @ spaces ;
  
 : o ( list -- list ) | show CoSy obj leaving unchanged . useful for debugging
 	dup refs+> dup lst refs-ok ;
-  
+ 
 : oo over o drop o ; 	| show top 2 items on stack . 
 
 |  Best to handle typing outside of loops .
@@ -982,51 +945,38 @@ variable indentv   : indent indentv @ spaces ;
    2 pick i# 
      0 ?do 2 pick i i@ 2 pick execute loop
    >r drop ref0del r> ;
- 
-1 [IF] 
-: across  ( RA fn -- r ) | result returning "/"
-   over i# 0=I z" nonce : empty , needs prototype " * throw 
-   dup fntype TypeFl =if acrossf ;then
-   over 0 i@ >aux
-   over i# 1 ?do aux> 2 pick i i@ 2 pick execute >aux loop
-   drop ref0del aux> ;
 
-: across  ( RA fn -- r ) | result returning "/" | empty simply returns
-   
-   over i# 0if drop ;then | 0=I  z" nonce : empty , needs prototype " * throw 
+: across  ( RA fn -- r ) | result returning "/" |
+   over i# 0if drop ;then       |  empty simply returns itself 
+   over i# 1 =if drop dsc ;then | 1 item discloses ( ala K )
    dup fntype TypeFl =if acrossf ;then
    over refs+> 0 i@ >aux
    over i# 1 ?do aux> 2 pick i i@ 2 pick execute >aux loop
    drop refs- aux> ;
 
-| [ELSE]
-
 : acrossN ( RA fn -- r ) $.s  swap 1p $.s cr 
    R@ i# 0if ." empty  " $.s cr drop R@ 1P> ;then 	| if empty , just returns .
-
-   R@ Type@ case $.s cr 
+  R@ Type@ case $.s cr 
    Type0 $.s ."  | " of $.s cr R@ swap across endof  
    TypeI  of ['] + acrossI endof 
    TypeFl of ['] f+ acrossf	endof 
    drop refs- z" invalid type " throw
   endcase 
    $.s cr 1P> ;   
- 
-[THEN]
 
+: _./  ( LA fn -- r ) | result returning "/" , "across" on naked fns
+   | over i# 0if drop $.s ref0del z" nonce : empty , needs prototype " throw then
+   over i# 2 <if drop ;then
+   >aux refs+> >aux> 0 _at\ aux@ 1 _at\ auxx@ execute 
+   aux@ i# 2 ?do aux@ i _at\ auxx@ execute loop
+   aux> refs- auxdrop ; 
+ 
 : across^  ( RA fn -- r ) | result returning "/"  on CoSy obs
    over i# 0if drop ref0del z" nonce : empty , needs prototype " throw ;then 
    over refs+> >r> i0 at\ r> i1 at\ --abca execute >aux
 | aux@ . ." here " $.s cr
    over i# 2 max 2 ?do aux> 2 pick i _at\ 2 pick execute >aux loop
    drop refs- aux> ;
-
-: _./  ( LA fn -- r ) | result returning "/" , "across" on naked fns
-   | over i# 0if drop $.s ref0del z" nonce : empty , needs prototype " throw then
-   over i# 2 <if drop ;then
-   >aux refs+> >aux> 0 _at\ aux@ 1 _at\ auxx@ execute 
-   aux@ i# 2 ?do aux@ i _at\ auxx@ cr execute loop
-   aux> refs- auxdrop ; 
 
 : +/ ( RA -- r ) 
   dup Type@ case
@@ -1365,7 +1315,7 @@ alias: _ cut
    >aux 2p> longer_ ev swap  
     0do L@ i _at R@ i _at aux@ execute cL loop aux> drop 2P> ; 
  
-: eachm ( RA fn -- R ) swap 1p ev >aux  
+: eachm ( RA fn -- R ) swap 1p ev >aux  | catinates 
    R@ i# 0do R@ i _at 2 SF@ execute aux> swap cL >aux loop
    1P drop aux> ;
 
@@ -1390,7 +1340,7 @@ alias: _ cut
 : flip ( CSob -- CSob )    | Transpose object . 
    dup @ if ;then		| transpose of a simple obj is itself 
    dup i# 0;drop 		| same for empty
-   refs+> dup 0 i@ i# cellVecInit >aux> 	| ob nbdy
+   refs+> dup (  0 i@ i# ) ['] rho 'm ,/ ['] min _./ i_ cellVecInit >aux> 	| ob nbdy
     i# 0 ?do dup i _nth refs+> aux@ i i! loop 
     refs- aux> ; 
 
@@ -1430,7 +1380,7 @@ cr cr  ." | /\ Fns /\ | \/ Dic \/ | Stk : "  $.s  cr cr
 
 $006346964 value TypeDic		| " dic" 
 
-| empty dictionary : 3 empty vecs . 
+| empty dictionary : 2 empty vecs . 
 
 : () : ed ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
@@ -1439,8 +1389,6 @@ $006346964 value TypeDic		| " dic"
 : d#_ ( dic -- #items_raw )  0 i@ i# ;
  
 : d# ( dic -- #items ) d#_ _i ;
-
-." !! " $.s cr
 
 : dicapnd ( val dic name -- )	| adds item to dictionary
    refs+> dup name?_ 0if refs- ref0del ref0del z" invalid name " throw then
@@ -1451,26 +1399,11 @@ $006346964 value TypeDic		| " dic"
 | combine a name and a value into a 1 item dictionary 
 : >d> ( sym val -- dic ) () >aux+> --bca dicapnd aux-ok> ;
 
- ." !!! " $.s cr
-
 | : reasgn ( addr name vadr0 -- )       
 
 | Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv |
 
 ." /\\ DICTIONARY  /\\ ======/\\  " $.s cr
-
-0 [IF]
-| t0 @ sym Q0 cL >t0  t0 @ sym Q1 cL >t0  t0 @ dup cL >t0  t0 @ dup enc  cL >t0
-: lst>dic ( lst -- dic )	| ?able fn . 
-  dup @ if z" not list " throw then  
-  dup 0 i@ i# 2 3 within? 0= abort" must be # 2 or 3 "
-  flip ;	
- 
-: dic>lst ( dic -- lst )
-  dup @ `dic <> abort" not dictionary "
-  flip dup 0 swap ! ; 
- 
-[THEN]
 
 | match obj str , I-logic .
 : strmatch_ ( s0 s1 -- 0|1 )	
@@ -1518,8 +1451,7 @@ $006346964 value TypeDic		| " dic"
 	i# 0 ?do dup i ix dup @ R@ dvi swap rplc loop drop 2P ;
 
 | delete item named sym from dictionary .
-: dds ( dic sym -- ) 
-  2dup 2p (wheresym) _i L@ swap dti 2P ;
+: dts ( dic sym -- ) 2p> wheresym L@ swap dti 2P ;
 
 : Rnames R : dnames ( dic -- names ) 0 _at ; 
 
@@ -1589,7 +1521,7 @@ $006346964 value TypeDic		| " dic"
    2p R@ R@ { L@ swap v@ } eachM> ,L 2P> ; 
 
  macro
-: `` p: sym vx ;	| returns address of dic obj . 
+: `` p: sym vx_ ;	| returns address of dic obj . 
 : `@ ( dic <sym> -- val ) p: sym v@ ;
 : `! ( val dic <sym> -- ) p: sym v! ;
 : `. p: `@ lst ;
@@ -1613,17 +1545,12 @@ needs Furniture.f	| Furniture : fns to flesh out the living area .
 
 cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 
- " COSYSTARTFILE" getenv str >value CoSyDirFile 
- CoSyDirFile dup s" \\" ss -1 _at i1 +i take >value CoSyDir
+ " COSYSTARTFILE" getenv str >value COSYSTARTFILE 
+ COSYSTARTFILE dup s" \\" ss -1 _at i1 +i take >value CoSyDir
  
 : curdrive s" cd " shell> 2 _take ; 
-: fullCoSyFile curdrive CoSyDirFile cL ; 
-: CoSyFile.csv fullCoSyFile s" .csv" cL ; 
-
-| {{ argc 2 > if 2 argv else " COSYSTARTFILE" getenv then
-|   str >value CoSyDirFile  }} 
-
-| CoSyDirFile lst
+: fullCoSyFile curdrive COSYSTARTFILE cL ; 
+: CoSyFile  COSYSTARTFILE s" \\" toksplt -1 _at ; 
 
 needs SaveRestore.f
 
@@ -1655,8 +1582,7 @@ needs SaveRestore.f
 | loaded instead . 
 | CoSyFile dsc o restorefile ' R rplc
  
- CoSyDirFile s" .csy" cL ." CoSyDirFile " o cr restorefile ' R rplc    
-
+ COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
 
 | restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
 
@@ -1698,7 +1624,7 @@ needs SaveRestore.f
 
 cr ." start RecurInterp "  $.s cr
 
-needs RecurInterp.f
+| needs RecurInterp.f
 
 needs Derived.f
 

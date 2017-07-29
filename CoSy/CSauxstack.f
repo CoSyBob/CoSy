@@ -1,5 +1,5 @@
-| "aux" stack words | enhanced from Reva |
-|
+| "aux" and stack pointer words words | enhanced from Reva |
+| See also 
 | Author: Bob Armstrong / www.CoSy.com
 | Reva's license terms also apply to this file.
 
@@ -41,51 +41,9 @@ context: ~CSauxstack ~CSauxstack
 | cells to the stack frame . Note then , of course your indexing
 | of parameters will change by the number of cells added .
 
-
 | ----------------------------------------------------------------- |
 
-| |\/| StackFrames |\/| ================================== \/ |  
-." |\\/| StackFrames |\\/| "  
-| The above does not answer the need for recursive stack frames .
-| This is implementing the notion in George B. Lyons : Stack Frames and Local Variables :  http://www.forth.com/archive/jfar/vol3/no1/article3.pdf
- 
- s0 cell- dup constant s1 dup dup !  variable, SFptr 	 	
- | relies for stopping on the 0th stack cell being set to itself 
-	| initialize StackFrame pointer 
-| SFptr @ dup @ !
-  
-: reset prior reset s1 SFptr ! ;
- 
-: SF+ | puts previous esi on the stack and saves current 
-	  esi@ cell- SFptr xchg ;
- 
-: SFx cells SFptr @ + ; 	| ( n -- n ofset by current pointer ) 
- 
-: SF@ SFx @ ;  	: SF! SFx ! ;  | Fetch and store relative to current pointer
- 
-: SF- | ( ... n -- drop n ) restores previous stack pointer but just drop n items beyond current pointer .
-	>aux SFptr @ dup @ SFptr ! cell+ esi! aux> ndrop ; 
-
-| of ?able worth
-| : SF_ ( res -- res ) >r 0 SF@ dup @ SFptr !   esi! r> ;
-| : SF- | restores previous stack pointer .
-|   SFptr @ @ dup s0 =if drop ( ." s0 " cr ) s0 dup SFptr ! cell- esi! ;then 
-|     dup SFptr ! esi! ; 
-
-| : SFn ( -- n ) SFptr @ dup @ swap - cells/ - ;  | number of parameters in frame
-	| undefined for empty stack .
-
-: RA  1 SFx ;	: LA  2 SFx ;	| Shorthand for dyadic fns .
-: R@  1 SF@ ;	: L@  2 SF@ ;
-: R!  1 SF! ;	: L!  2 SF! ;
- 
-: LR@ 2 SF@ 1 SF@ ;
- 
-: l0 -1 SFx ; 	: l0@ -1 SF@ ; 	: l0! -1 SF! ; 
-: l1 -2 SFx ; 	: l1@ -2 SF@ ; 	: l1! -2 SF! ; 
-
-
-." |/\\| StackFrames |/\\| "  
+| |->| StackFrames moved to ParameterPushing.f |<-| 
 
 exit~ with~ ~CSauxstack
 
