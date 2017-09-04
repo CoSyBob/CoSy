@@ -63,9 +63,21 @@ cr ." | SaveRestore begin | " type cr
 
 : savedic ( -- ) | save dictionary	|
   R storelst str  | computed 1st , the left on stack  
-  s" del " CoSyDirFile cL s" .bk" cL { shell nil } onvan drop  
-  s" ren " CoSyDirFile cL s" .csy CoSy.bk" cL >r> van shell r> ref0del 
-   CoSyDirFile s" .csy"  cL Foverwrite  ;
+  s" del " COSYSTARTFILE cL s" .bk" cL { shell nil } onvan drop  
+  s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL >r> van shell r> ref0del 
+   COSYSTARTFILE s" .csy"  cL Foverwrite  ;
+
+0 [IF]
+: savedic ( -- ) | save dictionary	|
+ $.s cr
+	R storelst str  | computed 1st , the left on stack  
+  s" del " COSYSTARTFILE cL s" .bk" cL { shell nil } onvan drop  
+  s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL  | 20170718.1349 			 
+ $.s cr 
+| s" ren " COSYSTARTFILE cL s" .csy " cL 
+|   CoSyFile cL s" .bk" cL  shell^ 
+   COSYSTARTFILE s" .csy"  cL Foverwrite  ;
+[THEN]
 
 | ======== |
  |  CoSyDir 
@@ -111,10 +123,10 @@ defer (rstrlst)
 
 
 : rep ( ob -- newob ) | replicate object . totally new
-	dup Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
+	 Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
 	             $.s cr dup refs0 r> ref0del ;then
 	    duplst ;
 
 | /\ SAVE LIST  /\ ========================================== /\
 
-." | SaveRestore end | "  cr
+." | SaveRestore end | " $.s  cr 
