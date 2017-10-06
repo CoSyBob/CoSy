@@ -1462,9 +1462,6 @@ $006346964 value TypeDic		| " dic"
 : sx_ ( dic sym -- adr of symbol | _n ) 
    --aab (wheresym) dup _n =if nip ;then swap 0 i@ swap ix ; 
 
-: ax ( dic sym -- adr of attribute | _n ) 
-   --aab (wheresym) dup _n =if nip ;then swap 2 i@ swap ix ; 
-
 : undefthrow  ( idx --  | throw ) dup _n =if drop z" undefined " throw then ; 
 
 | fetches symbol associated with symbol in dictionary
@@ -1472,10 +1469,6 @@ $006346964 value TypeDic		| " dic"
 
 | fetches value associated with symbol in dictionary
 : v@ ( dic sym -- val ) vx_ undefthrow @ ;	
-
-
-| fetches attributes associated with symbol in dictionary
-: a@ ( dic sym -- attr ) ax undefthrow @ ;
 
 | store value associated with symbol in dictionary
 : v! ( val dic sym -- )
@@ -1486,12 +1479,6 @@ $006346964 value TypeDic		| " dic"
  
 : v!> ( val dic sym -- dic ) over >r v! r> ; 
 	
-| store attributes associated with symbol in dictionary
-: a! ( val dic sym -- )
-	rot 2refs+> 2dup 2>aux --abcab ax 
-	dup _n =if drop dicapnd else rplc 2drop then
-	2aux> 2refs- ;
-
 | fetch value ( which must be string ) and evaluate 
 : v* ( dic sym -- result )
  v@ van eval ;

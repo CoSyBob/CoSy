@@ -74,7 +74,8 @@ variable btnswdo
 : >resvar> dup : >resvar `resvar Dv! ;
 : resvar `resvar Dv@ ;
  
-: res> reswdo @ getval --bc str ;
+: res> reswdo @ getval --bc str ( "lf>"nl ) ;  | conversion to Win std line brk
+| bombs for some reason if ' "lf>"nl uncommented 
 : saverestxt res> R `res v! ;
 : rtype ( a n -- ) reswdo @ -rot setval drop ; 
 : >res ( str -- ) dup van rtype ref0del ;

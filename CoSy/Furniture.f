@@ -28,7 +28,10 @@ cr ." | Furniture begin | "
 
 : \>/ s" \\" s" /" ,L ssr ; 	| replaces DOS \ w RoW / .
 
-: "lf>"nl "nl "lf ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
+: "lf>"nl "lf "nl ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
+ 
+: "nl>"lf "nl "lf ,L ssr ; 	| convert DOS "lf line breaks to UNIX "n| 
+| Use to convert ' res> result for saving as CoSy source file .
 
 : include^ ( fname -- flag ) { (include) ioerr @ _i } onvan ; | returns 0 on success
 
@@ -254,4 +257,5 @@ needs random/gm
 |  { van eval _i } eachM> ' cL across  over refs-ok  cL  R ` Types v!
 
 ." | Furniture end | " cr 
+
 
