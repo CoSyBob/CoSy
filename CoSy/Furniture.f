@@ -115,9 +115,9 @@ variable AFptr
 : ymdhm ( -- yyyymmdd.hhmm ) ymdhm_ str ;
 : |ymd.hm| ymd.hm s" | " s"  | " ,L braket ; : |ymd.hm|_ |ymd.hm| str>pad_ ;
 
-
-| : date_ ( yyyymmdd -- d m y ) ['] dtupk onvan ;    
-
+| Converting  ' daysdif  used to compute days of my life to take CoSy dates
+: date_ ( yyyymmdd _i -- d m y ) >r> vbody @ dtupk r> ref0del ;
+: daysdif^ >r date_ r> date_ daysdif _i ; 	| 20171112 
 
 | Cut text into day entries ( approximate as can be seen from def . )
  "lf s"  | ======================== | " cL refs+> value daylnTok 
@@ -193,18 +193,6 @@ variable AFptr
 : PoT 1p R@ R@ +/ %f 1P> ; | Proportion of Total 
 
 
- : i^n ( i n -- i^n )	| converted from Ruby on
-    | http://en.wikipedia.org/wiki/Exponentiating_by_squaring
-  dup 0if 2drop 1 ;; then
-  1 -rot repeat 
-   dup 2 mod
-   if --abcab * 2 put 1-
-   else swap dup * swap 2/ 
-   then 
-   dup while   
-   2drop ;
-
-
 needs random/gm
  
 : _rand_ ( n -- a ) dup intVecInit >aux
@@ -224,11 +212,12 @@ needs random/gm
 | requires 1 rand , but I don't think it complete and uniform . see
 | http://math.stackexchange.com/questions/1003779/show-whether-this-algorithm-produces-a-uniform-random-permutation
 
-
 : c>f ( fv -- fv )  1.8 _f *f 32. _f +f ; 	| centigrade to farenheit | 20141124 
 : f>c ( fv -- fv )  32. _f -f 1.8 _f %f ; 	| farenheit to centigrade | 20141124 
 
-  | ======================================== |
+: Pi fpi _f ; 	: rad fpi 180. f% _f ; 
+
+ | ======================================== |
 
 | Split integer vec into positives and negatives 
 : +-splt ( iv -- v ) 1p> i-1 >i refs+> >r> & R@ swap at 

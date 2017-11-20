@@ -2,8 +2,8 @@
 
 | |\/| StackFrames |\/| ================================== \/ |  
 ." |\\/| StackFrames |\\/| "  
-| The above does not answer the need for recursive stack frames .
-| This is implementing the notion in George B. Lyons : Stack Frames and Local Variables :  http://www.forth.com/archive/jfar/vol3/no1/article3.pdf
+ 
+| Implementing the notion in George B. Lyons : Stack Frames and Local Variables :  http://www.forth.com/archive/jfar/vol3/no1/article3.pdf
  
  s0 cell- dup constant s1 dup dup !  variable, SFptr 	 	
  | relies for stopping on the 0th stack cell being set to itself 
@@ -39,7 +39,7 @@
 
 | The stack just above the SF pointer can be used as locals which will of course
 | be dropped along with the frame . Note these ' l functions are naked . 
-| To use values must be pushed on the stack for use , and if a CoSy object
+| To use , values must be pushed on the stack ,  and if a CoSy object
 | appropriate ref handling must be done .
 
 : l0 -1 SFx ; 	: l0@ -1 SF@ ; 	: l0! -1 SF! ; 
@@ -49,9 +49,9 @@
 
 | \/ \/ | PARAMETER PUSHING & POPPING | \/ \/ |
 
-: >aux+> dup : >aux+ refs+> >aux ;
-: aux-ok> aux> dup refs-ok ;
-: aux- aux> refs- ;
+: >a> : >aux+> dup : >aux+ refs+> >aux ;
+: a> : aux-ok> aux> dup refs-ok ;
+: a- : aux- aux> refs- ;
 
 : 1p ( RA -- ) | pushs 1 arg from stack to param stack and ref incs .
 	| use on entrance to 1 arg fn .
@@ -60,11 +60,13 @@
 : 1p> ( RA -- ) | pushs 1 arg from stack to param stack and ref incs .
 	| use on entrance to 1 arg fn .
 	SF+ R@ refs+> ;
- 
+
 : 1P ( -- )	| decrements refs and clears param stack . Use leaving 1 arg fn .  
 	R@ refs- 1 SF- ;
-
-: 1P> ( r -- r )  >aux+> 1P aux-ok> ;
+ 
+: 1P_> ( r -- r )  >aux 1P aux> ;
+ 
+: 1P> ( r -- r )  >aux+ 1P aux-ok> ;
 
 : 2p ( LA RA -- ) | pushs 2 args from stack to param stack 
 	| and ref incs . Use on entrance to 2 arg fn .
@@ -76,7 +78,9 @@
 
 : 2P ( -- )	| decrements refs and clears param stack . Use leaving 2 arg fn .  
 	RA 2@ 2refs- 2 SF- ;
-
+ 
+: 2P_> >aux 2P aux> ; 
+ 
 : 2P> >aux+> 2P aux-ok> ; 
 
 | /\ /\ | PARAMETER PUSHING & POPPING | /\ /\ | 

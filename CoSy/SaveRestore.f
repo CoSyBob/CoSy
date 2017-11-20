@@ -119,13 +119,7 @@ defer (rstrlst)
 |   (restorefile) ['] R rplc ;
 
 : duplst ( lst -- nwlst )
-  storelst drop dup restorelst swap free ;
-
-
-: rep ( ob -- newob ) | replicate object . totally new
-	 Type@ if >r> vsize >r> allocate rr@ over r> $.s cr move 
-	             $.s cr dup refs0 r> ref0del ;then
-	    duplst ;
+  dup+ storelst drop dup restorelst swap free swap refs-ok ;
 
 | /\ SAVE LIST  /\ ========================================== /\
 

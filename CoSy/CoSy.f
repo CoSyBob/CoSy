@@ -21,7 +21,6 @@ needs choices
 
 | needs util/case
 
-
 needs math/floats 
 
 with~ ~doubles with~ ~floats
@@ -181,6 +180,8 @@ create nil  TypeN , 1 , $00000001 , nil , _n ,
 
 : ic@ ( v i -- o ) ix @ ;	
 : ic! ( o v i -- ) ix ! ;	| index fetch and store , cell 
+ 
+ alias: ii@ ic@		alias: ii! ic!	| index fetch and store , integer
 
 0 cellVecInit refs+> constant ev        | empty vector
  
@@ -212,8 +213,6 @@ alias: Type@ @		alias: Type! !
 
 : intVecInit ( n - objAdr )		| make header and allocate space for int vec of length n
    cellVecInit int> ;			| integer vector type -1
-
- alias: ii@ ic@		alias: ii! ic!	| index fetch and store , integer
 
  0 intVecInit refs+> value evI 	| empty integer vec . 
 
@@ -300,13 +299,6 @@ alias: Type@ @		alias: Type! !
 
 | /\ /\ | PARAMETER PUSHING | /\ /\ | 
 
-| \/ | appears to be a bad idea   | \/ |
-| ev refs+> value ^R 	| CoSy Result holder . Makes results evaporate 
-| : >^R ( ob -- ob )      
-|   ^R refs-  refs+> to ^R ;
-| : >^R> dup >^R ;
-| /\ | appears to be a bad idea   | /\ |
-
 : >value refs+> value ; 
 
 ev refs+> value t0	| Temp handle holder . Frees old value when assigned new
@@ -390,7 +382,8 @@ i( )i refs+> constant zild	| 0 iota
 : absi ['] abs eachMir ;	| abs
 : -0+i ['] sn eachMir ;		| sign 
 
- 
+| : _modi ['] _mod eachDfr ;	| _mod 2 **** vecs 
+
 : 0=i ( int -- bool )  i0 =i ; | essentially "not" 
 : -1*i ( int -- negate ) i-1 *i ; 
 
@@ -490,7 +483,7 @@ macro
   10 K* dup cellVecInit 
    swap 0do parsews 2dup " )`" cmp if (sym) refs+> over i ic!
     else 2drop i Vresize leave then loop compiling? if refs+> literal, then ; 
-	
+ 
 forth
 
 : str~_ ( s0 s1 -- b )	| string/symbol match .
@@ -616,19 +609,6 @@ cr ."  \\/ each \\/ " $.s cr
    0 ?do over i if@ dup i if@ 2 pick execute aux@ i ii! loop
    2ref0del drop aux> ; 
 
-
-: acrossYf  ( f:r0 RA fn -- r )	| result returning "/" on float lists 
-	 over refs+> 	| LA is initial result ( identity element ) on f stack  	  
-    i# 0 ?do over i if@ dup execute loop
-   drop refs- 1 floatVecInit dup 0 if! ;
-
-: acrossf  ( RA fn -- r )	| result returning "/" on float lists 
-	over i# 0=I z" nonce : empty , needs prototype " * throw 	
-    over refs+> dup 0 if@
-    i# 1 ?do over i if@ dup execute loop
-   drop refs- 1 floatVecInit dup 0 if! ;
-
-
 : takef ( fv n -- fv )             | APL take / reshape , float
   dup abs intVecInit >aux
   dup 0 <if 0 swap else 0 then		| if n neg , 0 n  do 
@@ -646,20 +626,27 @@ cr ."  \\/ each \\/ " $.s cr
 : -f ['] f- eachDfr ;	| subtract 2 float vecs 
 : *f ['] f* eachDfr ;	| * 2 float vecs 
 : %f ['] f/ eachDfr ;	| div 2 float vecs 
+: ^f swap ['] f^ eachDfr ;	| LA ^ RA . Note arguments swapped from Intel order to standard 
+ 
 : 1%f ['] 1/f eachMfr ;
 : floor ['] ffloor eachMfr ; 	| 3.14 -> 3.00  
-
-: ^f swap ['] f^ eachDfr ;	| LA ^ RA . Note arguments swapped from Intel order to standard 
-
-| : _modi ['] _mod eachDfr ;	| _mod 2 **** vecs 
-| : minf ['] min eachDfr ;	| min 2 integer vecs 
-| : maxf ['] max eachDfr ;	| max 2 integer vecs
-
+: absf ['] fabs eachMfr ; 		| -n.m -> n.m 
+: sqrtf ['] fsqrt eachMfr ; 
+ 
+: f^2 fdup f* ; 	| not defined in lib/math/floats .
+ | Much more efficient than { rep *f }  . Just 2 x87 instructions .
+: ^2f ['] f^2 eachMfr ; 
+ 
 : =f { f= M->I } eachDfir ;	| = ( Iverson logic ) 2 float vecs 
 : <f { f< M->I } eachDfir ;	| < ( Iverson logic ) 2 float vecs 
 : >f { f> M->I } eachDfir ;	| > ( Iverson logic ) 2 float vecs 
 
-|
+: fmin fover fover f< if fswap then ; 	| not defined in lib/math/floats 
+: fmax fover fover f> if fswap then ; 	| not defined in lib/math/floats 
+
+: minf ['] fmin eachDfr ; 	| 
+: maxf ['] fmax eachDfr ;
+
 : F. ( fv -- ) 
   dup i# 0 ?do dup i if@ f. loop ref0del ;  
 
@@ -819,6 +806,7 @@ a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a
 : >_ ( disclose  non-nested  and free if 0 refs ) dup 0 i@ swap ref0del ;
  
 : dsc ( obj -- first_item ) | returns 0th item , | 20130923.230527 
+  dup i# 0if ;then  	| If empty , just return 
   dup @ 0if dup 0 i@ refs+> (  to protect result from freeing if nested ) 
       swap ref0del dup refs-ok ;then  
     1 over @ VecInit >aux dup 0 i@ aux@ 0 i! ref0del aux> ;	
@@ -922,7 +910,6 @@ variable indentv   : indent indentv @ spaces ;
 
 |  Best to handle typing outside of loops .
 
-1 [IF]
 : acrossY  local[ proto obadr fn | n r -- res ]    | dYadic result returning "/"
    obadr i# to n  obadr vbody to obadr  proto to r
    n 0 ?do r obadr i c+ @ fn execute to r  loop
@@ -933,6 +920,17 @@ variable indentv   : indent indentv @ spaces ;
    over i# 
      1 ?do 2 pick 2 pick i i@ 2 pick execute 2 put  loop
    drop ref0del _i ;   
+
+: acrossYf  ( f:r0 RA fn -- r )	| result returning "/" on float lists 
+	 over refs+> 	| LA is initial result ( identity element ) on f stack  	  
+    i# 0 ?do over i if@ dup execute loop
+   drop refs- 1 floatVecInit dup 0 if! ;
+
+: acrossf  ( RA fn -- r )	| result returning "/" on float lists 
+	over i# 0=I z" nonce : empty , needs prototype " * throw 	
+    over refs+> dup 0 if@
+    i# 1 ?do over i if@ dup execute loop
+   drop refs- 1 floatVecInit dup 0 if! ;
 
 : acrossC  ( RA fn -- r )	 | result returning "/" on cell lists 
    over 0 i@		| RA fn r	| bombs on empty arg . use acrossYc		 	  
@@ -965,9 +963,9 @@ variable indentv   : indent indentv @ spaces ;
    $.s cr 1P> ;   
 
 : _./  ( LA fn -- r ) | result returning "/" , "across" on naked fns
-   | over i# 0if drop $.s ref0del z" nonce : empty , needs prototype " throw then
+| If empty or singlton , simply returns arg . 
    over i# 2 <if drop ;then
-   >aux refs+> >aux> 0 _at\ aux@ 1 _at\ auxx@ execute 
+   >aux   refs+> >aux> 0 _at\ aux@ 1 _at\ auxx@ execute 
    aux@ i# 2 ?do aux@ i _at\ auxx@ execute loop
    aux> refs- auxdrop ; 
  
@@ -1226,7 +1224,7 @@ alias: _ cut
    i# 0 ?do dup i i@ sigdig @ (f.) str refs+> aux@ i i! loop
    ref0del aux> ;
  
-: fmtF$ ( f precison -- strs ) >_ sigdig xchg >r fmtF r> sigdig ! ;
+: fmtnF ( f precison -- strs ) >_ sigdig xchg >r fmtF r> sigdig ! ;
  
 : fmt ( v -- str )	| format numbers . returns list of each number 
 	| converted to a string .
@@ -1358,6 +1356,9 @@ alias: _ cut
 : cconn ( strings str -- idxs )	| returns indexs of stings in LA containing RA 
    cconb & ; 
  
+: ccon ( strings str -- strings )	| returns stings in LA containing RA
+   2p L@ dup R@ cconn at\  2P> ; 
+ 
 : ncconn cconb 0=i & ;
  
 : conb  ( strings str -- bool ) 2p L@ ['] lower eachM> R@ lower cconb 2P> ; 
@@ -1394,10 +1395,6 @@ $006346964 value TypeDic		| " dic"
    refs+> dup name?_ 0if refs- ref0del ref0del z" invalid name " throw then
   swap >r> 0 ix swap cLr r> 1 ix swap cLr ; 
   | 2 ix nil cLr  ;
-
-
-| combine a name and a value into a 1 item dictionary 
-: >d> ( sym val -- dic ) () >aux+> --bca dicapnd aux-ok> ;
 
 | : reasgn ( addr name vadr0 -- )       
 
@@ -1541,6 +1538,36 @@ cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 
 needs SaveRestore.f
 
+| Reva takes first command line parameter as script to load , eg , this CoSy.f .
+| By default this loads the  *.csy  dictionary named in COSYSTARTFILE
+| environmental variable . 
+
+| Reva takes first command line parameter as script to load , eg , this CoSy.f .
+| By default this loads the  *.csy  dictionary named in COSYSTARTFILE
+| environmental variable . If a second argument is present , it is
+| loaded instead . 
+| CoSyFile dsc o restorefile ' R rplc
+ 
+ COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
+
+| restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
+
+ cr ." /\\ RESTORE /\\" cr
+
+
+| ' dup doesn't work in computations w refd lists . 
+| Need to ' rep to get 2 0 counted copies .
+ 
+: rep_ dup vsize ( a s ) dup allocate >r> swap ( a r s ) move r@ refs0 r> ; 
+| rep on simples .
+ 
+: rep ( ob -- newob ) | replicate object . totally new
+	 dup Type@ if rep_ ;then
+	    duplst ;
+ 
+: .. dup rep ; 	| equivalent of ' dup for CoSy objs .
+
+
 : >at!> rep dup at! ; 
 
 : sym>str> rep dup sym>str ; 	: str>sym> rep dup str>sym ; 
@@ -1559,21 +1586,6 @@ needs SaveRestore.f
 
 | ||
 
-| Reva takes first command line parameter as script to load , eg , this CoSy.f .
-| By default this loads the  *.csy  dictionary named in COSYSTARTFILE
-| environmental variable . 
-
-| Reva takes first command line parameter as script to load , eg , this CoSy.f .
-| By default this loads the  *.csy  dictionary named in COSYSTARTFILE
-| environmental variable . If a second argument is present , it is
-| loaded instead . 
-| CoSyFile dsc o restorefile ' R rplc
- 
- COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
-
-| restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
-
- cr ." /\\ RESTORE /\\" cr
 
  R refs+> value _d
  
@@ -1593,6 +1605,10 @@ needs SaveRestore.f
    _d swap v! ;
 
 : Dvdel _d swap vdel ;
+
+| append catinate ( ' cL ) object to list word in Dictionary . 20171114.
+: v_cL ( D w s -- ) >r vx_ dup @ r> cL swap rplc ;  
+: Dv_cL _d --cab v_cL ;
 
 | Utility treed variable 
 : >R0> dup : >R0 R " R0" (sym) v! ;

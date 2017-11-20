@@ -106,7 +106,7 @@ alias: |/\| |
 : ndrop 0 ?do  drop  loop ;	| should be optimized
 | \/ | has some bug related to directory executing in ??? |
 | : ndrop ( ... n -- drops n cells from stk ) 	| optimized from ' drop loop . 
-|	esi@ swap 1+ cells + esi!  ;
+| 	esi@ swap 1+ cells + esi!  ;
 	| don't understand why :| : ndrop 1+ cells esi@ + esi!  ; |: doesn't work .
 
 | : dup>r  inline{ 50 } ;inline  | from macoln . in  util/misc
@@ -213,6 +213,12 @@ $7FFFFFFE constant 0I		| integer infinity . ( Largest pos Number )
  | returns -1 if not found .
   swap 0 do over i + c@ over =if 2drop i unloop ;then loop 2drop true ;    
 
+
+: char parsews drop c@ ?literal ; 
+| returns integer value of following character . eg | char A _i  |>| 65
+| when compiling , appends char as literal .
+| word same as GForth std  | 20171103 
+
 | =============================================== |
 
 | \/ Allocated buffer . Simple buffer and position value	\/
@@ -270,7 +276,7 @@ $7FFFFFFE constant 0I		| integer infinity . ( Largest pos Number )
 | /\ Create a spooling space and fns for diverting  emit  and  type  /\
 
 | =============================================== |
-1 [IF]
+
 | \/  A more sophisticated  catch  .  \/
  
 variable thrown
@@ -280,7 +286,7 @@ a[ throwCodes THROW_BADFUNC , THROW_BADLIB , THROW_GENERIC , ]a
   else ztype cr then ; 
  
 | /\  A more sophisticated  catch  .  /\
-[THEN]
+
 | =============================================== |
 
 | \/ augmented & trapped file fns \/

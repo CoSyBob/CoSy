@@ -1,6 +1,6 @@
 
 | =============================================== |
-|\/ MATH \/|
+| \/ MATH \/ |
 
 : pi* fpi f* ;		| this is the monadic circle fn in APL
 
@@ -8,9 +8,34 @@
     dup if swap over mod gcd else drop then ;
  | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
 
+| \/ | ===== |  Most basic euclidian computations | ======== | \/ |
+
+: dot *f +/ ;
+| f( -1 0 1 )f f( 1 2 3 )f dot  |>| 2.00 
+: norm^2 dup rep dot ;
+|   f( -1 0 1 )f norm^2 		|>| 2.00 
+: norm norm^2 sqrtf ;
+ 
+: cor 2p> dot LR@ ['] norm^2 on2 *f %f ;
  
  
-|/\ MATH /\|
+| /\ MATH /\ |
+| =============================================== |
+| \/ | Stats | \/ |
+cf Arthur Whitney's K math functions | 
+  http://cosy.com/K/Math_AW.txt
+
+: var 1p> ^2f favg R@ favg ^2f -f 1P> ;
+: dev var sqrtf ; 
+ 20 _iota i>f dev
+
+: cov 2p> *f favg LR@ ['] favg on2 *f -f 2P> ;
+: cor 2p> cov LR@ ['] dev on2 *f %f 2P> ; 
+
+ 20 _iota i>f .. reverse cor 10 _i fmtnF
+| need to deal w rounding . 
+
+| /\ | Stats | /\ |
 | =============================================== |
 
 | Exponentiation by squaring
@@ -58,3 +83,4 @@ end
    then 
    dup while   
    2drop ;
+

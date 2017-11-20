@@ -128,10 +128,11 @@ variable btnswdo
 
 | Evaluate line under cursor 
  
-: evaln ( ? -- ? ) { getcurln eval } catch ?dup if ['] caught type>res ;then
-	  depth 0 =if nil then ;
+| : evaln ( ? -- ? ) { getcurln eval } catch ?dup if ['] caught type>res
+|	 $.s ;then
+|	depth 0 =if nil then ;
 
-: f6 { getcurln eval } catch ?dup if ['] caught type>res ;then 
+: f6 { getcurln eval } catch ?dup if ['] caught type>res $.s cr DMP  ;then 
     depth 0 =if nil then
     { >R0> ['] lst type>res } catch ?dup if ['] caught type>res ;then 
 	llUpdate  $.sUpdate ;
