@@ -186,36 +186,12 @@ variable AFptr
 | /\ /\ | miscellaneous fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
 
-| \/ \/ \/ MATH \/ \/ \/ |
+| \/ \/ \/ MOST MIMIMAL MATH \/ \/ \/ | 
 
-: favg  1p> +/ R@ rho i>f %f 1P> ;  |
-
-: PoT 1p R@ R@ +/ %f 1P> ; | Proportion of Total 
-
-
-needs random/gm
- 
-: _rand_ ( n -- a ) dup intVecInit >aux
-   0 ?do rand aux@ i ii! loop aux> ; 
- 
-: _rand ( i n -- ) | n rands in  i iota raw 
-   dup intVecInit >aux
-   0 ?do dup rand um* nip aux@ i ii! loop drop aux> ; 
-
-: rand ( i n -- iv )  2p L@ i_ R@ i_ _rand 2P> ; 	| n rands in  i iota . 
-
-: _perm ( n -- [ random permutation of n items ] )
-  dup _iota >aux dup dup _rand 
-  swap 0 ?do dup i ii@ aux@ i ii@
-  swap aux@ swap ix xchg aux@ i ii! loop free aux> ; 
-| not sure who in the Reva mail group offered this algo . Neat because it only
-| requires 1 rand , but I don't think it complete and uniform . see
-| http://math.stackexchange.com/questions/1003779/show-whether-this-algorithm-produces-a-uniform-random-permutation
+: PoT 1p R@ R@ +/ %f 1P> ; | Proportion of Total . I find very useful 
 
 : c>f ( fv -- fv )  1.8 _f *f 32. _f +f ; 	| centigrade to farenheit | 20141124 
 : f>c ( fv -- fv )  32. _f -f 1.8 _f %f ; 	| farenheit to centigrade | 20141124 
-
-: Pi fpi _f ; 	: rad fpi 180. f% _f ; 
 
  | ======================================== |
 

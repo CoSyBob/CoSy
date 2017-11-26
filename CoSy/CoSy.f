@@ -632,7 +632,8 @@ cr ."  \\/ each \\/ " $.s cr
 : floor ['] ffloor eachMfr ; 	| 3.14 -> 3.00  
 : absf ['] fabs eachMfr ; 		| -n.m -> n.m 
 : sqrtf ['] fsqrt eachMfr ; 
- 
+: fracf ['] ffrac eachMfr ; 
+
 : f^2 fdup f* ; 	| not defined in lib/math/floats .
  | Much more efficient than { rep *f }  . Just 2 x87 instructions .
 : ^2f ['] f^2 eachMfr ; 
@@ -1335,10 +1336,13 @@ alias: _ cut
 : _nth ( CSob n -- CSadr )  	| extracts nth item from each item of CSob  
    _i 2refs+> ev  2 pick i# 0 ?do 2 pick i i@ 2 pick at\ cL loop >r 2refs- r> ;     		
 
-: flip ( CSob -- CSob )    | Transpose object . 
+: flip ( CSob -- CSob )    | Transpose list of 2 lists .
+| returns list of each item of 1th list w corresponding item of 1st suject
+| to the minimum length of the 2 lists . 
+| 
    dup @ if ;then		| transpose of a simple obj is itself 
    dup i# 0;drop 		| same for empty
-   refs+> dup (  0 i@ i# ) ['] rho 'm ,/ ['] min _./ i_ cellVecInit >aux> 	| ob nbdy
+   refs+> dup ( 0 i@ i# ) ['] rho 'm ,/ ['] min _./ i_ cellVecInit >aux> 	| ob nbdy
     i# 0 ?do dup i _nth refs+> aux@ i i! loop 
     refs- aux> ; 
 
