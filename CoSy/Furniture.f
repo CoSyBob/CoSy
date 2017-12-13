@@ -88,6 +88,8 @@ ev refs+> variable, stk			| set stk to an empty vector
 | /\ /\ /\ Stack made with CoSy obs /\ /\ /\ |
 
 | \/ \/ \/ |  REF COUNTING  | \/ \/ \/ |
+| These fns are useful for checking that created obs get collected .
+| Useful phases are included in  ` state .
  
   0 _i 64 K* _take refs+> value AFbuf
 variable AFptr 
@@ -162,12 +164,43 @@ variable AFptr
 
 | /\ /\ | partitioned string fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
+| ~\/ | DictionaryTable > < .csv text | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
+ 
+| I've used the term , abreviated ' DT , in K.CoSy with a rather substantial
+| vocabuary . It is the fundamental form of a Kdb columnar data base . 
+| A DT is a Dictionary whose first is a list of column labels and second is a
+| corresponding set of correlated lists of values . This vocabulary converts
+| back and forth between CoSy DTs and standard .CSV strings , the most 
+| universal format for bank ledger downloads . See 20171212 .
+ 
+: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
+: lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
+: csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
+ 
+|  | Example 
+| s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 
+ 
+|  read in and check if line delimiter is "lf or "cr "lf . generally trailing .
+ 
+| T0 "nl "ht ,L csv>DT >T1 	
+|  | Note the combining of the line and item delimiters by ' ,L 
+ 
+| And the inverse 
+: DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
+: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
+: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
+ 
+|  | Note that the delimiters have to be reversed . 
+| T1 "nl "ht ,L reverse DT>csv 
+ 
+| ~/\~| DictionaryTable > < .csv text | \~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
+
 | \/ \/ | miscellaneous fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
-: words> ( str -- strL ) s" words " swap cL forth> nlfy -2 _i cut ;
+: words> ( str -- strL ) s" words " swap cL forth> VMbl -2 _i cut ;
 | see   s" help words" spool^ | use "bl arg all words 
 
-: .needs^ ['] .needs (spool) str nlfy i-1  _ dsc ;
+: .needs^ ['] .needs (spool) str VMbl i-1  _ dsc ;
 
 : ^!! ( str -- ) dup van shell ref0del ;	| CS version of !! shell execute .
 

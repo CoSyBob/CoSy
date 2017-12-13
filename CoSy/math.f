@@ -1,12 +1,13 @@
 
 | =============================================== |
-| \/ MATH \/ |
+." | \\/ MATH \\/ | "
+ 
 
 : pi fpi _f ;
 
 : fpi* fpi f* ;		| this is the monadic circle fn in APL
 
-: rad fpi 180. f% _f ; 
+: rad fpi 180. f/ _f ; 
 
 : gcd	( a b -- c) | Jack Browns recursive  greatest common divisor 
     dup if swap over mod gcd else drop then ;
@@ -23,24 +24,22 @@
 | /\ MATH /\ |
 | =============================================== |
 | \/ | Stats | \/ |
-cf Arthur Whitney's K math functions | 
-  http://cosy.com/K/Math_AW.txt
+| cf Arthur Whitney's K math functions | 
+|  http://cosy.com/K/Math_AW.txt
 
 : avgf  1p> +/ R@ rho i>f %f 1P> ; 
 
 : var 1p> ^2f avgf R@ avgf ^2f -f 1P> ;
 : dev var sqrtf ; 
- 20 _iota i>f dev
 
 : cov 2p> *f avgf LR@ ['] avgf on2 *f -f 2P> ;
 : cor 2p> cov LR@ ['] dev on2 *f %f 2P> ; 
 
- 20 _iota i>f .. reverse cor 10 _i fmtnF
+| 20 _iota i>f .. reverse cor 10 _i fmtnF
 | need to deal w rounding . 
 
 | /\ | Stats | /\ |
 | =============================================== |
-
 
 needs random/gm
  
@@ -61,6 +60,10 @@ needs random/gm
 | requires 1 rand , but I don't think it complete and uniform . see
 | http://math.stackexchange.com/questions/1003779/show-whether-this-algorithm-produces-a-uniform-random-permutation
 
+: factors ( n _i -- factors ) .. i>f sqrtf f>i iota i1 +i .. --bac _modi 0=i & at ;
+| Returns smaller factors of n . See  Thu.Nov,20171130 
+| eg : | 60 _i factors     |>| 1 2 3 4 5 6 
+
 | Exponentiation by squaring
 | See http://ronware.org/reva/viewtopic.php?id=341 
 |  from | http://en.wikipedia.org/wiki/Exponentiating_by_squaring
@@ -79,7 +82,6 @@ def power(x,n)
   end
   return result
 end
-
 
 | using  aux  stack 
 : i^n ( i n -- i^n ) | converted from Ruby on
@@ -107,3 +109,4 @@ end
    dup while   
    2drop ;
 
+." | /\\ MATH /\\ | "

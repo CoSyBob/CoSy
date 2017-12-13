@@ -3,13 +3,13 @@
  | ###################################################################### | 
  | Tap F1 to see Key Help | 
                                  First lesson :
- On a blank line below : tap F12 . tap  Enter . tap F11 . 
-			 write something . tap ctrl_S
+ On a blank line below : tap F12 . tap  Enter .  
+			 write something . tap F11 .
  __________________________________________________________________________
  
- 
- 
- 
+
+
+
 
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
@@ -1295,13 +1295,8 @@ back to ' _/
 : minf ['] fmin eachDfr ;
 : maxf ['] fmax eachDfr ;
  
-  f( 1. 2. 3 )f f( 3 2 1 )f  minf
-
+ f( 1. 2. 3 )f f( 3 2 1 )f  minf
  words~ ~floats
- res> "bl VM
- 
-  t0> dup vsize
- rep 
  | ======================== | Fri.Oct,20171027 | ======================== |
 | 1318 | 
   ` sys Dv@ ` CoSySource v@ >t0> rho
@@ -1313,8 +1308,7 @@ back to ' _/
 | 1203 | erased all downloads from NextBook . Cleaned all traces of CoSy
   to get ' asm{ error if I can  | 1229 | Damn . CoSy RAN !
   C:\Users\Bob\Downloads\CoSy-4thCoSy\CoSy-4thCoSy
- Ran also on 
- 
+ Ran also on  
   s" //Cosy1511/d/CoSy-4thCoSy/CoSy/CoSy.csy" restorefile >t0> rho
  t0 ` text v@ 
  | ======================== | Thu.Nov,20171102 | ======================== |
@@ -1439,10 +1433,8 @@ Need to master  ./lib/net/sockets |
  s" ./CoSy/math.f" F>  
  res> >t0> s" ./CoSy/math.f" >F  t0
  s" ./CoSy/math.f" F>  ^eval
-   see dr
  ' norm _i
-
- ' dp _i
+ ' dp _i 
 
  | ======================== | Sat.Nov,20171118 | ======================== |
 snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 | 
@@ -1497,17 +1489,202 @@ snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 |
  help (header)
  | ======================== | Fri.Nov,20171124 | ======================== |
 | did some consolidating of mathy fns from ./CoSy/Furniture.f in ./CoSy/math.f
-| Seem to have duplicate setions of ` text . still easiest to ed in Jedit .
- text> s" ./CoSy/text.txt" >F
-
+| Seem to have duplicate setions of ` text . still easiest to compare in Jedit .
+ text> VMlf rho |  s" ./CoSy/text.txt" >F
 
 | re : | https://groups.google.com/forum/#!topic/comp.lang.forth/2EHMK4JmO1g  
- 10 _iota i( 5 2 )i take flip ' ,/ 'm
- i( 1 2 3 )i i( 4 5 )i ,L reverse flip
+ 10 _iota i( 5 2 )i take >t0> | flip 
+ 
+ | ======================== | Sat.Nov,20171125 | ======================== |
+ see pi | Some variable ' pi exists the origin of which I strangely can't find .
+ overwriting in math.f w  : pi fpi _f ;
+ | ======================== | Sun.Nov,20171126 | ======================== |
+GHW Bush now 93 y 163 d . Oldest ever prez . When I was young HH was the old guy
+ 18740810 19641020 2_i daysdif^ |>| 32943  | Herbert Hoover life span . 
+ 32943. 365.25 2_f %f |>| 90.19 
+: fracf ['] ffrac eachMfr ; 	| not defined . added to  /cosy.f 
+ R0 fracf 365.25 _f *f     |>| 70.49 
+ 18740101 ymd>fixed 18740810 ymd>fixed - .
+| 1345 | 
+ | ======================== | Thu.Nov,20171130 | ======================== |
+| in response to thread on SV-FIG ml , implementing ' factors  from K.CoSy
+|  factors />/ { t @ & 0 = x !/: t : 1 + ! _ _sqrt x }
+| See | Re: [svfig] Highly divisible numbers |
+ http://www.cosy.com/CoSy/y17/Re%20%20%5bsvfig%5d%20Highly%20divisible%20numbers.html
 
+ s" ./CoSy/math.f" F> >t0> ^eval 
+ res> s" ./CoSy/math.f" >F
+ 60 _i factors 	|>| 1 2 3 4 5 6 
+ 64 _i factors  |>| 1 2 4 8 
+ 65 _i factors 	|>| 1 5 
+  60. _f f( 1 2 3 4 5 6 )f %f f>i 	|>| 60 30 20 15 12 10 
+ 60 _i >t0> factors >t1> 
+ t1  t0 t1 ' i>f on2 %f f>i ,L 
+: factors .. i>f sqrtf f>i iota i1 +i .. --bac _modi 0=i & at ;
+ 60 _iota i1 +i >t0>
+ t0 { _i factors } 'm
+Posted to SV-FIG | 1737 |   
+ | ======================== | Sat.Dec,20171202 | ======================== |
+ s" c:/CoSybob/CoSy/CoSy.csy" F> restorelist >t0> ` T0 v@ 
+ t0
+ Dnames
+  s" : & " ??
+ | ======================== | Sun.Dec,20171203 | ======================== |
+ ` sys Dv@ ` CoSySource v@ >t0> 
+  t0 ' F> 'm >t1> ' rho 'm ,/
+  t1 { "lf VM rho } 'm ,/
+  R0 +/
+` rho 'm ,/ 
+  t0
+ | ======================== | Fri.Dec,20171208 | ======================== |
+| 1232 | ( ) | 1615 | 
+ s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> >t0> rho
+| In ./CoSy/SaveRestore.f , changing name ' storelst^ to ' lst>str 
+| likewise ' restorelist to ' str>lst
+[ moved \/ Sat ]
+ s" C:/4thCoSy/lib/net/sockets" F> |  ^eval
+ res> s" C:/4thCoSy/lib/net/sockets" >F
+ needs net/sockets
+  REVAUSERLIB  
+ words~ ~util
+ .~
+ .contexts
+ libdir 
+ os _i
+ | ======================== | Sat.Dec,20171209 | ======================== |
+| really need somebody who understands it to make an example of how to
+| load and use the ./lib/net/sockets vocabulary . Set up 2 local CoSy's 
+| talking to each other .
+| Need to settle on some socket <-> browser "live" editiable TUIGUI .
+| rather than tracking down if all the Bombs in the old IUP interface are 
+| CoSy's or its . It's needed anyway .
+| \/ | .CSV < > CoSy Dictionary Table \/ | 
+ s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> >t0> rho
+  t0 str>lst >t1> dnames 
+ t1 ' rho 'm
+ t1 1 _at ' rho 'm ,/	|>| 14 14 14 14 14 14 
+ t1 1 _at { ['] rho 'm ,/ } 'm 
+ t1 1 _at { -1 _cut } 'm  { ['] rho 'm ,/ } 'm ' rho 'm ,/ |>| 13 13 13 13 13 13 
+ t1 1 _at { -1 _cut } 'm enc t1 1 _at!
+ t1 1 _at rho  
+ t1 s" Date" v@
+ t1 0 _at ' rho 'm 
+ t1 0 _at 0 _at 
 
+ t1 dnames -1 _at 	| bunch of blanks 
+ R0 >T0>
+ t1 T0 v@ 
+ t1 1 _at ' rho 'm
+| t1 1 _at { -1 _cut } 'm t1 1 _at!
+ 
+| Updated and fixed freeing \/  | in  CoSy.f
+: sym>str> ( sym -- str ) .. dup sym>str swap ref0del ; 
+: str>sym> ( str -- sym ) .. dup str>sym swap ref0del ; 
+ AF1  s" SYMBOL" str>sym> lst AF0 	| chked created & freed 
 
+ t1 dnames ' str>sym> 'm enc  t1 0 _at!
+ t1 ` SYMBOL v@
+ T0 lst>str s" C:/CoSyBob/acnts/y17/HBasis.csdt" >F
+ s" C:/CoSyBob/acnts/y17/HBasis.csdt" F>  str>lst >t0>
+ t0 ` Date v@
+ T0 dnames 5 _at DMP
+| somehow the bit count in one symbol in this DT got off by a byte ?!
+ T0 1 _at ' Type@^ 
+ | ======================== | Sun.Dec,20171210 | ======================== |
+| 1156 | | 1448 | 
+ t1 >T0> 
+ T0 dnames sym>str>' "bl MV |>| SYMBOL DESCRIPTION TYPE QTY Basis Date
+ 
+ T0 dnames >t0> ` Basis ?sym
+ t0 4 _at ` Basis strmatch
+ t0 5 _at >t1>
+ t1  DMP cr ` Date DMP
+028DFFC8 01 00 01 00 01 00 00 00 02 00 28 00 00 00 00 00 ..........(.....
+028DFFD8 44 61 74 65 0D 00 00 00 49 23 70 72 E9 98 0C 08 Date....I#pr....
 
+028FCFB0 01 00 01 00 01 00 00 00 00 00 20 00 00 00 00 00 .......... .....
+028FCFC0 44 61 74 65 00 00 00 00 4D 23 71 77 E9 98 0E 00 Date....M#qw....
+ t0 3 _at DMP
+ s" Basis" >t1> bits@ 
+| ' sym>str not fixing bit count .
+
+: sym>str ( sym -- ) TypeC over Type!  dup sym# over cell+ !  byte swap bits! ;   
+
+ t0 { bits@ 8 / _i } 'm
+ t0 sym>str>' { bits@ _i } 'm 
+ t0 
+ t0 5 _at DMP | $20 swap bits!
+ T0 dnames 5 _at   DMP 
+ T0 s" C:/CoSyBob/acnts/y17/HBasis.csdt" >F
+ s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> 
+ T0 1 _at { ['] Type@^ 'm } 'm 	| I'm real happy that this sort of each each works . I don't think recursive { { } } does .
+| Can never remember which . need to make CoSy table | \/ |
+ s" Types " ??
+| a[ Types Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv , ]a
+  s" Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv" s"  , " toksplt
+ R0 >T0> 
+ T0 T0 { ^eval _i } 'm >t0> ,L >t0> 
+ t0 ` sys Dv@ ` Types v!
+ ` sys Dv@ ` Types v@ >t0> ` TypeFl v@ 
+| really neat that /\ is that simple . Strings work as well as symbols -- which I'm coming to see as a superfluous type
+ t0 t0 dnames { v@ fmtI$ } 'R ,/
+ t0 dnames R0 ,L flip
+ | ======================== | Mon.Dec,20171211 | ======================== |
+ s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> str>lst >T0> dnames  
+ T0 dnames sym>str>' s"  \t " MV >t0>
+ T0 0 _at sym>str>' enc T0 1 _at flip cL 
+ R0 "ht ' MV 'L 
+"lf MV  >t0> rho
+ t0 s" /CoSy/tst.csv" >F
+ s" /CoSy/tst.csv" F> -2 _cut >T0> rho
+ T0 -2 _take c>i
+ T0 -2 _cut "nl VM "ht ' VM 'L >t0> 	| need to know if "lf or "lf "cr line delimiter
+ t0 0 _at t0 1 _cut flip ,L >t1>
+ | ======================== | Tue.Dec,20171212 | ======================== |
+| T0 -1 _cut "ht VM "lf ' VM 'L >t0> 	| delimiters not commutable .
+ "nl "ht ,L 
+: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
+ T0 "nl "ht ,L csv>lst lst>DT 
+: lst>DT 1p> dsc R@ 1 _cut flip ,L 1P> ; 
+: csv>DT csv>lst lst>DT ;
+ T0 "nl "ht ,L csv>DT >T1> rho
+| 1435 | 
+ T1 rho
+ T1 1 _at rho
+ T1 1 _at flip 
+: DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
+ T1 DT>lst >t0>
+: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
+ t0 "nl "ht ,L reverse lst>csv 
+
+: tst 2p> ,L L@ R@ ,L ,L 2p> ;
+ s" asf" s" qwer" i( 1 2 3 )i ,L tst
+
+ t0 { "ht MV } 'm | "lf MV >t1> -2 _take c>i
+  R0 >t1> { -1 _at } 'm
+  R0 >t1>
+  t1 ,/ c>i
+  "cr c>i
+ s" C:/CoSy/BobA/acnts/CHK_259bk.CSV" F> >T0> -2 _take c>i
+lst>csv
+ T0 -2 _take c>i
+
+: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
+
+( DT str -- csvStr ) | turns DictionaryTable into .csv format string w str as the delimiter and "lf as the line separator
+  
+
+: csv>DT ( str tok -- DTable ) | converts .csv string w lines delimited by
+| "lf and labels in first line to "Dictionary Table" essentially 
+| equivalent to K's
+ swap VMlf swap ['] VM 'L >aux> 0 _at { dlb dtb } 'm enc aux> 1 _cut flip ,L ;
+ | ======================== | Wed.Dec,20171213 | ======================== |
+| 1319 | ( Consider that CoSy is linearizing and saving ' R every timestamp and 
+ line you execute )
+ ' csv>DT _i
+
+ 
+ 
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
 
  | ######################## | e o current work | ######################## | 
@@ -1541,18 +1718,12 @@ snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 |
   CoSy ref counted lists of lists complementary to other vocs . 
 
        o  Whole system or as component Component
-  
 	
      o Need New TUI . Replace IUP 
 
   o Uses from smart phone environment to hearing aids to modeling the planet
     to "AI" 
   o Python chalenges 
- 
-
-   1 1
-    .
-  cosy.com
   
    Alan Perlis : Epigrams in Programming #9 
   It is better to have 100 functions operate on one data structure than 10 functions on 10 data structures. 
@@ -1563,7 +1734,6 @@ snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 |
   cosy.com/y16/CS(OS)2_1107.html#Scr5
 
   http://cosy.com/Science/ComputationalEarthPhysics.html#YouTubePhysicsDemoFund
-  
 
  ` ToDo ->
  CoSy  tying together systems for High Net Worth Individual .

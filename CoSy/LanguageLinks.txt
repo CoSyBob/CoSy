@@ -6,6 +6,9 @@
   | APL . Object Header |
 
 | --- 
+ https://services.github.com/on-demand/downloads/github-git-cheat-sheet.pdf
+ https://help.github.com/articles/github-glossary/ 
+
 | APL | 
 
  APL Idiom Library . Many useful algorithms 
@@ -57,7 +60,20 @@
  Source/Notes: Quoted in Naomi Hamilton, 
   The A-Z of Programming Languages: Forth, Computerworld (2008-06-27)
   Read more at http://izquotes.com/quote/254129
- 
+  
+ Charles Moore , 1974 , FORTH : A New Way to Program a Mini-Computer 
+  http://articles.adsabs.harvard.edu/full/1974A%26AS...15..497M
+  1970 | http://www.forth.org/POL.pdf
+
+  Ron Aaron's Reva Forth site . Documentation of the Forth CoSy is built in .
+ http://dev.ronware.org/p/reva/
+| Contexts which are not well documented by Ron's ' help 
+ http://dev.ronware.org/p/reva/wiki?name=Contexts  
+
+  Ron Aaron's site for his evolute of Reva Forth  :
+ http://8th-dev.com/
+
+
  http://www.pcorner.com/list/FORTH
   Archive of Forth implementations 
 
@@ -113,6 +129,17 @@ Hamming, "Error-Correcting Codes" (April 21, 1995)
    Yes Pythagoras is right about the physical world . 
    NO about the mental world .  The difference between 2 strings of bits is
    the sum of the differences . It is NOT the sum of the squares . "
+
+
+| \/ |  Mathematics & Physics  | \/ |
+
+I'm reading   Huseyin Yilmaz , 1965 , 
+ https://www.amazon.com/Introduction-relativity-principles-Blaisdell-sciences/dp/B0006BM13M/
+For better understanding of  co- vs contr- variant mappings , I found this . v.g. :
+ http://www.mathpages.com/home/kmath398/kmath398.htm
+
+
+
 
 
 

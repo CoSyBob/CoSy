@@ -1,17 +1,22 @@
  | ###################################################################### |
-                    | ----- |\/| Useful phrases |\/| ----- |
+		| ----- |\/| Useful phrases |\/| ----- | 
+ saveTSclone 	| Save timestamped clone of current environment | 
+
+ ` script0 -> 	| display final startup script for editing . Set display parameters
+  bye 		| close CoSy . If cmd wdo running , restart with Restart .
 
   Dnames  | names of items in _d dictionary ( initially ' R , the Root ) 
  
-  s" aux" ?? 	| Help on any phrase in CoSy scripts
-  s" eval" words>	| defined words containg  ph rase  . use "bl for all words
+  s" nlfy" ?? 	| Help on any phrase in CoSy scripts
+	 	` sys Dv@ ` CoSySource v@ 	| list of scripts searched
+  s" user" words>	| defined words containg  phrase  . use "bl for all words
   
-  | ' forth>  executes raw Forth capturing and returning output |
-  s" see _2nip "  forth> 	| see x86 code for word  	
-  s" help pick help put " forth> 		| Reva Forth help for word . empty for overview
+| ' forth>  executes raw Forth capturing and returning output |
+  s" see pi "  forth> 	| see x86 code for word  	
+  s" help strings " forth> 	| Reva Forth help for word . empty for overview
   s" res> Help " forth> 	| useful for looking at list of related words 
-
-  ` text
+  
+  ` text 
   ` ref 
   ` Addrs 
   ` ToDo 	 ->
@@ -19,31 +24,29 @@
   ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
   
   R0 ->
-  R0 Dv@ VMlf s" ssr" con 
+  R0 Dv@ VMlf s" flip " con 
   R0 Dv@ s" ( " toksplt s" morse" con 
-  R0 Dv@ daylncut s" 20170302" con 
-
+  ` text Dv@ daylncut >t0> s" nlfy" con 
+  t0 rho
   res> >t0> 	| useful after editing list of "See also:" refs in help 
   s"  cr help " t0 nlfy ' cL eachright ,/  spool^ 	| help on each word in res |
   s" help start " shell>
  
-  saveTSclone 	| Save timestamped clone of current environment | 
-
   ` Fact Dv@ dnames 
- s" : Dv@" ??
+ s" restore" ??
   
 | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
 | \/ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ---- | \/ | 
 
   `( ToDo text state LanguageLinks )` >t0> sym>str>' >t0> 
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
-
+ 
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt
 
 | /\ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ----    | /\ |  
 | ~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
 
- s" sym>str>' " ??
+ s" : 1p " ??
 
   ` sys Dv@  ` CoSySource v@
   s" /4thCoSy/CoSy/AltStackOps.f"  F>
@@ -102,6 +105,7 @@
  t0  0 _at s" /" cL  t0  i( 1 2 )i at ' cL 'R
 | /\ | 
 
+ s" //Cosy1511/c/CoSy-4thCoSy/CoSy/CoSy - Copy (2).csy"
 
  R0 restorefile >t0> ' rho 'm 	| check shapes for integrity .
  
@@ -132,11 +136,11 @@
 | \/ \/ \/ | for checking Allocate - Free matching | \/ \/ \/ |
  t0 L|R cL
  AF1    |ymd.hm| str>pad_ type  AF0 | >t0>   | turn on off  allocates frees 
- AF1 s" ?? " ?? AF0
+ AF1   5 _iota { . cr } 'M  AF0
  t0 DMP
  AF> +-splt  ' rho 'm ,/ ' = acrossI
  s" across" ??
- AF> fmtI
+ AF> fmtI 
  10972264 DMP
  AF> +/
  AF> rho  

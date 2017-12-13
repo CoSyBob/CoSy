@@ -47,7 +47,9 @@ cr ." | SaveRestore begin | " type cr
  
 ' ((storelst)) is  (storelst)
 
-: storelst^  storelst --aab str swap free ;
+: lst>str ( list -- string )  storelst --aab str swap free ;
+| main transformation between CoSy list structure an string .
+| This and its inverse were the start and heart of CoSy .
 	
 | ======== |
 
@@ -107,7 +109,8 @@ defer (rstrlst)
  
 ' ((rstrlst)) is (rstrlst)
  
-: restorelist ( str -- dic ) dup vbody restorelst swap ref0del ;
+: str>lst ( str -- dic ) dup vbody restorelst swap ref0del ;
+| converts string to CoSy list of lists 
 
 : (restorefile) ( a n -- lst )
   slurp 0if drop z" (restorefile) : file empty or non-existant " throw then 

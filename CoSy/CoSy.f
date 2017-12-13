@@ -382,8 +382,6 @@ i( )i refs+> constant zild	| 0 iota
 : absi ['] abs eachMir ;	| abs
 : -0+i ['] sn eachMir ;		| sign 
 
-| : _modi ['] _mod eachDfr ;	| _mod 2 **** vecs 
-
 : 0=i ( int -- bool )  i0 =i ; | essentially "not" 
 : -1*i ( int -- negate ) i-1 *i ; 
 
@@ -599,6 +597,11 @@ cr ."  \\/ each \\/ " $.s cr
   0 ?do over i if@ dup execute aux@ i if! loop
   drop refs- aux> ; 
  
+: eachMfir ( RA fn --  r ) 
+  over refs+> i# dup intVecInit >aux
+  0 ?do over i if@ dup execute aux@ i ii! loop
+  drop refs- aux> ;   
+  
 : eachDfr ( LA RA fn -- r ) 	| each Dyadic on floats , resulting 
   -rot 2dup 2refs+> longer_ dup floatVecInit >aux
    0 ?do over i if@ dup i if@ 2 pick execute aux@ i if! loop
@@ -629,7 +632,7 @@ cr ."  \\/ each \\/ " $.s cr
 : ^f swap ['] f^ eachDfr ;	| LA ^ RA . Note arguments swapped from Intel order to standard 
  
 : 1%f ['] 1/f eachMfr ;
-: floor ['] ffloor eachMfr ; 	| 3.14 -> 3.00  
+: floorf ['] ffloor eachMfr ; 	| 3.14 -> 3.00  
 : absf ['] fabs eachMfr ; 		| -n.m -> n.m 
 : sqrtf ['] fsqrt eachMfr ; 
 : fracf ['] ffrac eachMfr ; 
@@ -655,6 +658,8 @@ cr ."  \\/ each \\/ " $.s cr
   dup i# dup floatVecInit temp !
    0 ?do dup i ic@ temp @ i ix swap s>f f! loop 
   ref0del temp @ ; 
+ 
+: f>i ( floatVec -- intVec ) ['] f>s eachMfir ; 
 
 | \/ OTHER \/	 
 0 [IF]
@@ -667,9 +672,9 @@ $4d7e6d value TypeInterval		| " m~M" ( min to Max )
 cr ."  \\/ raw fn types \\/ " $.s cr
 | \/ RAW FN TYPES  \/ \/ \/
 
-$10000 constant TypeV		| verb
-$20000 constant TypeA		| Adverb
-$40000 constant TypeFv		| FORTH verb
+$10000 constant TypeV 		| verb
+$20000 constant TypeA 		| Adverb
+$40000 constant TypeFv 		| FORTH verb
 
 |  Fns have no names just symbols associated thru dictionary .
 
@@ -1291,7 +1296,7 @@ alias: _ cut
 | : toksplt 2p> swap cL R@ prior toksplt 1 _cut 2P> ; 
 
 |  name from APL " Vector to Matrix " 
-: VMbl : nlfy  "bl toksplt ;	| using Rick Trice's fn name .
+: VMbl "bl toksplt ; 
  
 : VMnl ( str -- list_of_strings_split_on_cr ) "nl toksplt ;
 |   Vector to Matrix on "newlines" . 
@@ -1574,7 +1579,8 @@ needs SaveRestore.f
 
 : >at!> rep dup at! ; 
 
-: sym>str> rep dup sym>str ; 	: str>sym> rep dup str>sym ; 
+: sym>str> ( sym -- str ) .. dup sym>str swap ref0del ; 
+: str>sym> ( str -- sym ) .. dup str>sym swap ref0del ; 
 
 | \/ | Result returning version on shallow lists 
 : sym>str>' rep { dup sym>str } 'm ; 
