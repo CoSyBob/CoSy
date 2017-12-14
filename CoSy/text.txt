@@ -1673,16 +1673,27 @@ lst>csv
 
 ( DT str -- csvStr ) | turns DictionaryTable into .csv format string w str as the delimiter and "lf as the line separator
   
-
 : csv>DT ( str tok -- DTable ) | converts .csv string w lines delimited by
 | "lf and labels in first line to "Dictionary Table" essentially 
 | equivalent to K's
- swap VMlf swap ['] VM 'L >aux> 0 _at { dlb dtb } 'm enc aux> 1 _cut flip ,L ;
+ 
+| 20171213.1629 |( Added notes : the equivalent old K.CoSy | see http://cosy.com/K/CoSy/K_CoSy.htm
+ csv2DT	: { ltab2dic @ + csvcutD[ x ]' y } \ splits y on char x \ 
+ ltab2dic : { tab2dic[ ` $ in[ ; ALPHabet , DIGITS ]' *:' x ; 1 _' x ] } \ convert labeled table to dictionary \
+ csvcutD : { ( nq 1 _ )' ( & uq[ d ] & d = x ) _ d : x , y } \ split values y separated by character x \
+
+ dic2csv : { tab2csv[ x ] dic2ltab y } 	\ convert columns of y to csv format using delimiter x 
+ dic2ltab : { { ( ! x ) ,' x[] } x } \ Converts dictionary to Table Labeled with each var name prepended to its value 
+ tab2csv : { MV[ x ]' ( $ + y ) }  \  convert columns of y to csv format using delimiter x
+
+You can see they are comparable in size and even similar in structure . 
+Admitedly , csvcutD in particular does more and needs some words yet to be translated  )|
+
  | ======================== | Wed.Dec,20171213 | ======================== |
 | 1319 | ( Consider that CoSy is linearizing and saving ' R every timestamp and 
- line you execute )
- ' csv>DT _i
-
+| line you execute )
+| saving to GitHub | 1500 |   
+ 
  
  
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
