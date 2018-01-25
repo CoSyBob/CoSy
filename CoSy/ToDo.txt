@@ -5,12 +5,12 @@
 Bugs : 
 | The debilitating bug with the IUP interface is worth 5 shares |
 
-
 | Below not necessarily in order of importance 
+ o Integrate Sockets | https://github.com/CoSyBob/CoSy/blob/4thCoSy/lib/net/sockets
  o Extend  ' v@ and ' v! to simple lists . currently works just on general .
    | eg |  ` Types Dv@ ` TypeS v@  | bombs
  o s" ... " limit 255 bytes 
- o Max float formatting 1.e18 . no exponential format 
+ o Max float formatting 1.e18 . need Floating exponential formatting .
  o Can't save when R0 is { ' Fact v@ } 
  o ' i! needs to check ref counts 
  o could be optimization by reversing order of args  of VecInit  
@@ -26,7 +26,6 @@ Bugs :
  o F3  " |>| " result output fix looks easy 
  o parsing of  ` (  lists .
  o Functionalize ` lst | remove top nesting layer so reads as written .
- o Floating exponential output .
  O words>  into real fn
  o make (spool) nestable .
  o make  {  }  true nestable quotations .
@@ -34,11 +33,13 @@ Bugs :
  o make ctrl-S ( shift S ) save timestamped copy of R 
  o need to change defs of ' cut ' cut*  to match ' at ' at\
  o make sF11 enclosed comment like F11 , eg : | 20170215.1503 | see that date .
+ o factor delimiter ' emptyLn out of (CShelp) & related to allow , eg : "lf 
+
 
 ( | VOCABULARY NEEDED | APL concepts ~ yet implemented )
  unique aka nub  and there relatives 
  sort
- match 
+ match | generally done .
 
 
 
@@ -73,17 +74,3 @@ example lists :
 ( greek grocery ; 1843 Briargate Blvd. , w of N Academy )
 ( Schnitzel Fritz ; 4037 Tutt Blvd Colorado Springs CO 80922 ;
  Phone: (719) 573-2000 ; Website: http://www.SchnitzelFritz.com ) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -6,9 +6,8 @@
  On a blank line below : tap F12 . tap  Enter .  
 			 write something . tap F11 .
  __________________________________________________________________________
- 
-
-
+    
+  
 
 
  __________________________________________________________________________
@@ -20,7 +19,7 @@
  | \/ \/ \/ |  F6 executes the line under the cursor 	   | \/ \/ \/ |
  | The syntax of Forth is  { parse-a-word doIt repeat }    |
  | \/ | Put the cursor on lines below and tap F6      | \/ |
-
+ 
   s" Hello World " 
   
   s" Hello World " reverse
@@ -92,7 +91,8 @@ F1 : Key Help  	| Tapping the F1 key lists all key shortcuts .
  | ====================================================================== |
  | \/ \/ \/ |   4th.Cosy ( F6 )    | \/ \/ \/ |
      
-  ` IntroHelp -> 	| Stale . dating back to 2006 .	
+ ` help -> 
+ ` IntroHelp -> 	| Stale . dating back to 2006 .	
   ` examples ->
 
   s" ./IntroHelp.txt" F>
@@ -115,20 +115,6 @@ But if you are excuting raw Forth and watch things on the stack
    | related words at the end of a definition . I often edit down the res
    | contents down to these lists and then sF6 this line to display them all .
 
-  | /\ /\ /\ |   Raw Reva Forth ( sF6 )    | /\ /\ /\ | 
-  | ====================================================================== |
-  | \/ \/ \/ |  WEB ( cF9 )  | cF9 on URL below to open in ` BROWSER  | \/ |
-
-  ` BROWSER -> 	| Browser used by cF9 ' www . Be sure no trailing empty lines
- 
-   http://cosy.com/CoSy/4th.CoSy.html
-   http://cosy.com/CoSy/4thCoSy/RevaHelp.htm
-   http://dev.ronware.org/p/reva/
-   http://www.tecgraf.puc-rio.br/iup/
-   http://cosy.com/CoSy/4thCoSy/Help.html 	
-   http://astro.pas.rochester.edu/Forth/forth-words.html
-
-  | /\ /\ /\ |  WEB ( cF9 )  | /\ /\ /\ | 
  | ======================================================================= |
 
 			| EVERYTHING is a LIST | 
@@ -170,7 +156,7 @@ Some numerical examples :
 | text>  s" ./CoSy/y2015.txt" >F  | save text to file
   ` TekLogArk Dv@ >t0>
   s" ./CoSy/y2015.txt" F> >t0>
-  t0 daylncut s" f?" con	| search for occurace of phrase |
+  t0 daylncut s" job" con	| search for occurace of phrase |
   s" ./CoSy/y2016.txt" F>
   text> VMlf s" | =======" con
   res> s" ./CoSy/y2016.txt" >F
@@ -1693,16 +1679,307 @@ Admitedly , csvcutD in particular does more and needs some words yet to be trans
 | 1319 | ( Consider that CoSy is linearizing and saving ' R every timestamp and 
 | line you execute )
 | saving to GitHub | 1500 |   
- 
- 
- 
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ | ======================== | Sat.Dec,20171216 | ======================== |
+| 1500 | I've evolved to keeping a ledger of my transactions , particularly 
+ by noting upcoming payments due as , eg :
+  ` BHEnergy 104.32 _f cL 
+ in my calendar on the day due , then when the day comes and I pay it fleshing
+ it out to , eg :
+  20171216.1526 _f ` PSBank ` BHEnergy 104.32 _f s" gas " 4 times cL 
+ where ' times is a Reva word .
+ The items are 
+  ` TimeStamp ` From ` To ` amount ` note  4 times cL
+ Down in ` state , I keep a number of accounting related lines including first
+  ` LedgerList R0 enc Dv_cL 	| append item from day 
 
+  ` LedgerList Dv@ >T0>  reverse 	| check posted 
+ But sometimes I don't have a note , so here I'm cleaning up , ie : adding 
+ an empty string to any items which don't have notes so I can convert it
+ to a .csv for output and reconciliation with my legacy K.CoSy accounts .
+ Reading the list from my personal CoSy .
+  s" C:/CoSyBob/CoSy/CoSy.csy" F> str>lst ` LedgerList v@ >T0> rho |>| 74 
+ Which ones just have 4 items 
+  T0 ' rho 'm ,/ 	|>| 4 4 4 4 4 5 5 4 4 4 4 4 5 5 4 5 5 5 5 4 ...
+  R0 4 _i =i & >T1> 	|>| 0 1 2 3 4 7 8 9 10 11 14 19 ...
+ So those are the items we want to modify .  
+  T0 t0 { ix _i } 'R >t1> 	| addresses of selected items
+ | ======================== | Sun.Dec,20171217 | ======================== |
+| continuing :
+  T0 T1 { ix _i } 'R >t1> 	| addresses of selected items
+  t1 dsc >_ dup @ zic cL swap rplc 	| Worked !
+| pulling it together :
+  
+: @x! ( lst idx f -- lst ) | applies ' f to indexed items in ' lst .
+ >aux   >t1> 
+ T0 T1 at 
+: tst zic cL o ; 
+ T0 T1 0 _at at tst
+ T0 T1 at ' tst 'm >t0>
+: @x! >aux { ix dup @ o aux@ execute o swap rplc o cr zic } 'm auxdrop ;
+ T0 T1 { zic cL o } @x! 
+ see i#
+ | ======================== | Mon.Dec,20171218 | ======================== |
+ s" : rotate" ?? 	| ' rotate failing on floats 
+ f( 0 1 2 3 4 )f 2 _rotate 
+ i( 0 1 2 3 4 )i >t0> 2 _rotate
+| Was failing because ' if@ and ' if! work from float stack w nothing on stack .
+| fixed by copying logic of ' reverse .
+| 1856 | 
+ | ======================== | Tue.Dec,20171219 | ======================== |
+: @x! >aux o { ix dup @ o aux@ execute o swap rplc $.s cr ev } 'R auxdrop ;
+: t0 zic cL ;
+: tst { ix dup @ o t0 execute o swap rplc $.s cr ev } 'R ;
+| !!! problem because " each " fns use ' aux stack !!! |
+| updating " each " fns w stack frame versions 
+
+: 'd >r 2p r> LR@ longer_ ev swap 0 ?do L@ i _at R@ i _at l0@ execute cL loop 2P> ; 
+ AF1  5 _iota s" as" { cL enc } 'd lst AF0  | works & clean first time 
+
+ T0 T1 { zic cL } @x! 
+  ` tstScript Dv@ s" /CoSy/temp.txt" >F
+  s" /CoSy/temp.txt" shell^
+ ` tstScript ->
+  ` tstScript Dv@   ^eval  
+
+: tst >r 2p r> l0@ 2P> ; 
+  s" zero " s" 1 " s" r " tst
+ T0 T1 { i@  } 'R 
+ 
+: tst 0do i _i loop ;
+  0 tst 
+ | ======================== | Thu.Dec,20171221 | ======================== |
+ see 'R
+: tst0 nip _i ;  
+ s"  ' tst0 $. " forth>  | $634B54 
+
+ T0 T1 { _at s" " cL } 'R
+  sp 
+ 1 _i
+
+ | ======================== | Sun.Dec,20171224 | ======================== |
+| ' 'R  seems working . removing traces & replacing in CoSy.f | 
+: 'R : eachright ( LA RA fn -- R )
+  | iterates over raw items of RA . result of fn must be a CoSy object 
+  >r 2p r> $.s cr | fntype TypeFl =if z" nonce " throw ;then 	| Floats are sui generis
+    R@ i# l0@ $.s cr fntype VecInit 
+    dup i# 0 $.s cr ?do L@ R@ i i@ l0@ $.s cr execute refs+> l1@ i i! loop 
+   l1@ $.s cr o 2P> ;
+ T0 T1 { ix dup @ s" " cL swap rplc ev } 'R
+ T0 T1 at
+ T0 rep >t0> T1 at
+: @x! >aux { ix dup @ aux@ execute swap rplc ev } 'R refs- auxdrop ;
+  t0 T1 { s" " cL } @x!
+ t0 ' rho 'm ,/
+| ! Working !  Simpler tha APL or K ! | 2030 | 
+ t0 >T0>
+ s" T0  lst " forth> rho
+"lf "ht ,L lst>csv 
+ | ======================== | Mon.Dec,20171225 | ======================== |
+| need to "hack" general format fn by "capturing" output of ' lst which 
+| foolishly directly outputs rather than formatting then outputing .
+: FMT >aux s" aux@ lst " forth> auxdrop ;
+| tested w AF1 AF0 for cleanup .
+ T0 dsc { FMT -1 _cut } 'm  >t0>  | each item ends w "lf . 
+| 1203 | (nonce) et al bombings 
+ 
+  s" C:/reva201101/lib/ui/gui" F> >t0> rho
+  s" C:/4thCoSy/lib/ui/gui" F> >t1> rho
+ t0 t1 ,L ' rho 'm
+  t0 t1 ' VMlf on2 
+ t0 t1 ,L ' rho 'm
+ see sp 
+ 1 2 3 
+ . . . 
+ | 1406 | 
+ | ======================== | Fri.Dec,20171229 | ======================== |
+  sp .  | 4356208 
+  sp _i
+  t0 
+ help catch 
+ | ======================== | Sat.Dec,20171230 | ======================== |
+ | ======================== | Sun.Dec,20171231 | ======================== |
+ | ======================== | Sun.Jan,20180107 | ======================== |
+Going to see if I can go directly to redirecting ' exception | 1418 | 
+
+ see exception
+ ' (see) _i
+
+ words~ ~sys 
+ see defer
+ | ======================== | Thu.Jan,20180111 | ======================== |
+| 1422 | 
+| : tst ( f( start increment )f n -- a )  | bombs . ` ( ` ) ,L not nestable .
+| : apvi ( start increment n -- a ) iota *i +i ;  | renamed from ' apv .
+: _apv _i : apv ( start increment  n -- a ) iota i>f *f +f ; 
+| in answer to | https://www.facebook.com/groups/sliderule/permalink/1606225782797059/?comment_id=1606336892785948&reply_comment_id=1606480706104900&comment_tracking=%7B%22tn%22%3A%22R0%22%7D
+| 10. 1. 2_f  10 _apv 1.15 _f *f
+ 
+ | ======================== | Fri.Jan,20180112 | ======================== |
+| 1113 | [ 20180115.1616 | Should have looked for ' noop 
+ | see | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1823768547923171/ | ]
+ 10. 1. 2_f  10 _apv { 1.15 _f *f } 
+: tst  { }  { 1.15 _f *f } 
+ ' NOOP _i  |>| 0 
+: :; ; 	| Do nothing .
+ ' :; _i
+: tst 1p 
+  ' :;  { 1.15 _f *f }  2_i cL >t0
+| t0 dsc t0 0 _at match  |>| 1  | just a check that my definitions match .
+ t0 dsc  >_ _i
+  see (see) 
+ " :;"  
+  find
+ DMP
+ | ======================== | Sat.Jan,20180113 | ======================== |
+| 1226 | 
+|  50L  | did not remember have double int vocab defined somewhere 
+ s" needs " ?? 
+| cleaned up manually 
+ res> >T0> 
+ T0 ` sys Dv@ ` needsList v! 	| list of ' needed scripts
+ ` sys Dv@ ` needsList v@ 	| Nice that this works so simply . 
+ 0 5  d.
+ | ======================== | Sun.Jan,20180114 | ======================== |
+| Was diverted by fact that I didn't recognize use of " 0L " in Reva.f script 
+| had totally forgotten that Reva supports doubles & really could find no help
+| have done a little editing of 
+ ` help 	->
+| considerably more needed . including mirroring Reva wiki .
+| in any case , the full discription of Reva's numbers is at 
+ http://dev.ronware.org/p/reva/wiki?name=Numbers
+| Note doubles are not integrated as a type in CoSy .
+ | ======================== | Mon.Jan,20180115 | ======================== |
+| 1400 | re /\ | Type ` complex more important than ` double . /\ |
+| Re :  https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1825004464466246/
+   5 3 2_i take ' +i across^ 	| works 
+: multiply ( i i -- f ) take +/ ; 	| actually f i . But only i i commutes .
+| settled on  ' ./  for ' across . Still need to clean up vocabulary .
+: ./ across^ ;
+ 5 3 2_i  multiply |>| 15 
+| Back to slide rule .
+  ' :;  { 1.15 _f *f }  2_i cL >t0
+ t0 {  s" 10 disassemble " forth> } 'm
+ t0 dup  fmtI$ ,L flip
+ t0 1 _at >_ 10 disassemble
+ t0 0 _at 
+ t0  
+
+ 10 disassemble 
+ 6448996 10 disassemble
+6507346 10 disassemble
+ | ======================== | Tue.Jan,20180116 | ======================== |
+ | ======================== | Wed.Jan,20180117 | ======================== |
+ ' :;  { 1.15 _f *f }  2_i cL >t0>
+ t0 { _i } 'm ,/ 	|>|  6448996 6507328 
+ s" 6448996 10 disassemble " forth> 
+: dasm ( adr n -- str ) cL fmtI "bl MV s"  disassemble " cL forth> ;
+  t0 { 10 2_i dasm } 'm
+| see how a " simple " Q like making a slide rule can lead down more general enhancements|
+| adding ' dasm to  Furniture.f 
+  5 _iota i>f >t1> t0 1 _at >_ xeq
+{ .s cr xeq } 'm |  ' :; { 1.15 _f *f } xeq
+  t1  t0 { xeq } 'R
+| was hung up on 'm because arg was actually fn list | 1754 | 
+  10. _f 
+ f 10. f 20. f*  _f
+ 10. fln _f 10 _i fmtnF
+: lnf ['] fln eachMfr ; 	| ` SlideRule propmting finally implemented logs 
+  1. 10. 2_f 
+ | ======================== | Thu.Jan,20180118 | ======================== |
+  ' :; _i  { 1.15 _f *f } _i cL ' c>f _i cL >t0>  |>| 6448996 6507436 6489768 
+  0. .5 2_f 5 _apv >t1 
+  t1 t0 ' xeq 'R
+  
+ res> >t0> rho
+ t0
+ | ======================== | Fri.Jan,20180119 | ======================== |
+  ' :; _i  { 1.15 _f *f } _i ' c>f _i 2 times cL >t0> 
+ see peek   see poke 
+: onN ( a b c ... N f -- f on each a b c ... ) >aux 0 ?do i pick aux@ xeq i put loop auxdrop ;
+ 1 2 3 3 ' _i onN cL cL 
+
+: tst >aux 1 0 do aux@ loop aux> ; 	| return stack used by do loop . use aux
+| 1301 |  Responses to Roger Levy @ | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1826322497667776/?comment_id=1827174690915890&reply_comment_id=1827181157581910&comment_tracking=%7B%22tn%22%3A%22R3%22%7D
+  s" c:/games/blerch" s" c:/games/kpekl" ,L { s" /" VM } 'm 
+( 
+ ( 
+  c:
+  games
+  blerch
+ ) ( 
+  c:
+  games
+  kpekl
+ ) )
+ s" ../" s" c:/games/kpekl" s" /" VM -1 _at cL
+ s" c:/games/kpekl/data/audio"  s" c:/games/kpekl" rho 1 _i +i cut 
+ ~> "data/audio 
+ s" c:/games/kpekl/data/audio"  s" c:/games/kpekl" ,L { s" /" VM } 'm 
+ R0 0 _at R0 1 _at rho  cut  s" /" MV
+| 1347 | | 1537 | 
+: tst >r >r dup r> r> swap ;    | Danny uses .  --aacb | 
+ 1 2 3 tst |>| 1 1 3 2 
+ s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
+ s" " words> >t0> rho |>| 783 
+ newwdo  2_i cL >T0>
+ T0 0 _at >_   600 200 showXY 
+ T0 1 _at\ >_ gettxt  
+ ' dlgH 
+ closedlg 
+ | ======================== | Sun.Jan,20180121 | ======================== |
+ dlgH @ _i 
+  dlgH z" K_F3" ['] svtxt IupSetCallback drop
+
+  s" sqrt" ??
+  655. fsqrt _f 18 _i fmtnF |>| 25.592967784139454896
+: poly 2p L@ R@ L@ rho iota i>f ^f *f +/ 2P> ;
+  f( 2 3 4 5.5 )f reverse >t0> 	|>| 5.50 4.00 3.00 2.00 
+  t0 10. _f poly 	|>| 2345.50 
+  .00000001 1. 2_f 11 _apv >t1> 
+  t0 t1 { _f poly } 'R ,/  |>| 5.50 14.50 41.50 98.50 197.50 350.50 569.50 866.50 1253.50 1742.50 2345.50 
+ t1 rho
+  ev >R0
+  .00000001 _f 4 _iota i>f ^f *f +/
+  1. 0. f^ _f
+  .0001 f2^ _f
+  3. 10. f^ _f 
+ | ======================== | Tue.Jan,20180123 | ======================== | 
+  
+ s" C:/4thCoSy/CoSy/math.f" F> >t0> 
+ t0 ^eval
+ ' dot _i
+ t0
+
+  f( 3.2e7 1 -1 8.0e7 )f f( 4.0e7 1 -1 -1.6e7 )f dot 10 _i fmtnF
+  2. _f f( 16 24. )f ^f reverse
+ 
+: fldl2t inline{ D9 E9 } ;
+ see fldl2t 
+ fldl2t _f 
+| 1641 | 
+: fl10 	| F: f -- ln(f) | Floating point log base e.  | fldl2t; fxch; fyl2x
+: fl10 inline{ D9 E9 D9 C9 D9 F1 } ;
+  10. fl10 _f
+  10. fln _f
+: fxch  inline{ D9 C9 } ; 
+  1. 2.  2_f cL
+ help fln 
+ 1. fln _f 18 _i fmtnF 
+ | ======================== | Wed.Jan,20180124 | ======================== |
+Saving copy 
+ 
+
+
+ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ ` tstScript -> 	| Test script for interactively editing multiline fns
+  ` tstScript Dv@   ^eval 	| save . Then execute to redefine .
+   forgettst
+  
  | ######################## | e o current work | ######################## | 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
  SCRIPT THOTS |
-
+  1.e19 f.
 
    ? Know APL ? | Concatinative languages - Joy 
   Recursive defs . 

@@ -44,7 +44,8 @@
  Arthur Whitney's K ; http://kx.com/ | the foundation of K.CoSy and
   "template" for much of the essential structure of 4th.CoSy .
  
- Essentially the total vocabulary of K.CoSy : http://cosy.com/K/CoSy/K_CoSy.htm
+ Essentially the total vocabulary of K.CoSy : 
+  http://cosy.com/K/CoSy/K_CoSy.htm
 
 | Forth | 
  
@@ -69,6 +70,14 @@
  http://dev.ronware.org/p/reva/
 | Contexts which are not well documented by Ron's ' help 
  http://dev.ronware.org/p/reva/wiki?name=Contexts  
+
+
+|\/| sources of K & Kona  algorithms |\/|
+
+https://github.com/kevinlawler/kona/wiki/Idioms#combinatorics
+http://nsl.com/k/perm.k
+http://kxcommunity.com/?_ga=1.80878295.1317536316.1442414254
+
 
   Ron Aaron's site for his evolute of Reva Forth  :
  http://8th-dev.com/
@@ -137,6 +146,9 @@ I'm reading   Huseyin Yilmaz , 1965 ,
  https://www.amazon.com/Introduction-relativity-principles-Blaisdell-sciences/dp/B0006BM13M/
 For better understanding of  co- vs contr- variant mappings , I found this . v.g. :
  http://www.mathpages.com/home/kmath398/kmath398.htm
+
+
+
 
 
 
