@@ -38,14 +38,12 @@ alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 : --abca	2 pick ;
 : --abac	2 pick swap ;
 : --acab	2 pick rot ;
-: --acdb 	2swap rot ;
 : --abcda	3 pick ;
 : --abcab	2 pick 2 pick ;
 : --bab		dup -rot ;
 : --bba		tuck swap ;		| or | dup rot 
 : --bc		rot drop ;
 
-: --c		nip nip ;
 | : --ca 		-rot drop ; 	| For some reason defining this name causes IUP to bomb on any execute ? 
 : --cba		swap rot ;
 : --cabd 2swap rot ;
