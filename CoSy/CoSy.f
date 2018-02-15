@@ -368,8 +368,8 @@ i( )i refs+> constant zild	| 0 iota
 : *i ['] * eachDir ;	| * 2 integer vecs 
 : /i ['] / eachDir ;	| div 2 integer vecs 
 : _modi ['] _mod eachDir ;	| _mod 2 integer vecs 
-: /\ : mini ['] min eachDir ;	| min 2 integer vecs . "or" on booleans . 
-: \/ : maxi ['] max eachDir ;	| max 2 integer vecs . "and" on booleans .
+: \/ : mini ['] min eachDir ;	| min 2 integer vecs . "or" on booleans . 
+: /\ : maxi ['] max eachDir ;	| max 2 integer vecs . "and" on booleans .
 
 : =i ['] =I eachDir ;	| = ( Iverson logic ) 2 integer vecs 
 : <>i ['] <>I eachDir ;	| not equal ( Iverson logic ) 2 integer vecs 
@@ -636,6 +636,8 @@ cr ."  \\/ each \\/ " $.s cr
 : absf ['] fabs eachMfr ; 		| -n.m -> n.m 
 : sqrtf ['] fsqrt eachMfr ; 
 : fracf ['] ffrac eachMfr ; 
+: lnf ['] fln eachMfr ; 	: l10f lnf 10. _f lnf %f ; 
+
 
 : f^2 fdup f* ; 	| not defined in lib/math/floats .
  | Much more efficient than { rep *f }  . Just 2 x87 instructions .
@@ -783,21 +785,12 @@ cr ."  \\/ ops \\/ " $.s cr
 
 : ^eval ( str -- ? ) >r> van eval r> ref0del ;
 
-a[ byteFns  ]a
+| a[ byteFns  ]a
 
 a[ intFns ' + , ' - , ' * , ' / , ' _mod , ' = , ' =I , ' and , ' or , ' <>I , ' >I , ' <I , ' 0=I , ' negate , ' @ , ' i# , ' i@ , ' i! , ' refs@ , ' bits@ , ]a
 
 a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
    ' ftan , ' fatan , ' fnegate , ' f0 , ' f1 , ' fpi , ' fabs , ' fsqrt ,  ]a
-
-a[ lstFns ]a
-
-a[ nilfns ' _n , ]a
-
-
-a[ Types Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv , ]a
-
-a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a 
 
 : verb? dup _n =if false ;then ( Type TypeV TypeA TypeFv or or ) $70000 and ;  
 : noun? verb? not ; 
@@ -819,12 +812,12 @@ a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a
     | otherwise , just returns . 20090809.1347 
 
 : _at\ ( Lst idx -- items ) _i    : at\ ( v i -- v )  
-| fundamental indexing fn .
-  dup i# --abca Type@ VecInit >aux>  i#		| v r #
+| fundamental indexing fn . Always returns enclosed list of enclosed item dup i# --abca Type@ VecInit >aux>  i#		| v r #
    0 ?do 2dup i i@ i@ aux@ i i! loop
    aux@ v?refs+ 2ref0del aux> ;
 
-: _at _i : at ( v i -- v ) | discloses if singlton index | 
+: _at _i : at ( v i -- v ) | discloses if singlton index . 
+| no diference on simples . Try | Dnames 1 _at\ | vs | Dnames 1 _at | 
     dup i# >r at\ r> 1 =if dsc then ; 
 
 : _at! _i : at!  ( v0 v i -- ) | insert elements of v0 at locations i in v 
@@ -847,20 +840,18 @@ a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a
    i# 0 ?do 2 pick i i@ 2 pick i i@ 2 pick execute aux@ i i! loop
    aux@ v?refs+  drop 2refs- aux> ; 
  
-
-   
 : 'L : eachleft ( LA RA fn -- R )	| execute fn using RA over each item of LA
    dup fntype TypeFl =if z" nonce " throw ;then 	| Floats are sui generis
    --abcab 2refs+ 2 pick i#  over fntype VecInit >aux>
     i# 0 ?do 2 pick i i@ --abcab execute refs+> aux@ i i! loop
 	drop 2refs- aux> ;
-
+ 
 : 'R : eachright ( LA RA fn -- R )
   | iterates over raw items of RA . result of fn must be a CoSy object 
-   dup fntype TypeFl =if z" nonce " throw ;then 	| Floats are sui generis
-   --abcab 2refs+ over i# over fntype VecInit >aux>
-    i# 0 ?do --abcab i i@ 2 pick execute refs+> aux@ i i! loop
-	( aux@ v?refs+ ) drop 2refs- aux> ;
+  >r 2p r> | fntype TypeFl =if z" nonce " throw ;then 	| Floats are sui generis
+    R@ i# l0@ fntype VecInit 
+    dup i# 0 ?do L@ R@ i i@ l0@ execute refs+> l1@ i i! loop 
+   l1@ 2P> ;
 
 : aaplym ( LA fn -- r ) 
    swap 1p 
@@ -975,7 +966,7 @@ variable indentv   : indent indentv @ spaces ;
    aux@ i# 2 ?do aux@ i _at\ auxx@ execute loop
    aux> refs- auxdrop ; 
  
-: across^  ( RA fn -- r ) | result returning "/"  on CoSy obs
+: ./ : across^  ( RA fn -- r ) | result returning "/"  on CoSy obs
    over i# 0if drop ref0del z" nonce : empty , needs prototype " throw ;then 
    over refs+> >r> i0 at\ r> i1 at\ --abca execute >aux
 | aux@ . ." here " $.s cr
@@ -1078,8 +1069,10 @@ variable indentv   : indent indentv @ spaces ;
    2p> swap -i iota L@ +i 2P> ;
   | was til 20141221.2349 | 2dup swap -i _iota nip swap _i ['] + each ; 
 
-: apv ( start increment n -- a ) iota *i +i ;
+: apvi ( start increment n -- a ) iota *i +i ;
 	| IBM's Arithmetic Progression Vector . Affine transform of  iota n .
+ 
+: _apv _i : apv ( start increment  n -- a ) iota i>f *f +f ; | floating 
 
 : mem>iv ( adr n -- obadr )     | copy n cells from memory to IV
   dup intVecInit >r> 0 ix swap cells move r> ;
@@ -1110,11 +1103,11 @@ variable indentv   : indent indentv @ spaces ;
 
 : rotate >_ : _rotate ( v n -- v )		| i( 0 1 2 3 4 )i 2 -> i( 2 3 4 0 1 )i 
    >aux dup v#@ VecInit
-    dup @ if ( SIMPLE ) dup i# 0 ?do over i aux@ + i@ over i i! loop 
+    dup @ if ( SIMPLE ) dup i#
+     over Type@ TypeFl =if 0 ?do over i aux@ + i@ dup i i! loop 
+               else 0 ?do over i aux@ + i@ over i i! loop  then 
 	 else ( LIST ) dup i# 0 ?do over i aux@ + i@ refs+> over i i! loop then
    auxdrop swap ref0del ;
-
-| cr  ." --- " ." Stk : "  $.s  cr 
 
 : sublist ( lst i0 i1 -- lst )	| returns substring from i0 to i1 - 1
   2dup >if Head# drop z" sublist : i0 must not be greater than i1 " throw ;then 
@@ -1123,8 +1116,6 @@ variable indentv   : indent indentv @ spaces ;
   aux@ v?refs+ 
   | aux@ @ 0if aux@ i# 0 ?do aux@ i i@ refs+ loop then 
   ref0del aux> ;
-
-." pretake " 
 
 : _take ( v n -- r )		| APL take / reshape , just lists 
    ?dup 0if 0 over Type@ VecInit swap ref0del ;then | n = 0 , return empty 
@@ -1138,8 +1129,6 @@ variable indentv   : indent indentv @ spaces ;
 	 --aab 0 <if dup vbytes + Head# cells + aux@ vbytes - aux@ van move 
      else vbody aux@ van move then 
    then aux@ v?refs+ ref0del aux> ;
-
-$.s cr
 
 | Kludge fix of bug in Reva  ' search on some strings 
 : search ( a1 n1 a2 n2 -- a3 n3 true | false ) 
@@ -1163,9 +1152,7 @@ $.s cr
 | the 2 max cures bug when singleton 
       if over auxx@ - aux@ i ii!	| S1 S1a S1n S0+ n- 
        else aux> i _take auxdrop leave
-      then loop 2P> ;
-
-$.s cr
+      then loop 2P> ; 
 
 : _2takecalc ( i# n -- m )	>r> abs swap - 0 min r> sn * ; 
 | computes parameter to convert a ` cut to a ` _take . 
@@ -1314,11 +1301,11 @@ alias: _ cut
 
 : eachleftI --bac : eachrightI ( LA RA fn -- R ) | Lets get integer working 
    >aux 2p ev R@ i# 0 ?do L@ R@ i _at\ aux@ execute cL loop aux> drop 2P> ; 
-   
-: 'd : each^ ( LA RA fn -- R ) 
-   >aux 2p> longer_ ev swap  
-    0do L@ i _at R@ i _at aux@ execute cL loop aux> drop 2P> ; 
- 
+
+: 'd ( LA RA fn -- R )  
+   >r 2p r> LR@ longer_ ev swap
+   0 ?do L@ i _at R@ i _at l0@ execute cL loop 2P> ; 
+
 : eachm ( RA fn -- R ) swap 1p ev >aux  | catinates 
    R@ i# 0do R@ i _at 2 SF@ execute aux> swap cL >aux loop
    1P drop aux> ;
@@ -1579,8 +1566,11 @@ needs SaveRestore.f
 
 : >at!> rep dup at! ; 
 
-: sym>str> ( sym -- str ) .. dup sym>str swap ref0del ; 
+: fmtS : sym>str> ( sym -- str ) .. dup sym>str swap ref0del ; 
 : str>sym> ( str -- sym ) .. dup str>sym swap ref0del ; 
+
+: fmt dup Type@ TypeS =if sym>str> ;then prior fmt ; 
+| kludge to deal w symbols . See 20180130
 
 | \/ | Result returning version on shallow lists 
 : sym>str>' rep { dup sym>str } 'm ; 
@@ -1593,6 +1583,36 @@ needs SaveRestore.f
 | " What is a symbol other than a string ? "
 | /\ | 
 
+
+| ~\/ | DictionaryTable > < .csv text | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
+ 
+| I've used the term , abbreviated ' DT , in K.CoSy with a rather substantial
+| vocabulary . It is the fundamental form of a Kdb columnar data base . 
+| A DT is a Dictionary whose first item is a list of column labels and second is | a corresponding set of correlated lists of values . This vocabulary converts
+| back and forth between CoSy DTs and standard .CSV strings , the most 
+| universal format for bank ledger downloads . See 20171212 .
+ 
+: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
+: lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
+: csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
+ 
+|  | Example 
+| s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 
+ 
+|  read in and check if line delimiter is "lf or "cr "lf . generally trailing .
+ 
+| T0 "nl "ht ,L csv>DT >T1 	
+|  | Note the combining of the line and item delimiters by ' ,L 
+ 
+| And the inverse 
+: DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
+: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
+: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
+ 
+|  | Note that the delimiters have to be reversed . 
+| T1 "nl "ht ,L reverse DT>csv 
+ 
+| ~/\~| DictionaryTable > < .csv text | \~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
 
 | ||
 
