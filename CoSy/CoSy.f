@@ -812,12 +812,12 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
     | otherwise , just returns . 20090809.1347 
 
 : _at\ ( Lst idx -- items ) _i    : at\ ( v i -- v )  
-| fundamental indexing fn . Always returns enclosed list of enclosed item dup i# --abca Type@ VecInit >aux>  i#		| v r #
+| fundamental indexing fn .
+  dup i# --abca Type@ VecInit >aux>  i#		| v r #
    0 ?do 2dup i i@ i@ aux@ i i! loop
    aux@ v?refs+ 2ref0del aux> ;
 
-: _at _i : at ( v i -- v ) | discloses if singlton index . 
-| no diference on simples . Try | Dnames 1 _at\ | vs | Dnames 1 _at | 
+: _at _i : at ( v i -- v ) | discloses if singlton index | 
     dup i# >r at\ r> 1 =if dsc then ; 
 
 : _at! _i : at!  ( v0 v i -- ) | insert elements of v0 at locations i in v 
