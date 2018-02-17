@@ -818,6 +818,7 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
    aux@ v?refs+ 2ref0del aux> ;
 
 : _at _i : at ( v i -- v ) | discloses if singlton index | 
+| no diference on simples . Try | Dnames 1 _at\ | vs | Dnames 1 _at | 
     dup i# >r at\ r> 1 =if dsc then ; 
 
 : _at! _i : at!  ( v0 v i -- ) | insert elements of v0 at locations i in v 
