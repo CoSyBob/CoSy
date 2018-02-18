@@ -1,29 +1,31 @@
  | ###################################################################### |
 		| ----- |\/| Useful phrases |\/| ----- | 
  saveTSclone 	| Save timestamped clone of current environment | 
+ Dnames 	| names in ' _d dictionary . initialized to ' R
+ fileDialog 	| Get file name |
  
  ` script0 -> 	| display final startup script for editing . Set display parameters
   bye 		| close CoSy . If cmd wdo running , restart with Restart .
  
   Dnames  | names of items in _d dictionary ( initially ' R , the Root ) 
  
-  s" inline " ?? 	| Help on any phrase in CoSy scripts
+  s" i>c " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
 	 	` sys Dv@ ` CoSySource v@ 	| list of scripts searched
  	res> VMlf s" 0L " con  
 
-  s" " words>	| defined words containg  phrase  . use "bl for all words
+  s" sel" words>	| defined words containg  phrase  . use "bl for all words
   
 | ' forth>  executes raw Forth capturing and returning output |
   s" see put "  forth> 	| see x86 code for word  	
-  s" help ;inline " forth> 	| Reva Forth help for word . empty for overview
+  s" help a[ " forth> 	| Reva Forth help for word . empty for overview
   s" res> Help " forth> 	| useful for looking at list of related words 
   http://dev.ronware.org/p/reva/ 	
 | online Reva help  
  
-  ` text 
+  ` text 	->
   ` help 	->
   ` ref 	->
-  ` Addrs 
+  ` Addrs 	
   ` ToDo 	 ->
   ` script0 	->
   ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
@@ -31,8 +33,8 @@
   R0 ->
   R0 Dv@ VMlf s" 'd " con 
   R0 Dv@ s" ( " toksplt s" morse" con 
-  ` text Dv@ daylncut >t0> s" shell" con 
-  
+  ` text Dv@ daylncut >t0> s" job" con 
+  ` text Dv@ VMlf s" job" con
   res> >t0> 	| useful after editing list of "See also:" refs in help 
   s"  cr help " t0 nlfy ' cL eachright ,/  spool^ 	| help on each word in res |
   s" help " shell>

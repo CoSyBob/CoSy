@@ -10,6 +10,7 @@ Bugs :
  o Extend  ' v@ and ' v! to simple lists . currently works just on general .
    | eg |  ` Types Dv@ ` TypeS v@  | bombs
  o s" ... " limit 255 bytes 
+ o +0100 not parsed as integer 
  o Max float formatting 1.e18 . need Floating exponential formatting .
  o Can't save when R0 is { ' Fact v@ } 
  o ' i! needs to check ref counts 
@@ -74,3 +75,4 @@ example lists :
 ( greek grocery ; 1843 Briargate Blvd. , w of N Academy )
 ( Schnitzel Fritz ; 4037 Tutt Blvd Colorado Springs CO 80922 ;
  Phone: (719) 573-2000 ; Website: http://www.SchnitzelFritz.com ) 
+

@@ -1,5 +1,4 @@
-|\/| ` Keyhelp |\/|
- F1	Key Help
+ F1	Help
 
  F5	Insert  res  at cursor
  F6	CoSy evaluate | requires result to be CoSy object or empty stack 
@@ -15,7 +14,7 @@ sF11	Insert timestamp ( yyyymmdd.hhmm ) at cursor
 
 cS	saveText	 
 
-|/\| 
+|/\| KeyHelp |/\ | 
 
   ` BROWSER -> 	| Browser used by cF9 ' www . Be sure no trailing empty lines
  
@@ -38,6 +37,8 @@ cS	saveText
 
 |  Other |\/|
   http://astro.pas.rochester.edu/Forth/forth-words.html
+
+
 
 
 

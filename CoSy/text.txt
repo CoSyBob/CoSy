@@ -6,8 +6,8 @@
  On a blank line below : tap F12 . tap  Enter .  
 			 write something . tap F11 .
  __________________________________________________________________________
-    
-  
+
+ 
 
 
  __________________________________________________________________________
@@ -37,7 +37,7 @@
  HelloWorld				| ( to be saved needs to be added to script
 
  HelloWorld i( 7 23 )i take >t0> 	| Here's an APLish demo 
- t0 dup ' reverse 'm ' cL each 		| execute each line in turn to see 
+ t0 dup ' reverse 'm ' cL 'd 		| execute each line in turn to see 
  R0 dup reverse cL 			| what Forth CoSy APL vocabulary can do .
 
 | NB : vocabulary is case sensitive |
@@ -1318,9 +1318,7 @@ macro : char parsews drop c@ ?literal ; forth
 .
   char 1 _i
  | ======================== | Sun.Nov,20171105 | ======================== |
-: 
    -183. _f absf dup rep_ 360. _f swap -f 
-
  ' xx _i 
  o Top irritation changes drastically when other heads involved . 
  | ======================== | Mon.Nov,20171106 | ======================== |
@@ -1407,7 +1405,6 @@ Need to master  ./lib/net/sockets |
 | : sqrtf ['] fsqrt eachMfr ; 	| added to float fns @ ./CoSy/CoSy.f
 : norm norm^2 sqrtf ;
  | ======================== | Fri.Nov,20171117 | ======================== |
- 
  f( -1 0 1 )f dup rep cor
 ' norm^2 on2 *f 
 
@@ -1420,8 +1417,6 @@ Need to master  ./lib/net/sockets |
  res> >t0> s" ./CoSy/math.f" >F  t0
  s" ./CoSy/math.f" F>  ^eval
  ' norm _i
- ' dp _i 
-
  | ======================== | Sat.Nov,20171118 | ======================== |
 snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 | 
  | archived schedule | http://cosy.com/y17/SV-FIG_ForthDay1118.html
@@ -1751,10 +1746,7 @@ Admitedly , csvcutD in particular does more and needs some words yet to be trans
  see 'R
 : tst0 nip _i ;  
  s"  ' tst0 $. " forth>  | $634B54 
-
  T0 T1 { _at s" " cL } 'R
-  sp 
- 1 _i
 
  | ======================== | Sun.Dec,20171224 | ======================== |
 | ' 'R  seems working . removing traces & replacing in CoSy.f | 
@@ -1944,7 +1936,6 @@ Going to see if I can go directly to redirecting ' exception | 1418 |
   .0001 f2^ _f
   3. 10. f^ _f 
  | ======================== | Tue.Jan,20180123 | ======================== | 
-  
  s" C:/4thCoSy/CoSy/math.f" F> >t0> 
  t0 ^eval
  ' dot _i
@@ -1966,15 +1957,201 @@ Going to see if I can go directly to redirecting ' exception | 1418 |
  help fln 
  1. fln _f 18 _i fmtnF 
  | ======================== | Wed.Jan,20180124 | ======================== |
-Saving copy 
+Saving copys of texts
+  ` USA.CO.WP  ` India.Hyderabad cL 
+ R0 f( 39.038681 -105.079070 )f f( 17.3850 78.4867 )f ,L ,L  >t0>
+ t0 >T0>
+ T0 1 _at >t0>
+ t0 0 _at t0 1 _at -f
+ T0 1 _at ' -f ./
+  f( 39.038681 -105.079070 )f f( 17.3850 78.4867 )f -f 
+ | ======================== | Tue.Jan,20180130 | ======================== |
+ s" C:/CoSyBob/CoSy/CoSy.csy" F> str>lst ` LedgerList v@ >T0> rho
+
+ T0 { s"  " enc cL } 'm { 5 _take } 'm >T0>
+ dsc >t1> 
+ t0 { ['] fmt 'm ,/ } 'm dsc >t1> 
+ t1 ' fmt 'm
  
+ t1 1 _at sym>str>
+ t0 0 _at >t1> fmt 
+ t1 0 _at t1 1 _at cL |   ' cL ./
+ t1 1 _at rho | t1 1 _at cL |   ' cL ./
+ T0 { -1 _take dsc Type@^ } 'm
+ ` s TypeS 
+ t0 
+  T0 | { 0 _at } 'm 
+ ` asdf fmt
+: tmp { fmt ,/ } 'm  "ht MV ;
+ T0 ' tmp 'm  >t0> rho
+ t0 "lf MV s" /CoSy/BobA/acnts/y2018/LedgerList.csv" >F
+
+ T0 { -1 _at rho } 'm
+ T0 -1 _at -1 _at  fmt 
+ s" asdfs werl" prior fmt
+ 
+ T0 ' tmp 'm >t0>
+ t0 { ['] rho } 'm
+: fmt dup Type@ TypeS and if sym>str> ;then .s prior fmt ; 
+ | ======================== | Sat.Feb,20180203 | ======================== |
+ | ======================== | Tue.Feb,20180206 | ======================== | 
+: >text  
+: >wdo ( str wdo -- ) >r van r> 
+	--bba van   
+ | ======================== | Fri.Feb,20180209 | ======================== |
+  1 2 - .  " Hello World " type
+| 1424 | changed  ` Keyhelp to ` help in Tui.f | much better .
+| ` keyhelp Dvdel 
+| 1501 | made | s" Hello World " | https://youtu.be/f3pZ55k5z8w 
+ | ======================== | Sat.Feb,20180210 | ======================== |
+  s" dir \\4thCoSy\\lib\\math" shell>
+  s" \\4thCoSy\\lib\\math\\floats" F> >t0> rho
+  s" \\4thCoSy\\CoSy\\FloatsPlus.f" F> >t1> rho
+  t0 t1 ,L { VMlf } 'm >T0> 
+  T0 0 _at  s" : " in 
+  T0 0 _at ' rho 'm
+: in  2p> rho ['] take 'd 2P> ;
+  res> >t0> VMbl 
+   t0 VMbl s" Ty" con  
+
+  ` Types Dv@ flip
+ | ======================== | Sun.Feb,20180211 | ======================== |
+Deleted never used 
+| a[ lstFns ]a
+| a[ nilfns ' _n , ]a
+| a[ Types Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv , ]a
+| a[ nouns Type0 , TypeC , TypeI , TypeFl , TypeS , ]a 
+| 1546 |  
+ ` Types Dv@ flip
+
+  ev 1 _take
+ 
+ ` Type0 0 _i s" 
+ 
+ ` TypeI  1 _i cL 
+ TypeC
+ TypeS
+ TypeFl
+ TypeV
+ TypeA
+ TypeFv
+ ) 
+| adding ` prototypes to  fns like _take not trivial to choose path . Not worth it right now
+| ======================== | Mon.Feb,20180212 | ======================== |
+| 0853 | In response to 
+
+ s" lol " 1000000 _take  >t0> rho |>| 1000000 
+ t0  50 _i take t0 -50 _take ,L 
+( 
+ lol lol lol lol lol lol lol lol lol lol lol lol lo
+ l lol lol lol lol lol lol lol lol lol lol lol lol 
+ )
+ t0  50 _i take t0 -50 _take cL 
+lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol lol 
+
+ t0 i( 100 -100 )i ' take 'R >t1 
+ t0 
+ | ======================== | Tue.Feb,20180213 | ======================== |
+| Making a list of timezones and calculating dif | found that +0100 is not recognized as number 
+  ` UTC -0700 _i ,L  ` UTC 0100 _i ,L ,L >t0> 
+  t0 { 1 _at } 'm ,/ ' -i _./ 	|>| -8
+ | ======================== | Wed.Feb,20180214 | ======================== |
+| 1222 | | From 20180119 \/
+ s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
+
+| Decided to remove extraneous old objects from SV-FIG discussons from ' R .
+| see archived texts for contexts 
+ `( ModelT.engineSpecs ModelT.engineSpecsHeadings ForthDayStanford151121 morse )`
+ R0 >t0> dup ' Dv@ 'm ,L >t1> rho
+| could have should have used | R R0 dsel >t1> | if I had remembered I made it .
+ t1 lst>str s" CoSy/ark180214.csd" >F
+ s" CoSy/ark180214.csd" F> str>lst >t1> dnames >t0>
+ t0 3 _at Dvdel 	| for some reason | t0 ' Dvdel 'm | bombs . not worth pursuing now
+| 1556 |  Back to new windows ( despite issues w IUP ) 
+  newwdo 2_i cL >t0>
+ t0 0 _at >_ z" 300x200" setsize
+ t0 0 _at >_   1000 100 showXY 
+ t0 1 _at >_  ` script0 Dv@ settxt  | works !
+ t0 1 _at >_ gettxt >t1> rho
+ t1
+ 0
+ t0 0 _at >_  destroy
+| understanding  ' at vs ' at\ |
+  Dnames dup i(  3 )i at\ 
+  5 _iota i>f i( 1 3 )i at  
+  s" asdf" i( 1 )i at
+ | ======================== | Thu.Feb,20180215 | ======================== |
+ s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
+ 
+ text> rho
+  see match_ 
+  s" C:/4thCoSy/CoSy/CoSy - Copy (2).f" F> VMlf >t0> rho
+  s" C:/4thCoSy/CoSy/CoSy.f" F> VMlf >t1> rho
+  t0 t1 ,L ' rho 'm
+ t0 ' rho 'm ,/
+  
+ s" @>+! " ??
+ | ======================== | Fri.Feb,20180216 | ======================== |
+  newwdo 2_i cL >t0>
+ t0 0 _at >_ z" 500x400" setsize
+ t0 0 _at >_   1000 100 showXY 
+ t0 1 _at >_  s" C:/4thCoSy/CoSy/Job.f" F> settxt  
+ t0 1 _at >_ gettxt >t1> rho
+ t0 0 _at >_ getsize 
+ DMP
+ t0 0 _at >_  destroy 
+ | ======================== | Sat.Feb,20180217 | ======================== |
+| attribute saving |
+  ` tst ` script0 Dv@ rep ><  >t0>
+  t0 ` tst v@ m@ _i
+	| fetches symbol associated with symbol in dictionary
+	: s@ ( dic sym -- sym ) sx_ undefthrow @ ;	
+  t0 ` tst s@ m@ _i
+| making peace w regex thru jEdit . Not even the chat w Ken Thompson did that .
+| note  C:/4thCoSy/lib/string/regex  just waits for integration . Good excercise for someone 
+ t0 lst>str s" tst.csd" >F
+ s" tst.csd" F> >t1> rho
+ t1 str>lst 
+ t0 ` tst s@ m@ _i
+ t0 ` tst s@ ` size s" 500x400" >< m! 
+ t0 ` tst v@
+ t0 0 _at DMP 
+ t0 ` tst (wheresym) _i
+  t0 0 _at\ 0 i@ 
+ t0 dnames
+| m@ _i
+ t0 dsc DMP
+ ` sta enc 
+ t0 |  ` ts2 3.12 _f ><  ' cL 'd >t1> ' rho 'm
+ t1 rho
+ : >< swap enc enc swap enc enc cL ; 
+ ` tst1 enc enc s" asdf" enc enc cL >t1> rho
+ t0 ` tst v@
+ t0 t1 { cL enc } 'd >T0> rho
+ T0 ` tst1 v@
+ t0 0 _at t1 0 _at cL 
+| Demoed a bunch > PH 
+ | ======================== | Sun.Feb,20180218 | ======================== | 
+| In response to | https://www.facebook.com/groups/sliderule/permalink/1643289219090715/
+ res> >T0> | "screenscrape" table .
+ T0 VMlf >t0> ilst 		| split on linefeeds an list w index .
+ t0 6 _iota 5 _i *i  at >t1> 	| select every 5th row .
+ t1 { "ht "bl ,L  ssr } 'm >t1> 	| replace tabs w spaces
+ t1 { s"  i( " s"  )i " ,L braket ^eval } 'm >t1> | convert to integer list
+ 6 _iota 5 _i *i 1 _i +i 	|>| 1 6 11 16 21 26 
+ t0 R0 at >t0> 	| select rows after every 5th row . these lines have "+" in them 
+ t0 { "ht "ht s" +" "ht 3 times cL "bl ,L ssr } 'm >t0> | replace w blank
+ t0 { s"  i( " s"  )i " ,L braket ^eval } 'm >t0> | convert to integer list
+ t1 t0 ' +i 'd 	| add the 2 table .  ( should be simpler )
+ t1 t0 ,L R0 cL | display result .
+| posted | 1426 | 
 
 
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@   ^eval 	| save . Then execute to redefine .
    forgettst
-  
+  R0 DMP   | ev >R0 R0 DMP  
  | ######################## | e o current work | ######################## | 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
