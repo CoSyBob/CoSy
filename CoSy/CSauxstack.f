@@ -43,9 +43,15 @@ context: ~CSauxstack ~CSauxstack
 
 | ----------------------------------------------------------------- |
 
+| \/ | Need aux stack  | \/ |
+
+: onN ( a b c ... N f -- f on each a b c ... ) | see 20180119 
+	>aux 0 ?do i pick aux@ xeq i put loop auxdrop ;
+
+| /\ | ------------------------------------------------------------ |
+
 | |->| StackFrames moved to ParameterPushing.f |<-| 
 
 exit~ with~ ~CSauxstack
 
 ." | < CSauxstack | "
-

@@ -207,9 +207,7 @@ alias: Type@ @		alias: Type! !
 
 | { ." integer " } value TypeI
 
-: int TypeI swap ! ;	| convert type to int
-: int> dup int ;		| convert type to int , returning
-
+: int> dup : int TypeI swap ! ;	| convert type to int | int> returning
 
 : intVecInit ( n - objAdr )		| make header and allocate space for int vec of length n
    cellVecInit int> ;			| integer vector type -1
@@ -341,6 +339,8 @@ ev refs+> value r
 : eachMir eachMcr int> ;
 : eachDir eachDcr int> ;
 
+defer aaply
+
 macro
 : i(		| input integers up til " )i" -- IV |
   100 K* dup intVecInit 
@@ -360,9 +360,10 @@ forth
 : rho ( list -- #L ) dup i# _i swap ref0del  ;	
  | Same as i# but CoSy list result 
 
-
 i( )i refs+> constant zild	| 0 iota 
 
+1 [IF]
+| integer dyadic funtions on simple lists eg | 5 _iota i( 1 -1 )i  +i `|
 : +i ['] + eachDir ;	| add 2 integer vecs 
 : -i ['] - eachDir ;	| subtract 2 integer vecs 
 : *i ['] * eachDir ;	| * 2 integer vecs 
@@ -370,11 +371,27 @@ i( )i refs+> constant zild	| 0 iota
 : _modi ['] _mod eachDir ;	| _mod 2 integer vecs 
 : \/ : mini ['] min eachDir ;	| min 2 integer vecs . "or" on booleans . 
 : /\ : maxi ['] max eachDir ;	| max 2 integer vecs . "and" on booleans .
-
+ 
 : =i ['] =I eachDir ;	| = ( Iverson logic ) 2 integer vecs 
 : <>i ['] <>I eachDir ;	| not equal ( Iverson logic ) 2 integer vecs 
 : <i ['] <I eachDir ;	| < ( Iverson logic ) 2 integer vecs 
 : >0i i0 : >i ['] >I eachDir ;	| > 2 integer vecs 
+[THEN]
+
+0 [IF]
+: +i { ['] + eachDir } aaply ;	| add 2 integer vecs 
+: -i { ['] - eachDir } aaply ;	| subtract 2 integer vecs 
+: *i { ['] * eachDir } aaply ;	| * 2 integer vecs 
+: /i { ['] / eachDir } aaply ;	| div 2 integer vecs 
+: _modi { ['] _mod eachDir } aaply ;	| _mod 2 integer vecs 
+: \/ : mini { ['] min eachDir } aaply ;	| min 2 integer vecs . "or" on booleans . 
+: /\ : maxi { ['] max eachDir } aaply ;	| max 2 integer vecs . "and" on booleans .
+
+: =i { ['] =I eachDir } aaply ;	| = ( Iverson logic ) 2 integer vecs 
+: <>i { ['] <>I eachDir } aaply ;	| not equal ( Iverson logic ) 2 integer vecs 
+: <i { ['] <I eachDir } aaply ;	| < ( Iverson logic ) 2 integer vecs 
+: >0i i0 : { >i ['] >I eachDir } aaply ;	| > 2 integer vecs 
+[THEN] 
 
 | : =c ['] =I each ;	| = ( Iverson logic ) 2 integer vecs 
 | : <>c ['] <>I each ;	| not equal ( Iverson logic ) 2 integer vecs 
@@ -812,12 +829,12 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
     | otherwise , just returns . 20090809.1347 
 
 : _at\ ( Lst idx -- items ) _i    : at\ ( v i -- v )  
-| fundamental indexing fn .
-  dup i# --abca Type@ VecInit >aux>  i#		| v r #
+| fundamental indexing fn . Always returns enclosed list of enclosed item
+   dup i# --abca Type@ VecInit >aux>  i#		| v r #
    0 ?do 2dup i i@ i@ aux@ i i! loop
    aux@ v?refs+ 2ref0del aux> ;
 
-: _at _i : at ( v i -- v ) | discloses if singlton index | 
+: _at _i : at ( v i -- v ) | discloses if singlton index . 
 | no diference on simples . Try | Dnames 1 _at\ | vs | Dnames 1 _at | 
     dup i# >r at\ r> 1 =if dsc then ; 
 
@@ -854,35 +871,39 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
     dup i# 0 ?do L@ R@ i i@ l0@ execute refs+> l1@ i i! loop 
    l1@ 2P> ;
 
-: aaplym ( LA fn -- r ) 
+| \/ |  Atomic Apply operators . Apply verb to simple leafs of noun  | \/ |   
+: aaplym ( n v -- r ) 
    swap 1p 
-   R@ Type@ 0if ." ( BRANCH ) " R@ i# cellVecInit >aux>		| Res 
+   R@ Type@ 0if  | ." ( BRANCH ) " 
+      R@ i# cellVecInit >aux>		| Res 
     	i# 0 ?do R@ i i@ L@ ( $.s cr ) aaplym refs+> aux@ i i! loop
     	1P drop aux>		| 
-	else  ." ( LEAF ) " | 
+	else | ." ( LEAF ) " | 
 	 R@ L@ ( $.s cr ) execute 1P> nip 
     then ;
 
-: aaply ( LA RA fn -- r ) 
+
+:: ( aaply LA RA fn -- r ) 
    --cab 2p 
    R@ Type@ 0if
-     L@ Type@ 0if ." ( BRANCH ) both nested "  
+     L@ Type@ 0if | ." ( BRANCH ) both nested "  
        LR@ longer_ cellVecInit >aux>
         i# 0 ?do LR@ i i@i@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
-   	  else ." ( L LEAF  R NEST ) " 
+   	  else | ." ( L LEAF  R NEST ) " 
    	  R@ i# cellVecInit >aux> 
    	   i# 0 ?do L@ R@ i i@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
    	  then
     else ( R LEAF )
-   	 L@ Type@ 0if ." ( R LEAF L NEST ) " 
+   	 L@ Type@ 0if | ." ( R LEAF L NEST ) " 
    	  L@ i# cellVecInit >aux> 
    	   i# 0 ?do L@ i i@ R@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
-   	  else ." ( both LEAF ) "  
+   	  else | ." ( both LEAF ) "  
    	   LR@ 3 SF@ execute 
 	  then
 	then 
 	2P> nip 
 	;
+ is aaply
 
 : ^= ( LA RA -- Bool ) ['] =i aaply ;
 : ^+ ['] +i aaply ;
@@ -1458,10 +1479,10 @@ $006346964 value TypeDic		| " dic"
 
 : undefthrow  ( idx --  | throw ) dup _n =if drop z" undefined " throw then ; 
 
-| fetches symbol associated with symbol in dictionary
+| fetch symbol associated with symbol in dictionary
 : s@ ( dic sym -- sym ) sx_ undefthrow @ ;	
 
-| fetches value associated with symbol in dictionary
+| fetch value associated with symbol in dictionary
 : v@ ( dic sym -- val ) vx_ undefthrow @ ;	
 
 | store value associated with symbol in dictionary
@@ -1479,7 +1500,10 @@ $006346964 value TypeDic		| " dic"
 
 
 : >< ( sym val -- dic )		| creates dic with sym and val .
-	swap enc swap enc enc cL ; 
+	swap enc swap enc ,L ; 
+
+: djoin ( dic dic -- dic )  { cL enc } 'd ;
+| catinates each list of pair of lists , eg , dictionaries . see 20180218 .
 
 : symrplc ( dic oldsym newsym -- )
   >r swap 0 i@ --bba  ?sym_   dup _n =if 2drop z" undefined " throw then

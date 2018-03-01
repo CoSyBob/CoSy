@@ -8,6 +8,9 @@ cr ." | UTIL begin | "
 alias: xeq execute
 alias: |\/| | 
 alias: |/\| |
+alias: |>|  |
+
+: :; ; 	| Do nothing . NOOP .
 
 | =============================================== |
 | redef  p:  and def  p[ . from Danny Reinholt
@@ -63,7 +66,7 @@ alias: |/\| |
 
 : pause ekey drop ;  
 
-: D> dup : DMP 32 dump ;
+: DMP 32 dump ;
 
 : .> dup . ;
 
@@ -201,7 +204,7 @@ $7FFFFFFE constant 0I		| integer infinity . ( Largest pos Number )
 | =============================================== |
 
 : on2> --ababc : on2 ( LA RA f -- LAr RAr )	| applies f to each LA and RA . 
-| f must be monadica and return exactly 1 cell .
+| f must be monadic and return exactly 1 cell .
 | on2> leaves items on stack . No ref chk .
  >r swap r@ execute swap r> execute ;
 

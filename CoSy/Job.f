@@ -117,6 +117,9 @@ _n dup value dlgH  value txtH
 
 : closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
 
+| really nothing below here  
+0 [IF]  
+
 : show`txt ( sym -- ) | also sets global value pair dlgH and txtH   
   newwdo addr dlgH 2! 
   R over v@ txtH swap settxt 
@@ -128,7 +131,6 @@ _n dup value dlgH  value txtH
   dlgH z" CLOSE_CB" ['] closedlg IupSetCallback drop 
  ;
 
-0 [IF]  
   curwdo 1 c+ @ gettxt R curwdo @ gettit v!
   addr dlgH dup 1 c+ @ gettxt R rot @ gettit v!
 [THEN]

@@ -45,7 +45,6 @@ alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 : --bba		tuck swap ;		| or | dup rot 
 : --bc		rot drop ;
 
-: --c		nip nip ;
 | : --ca 		-rot drop ; 	| For some reason defining this name causes IUP to bomb on any execute ? 
 : --cba		swap rot ;
 : --cabd 2swap rot ;
