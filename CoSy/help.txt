@@ -1,0 +1,44 @@
+ F1	Help
+
+ F5	Insert  res  at cursor
+ F6	CoSy evaluate | requires result to be CoSy object or empty stack 
+sF6	Eval line under cursor in  text 
+cF6     Eval line in OS
+
+cF9	{ textwdo @ selected-text? www }  
+
+ F11	Insert timestamp ( |hm| ) at cursor
+sF11	Insert timestamp ( yyyymmdd.hhmm ) at cursor 
+ F12	Insert date line ( dayln ) at cursor
+
+
+cS	saveText	 
+
+|/\| KeyHelp |/\ | 
+
+  ` BROWSER -> 	| Browser used by cF9 ' www . Be sure no trailing empty lines
+ 
+| Ron Aaron's Reva Forth site . Documentation of the Forth CoSy is built in |
+  http://dev.ronware.org/p/reva/
+| not well documented by Ron's ' help |
+  http://dev.ronware.org/p/reva/wiki?name=Contexts  
+  http://dev.ronware.org/p/reva/wiki?name=Numbers 
+
+| The IUP GUI used in  Tui.f | © 1994-2005 Tecgraf / PUC-Rio and PETROBRAS S/A. 
+  http://www.tecgraf.puc-rio.br/iup/
+
+| Reva is written in x86 assembler . Opcode table :
+  http://ref.x86asm.net/geek.html
+
+|  CoSy links |\/|
+  http://cosy.com/CoSy/4th.CoSy.html
+  http://cosy.com/CoSy/4thCoSy/RevaHelp.htm
+  http://cosy.com/CoSy/4thCoSy/Help.html 	
+
+|  Other |\/|
+  http://astro.pas.rochester.edu/Forth/forth-words.html
+
+
+
+
+
