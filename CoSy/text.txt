@@ -8,7 +8,7 @@
  __________________________________________________________________________
 
  
- 
+
  
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
@@ -20,9 +20,9 @@
  | The syntax of Forth is  { parse-a-word doIt repeat }    |
  | \/ | Put the cursor on lines below and tap F6      | \/ |
  
-  s" Hello World " 
+  s" Hello World " 		| return a CoSy character list , ie: string .
   
-  s" Hello World " reverse
+  s" Hello World " reverse 	| See ! it was sitting on  Top of Stack 
 
   s" Hello World " rho 		| ` rho is APL for ` count   number of items .
  
@@ -52,20 +52,13 @@ versus
 
 To test if a word exists :
 
-  ' help  _i 	| returns address if defined else 0  | 
+  ' asdf _i 	| returns address if defined else 0  | 
 
 I use these a short hand in refering to words . Eg :
 
 | ' ??  is the HELP verb . For example :
 
  s" : ?? " ?? 	| Find the definition of  ' ??   itself 
-
-To test if a word exists , 
-
-As opposed to 
-  0 execute
-		 
-  Dnames	| names in current dictionary intially the Root ( ` R ) dictionary . 
 
 | Historical note :  ` NB , short for Nota Bene == Note Well , was a favorite of Ken Iverson |
  | ###################################################################### | 
@@ -82,7 +75,8 @@ As opposed to
   R ' rho 'm 	| count each ( monadic )
 
   R dnames	| names in Root (  ` R  ) dictionary . 
-  Rnames 	|  Same as  /\  |  
+   
+  Dnames	| names in current dictionary intially the Root ( ` R ) dictionary . 
  
  | ###################################################################### | 
  | \/ \/ \/ \/ |  help sources | \/ \/ \/ \/ | 
@@ -94,18 +88,17 @@ F1 : Key Help  	| Tapping the F1 key lists all key shortcuts .
      
  ` help -> 
  ` IntroHelp -> 	| Stale . dating back to 2006 .	
-  ` examples ->
+ ` examples ->
 
-  s" ./IntroHelp.txt" F>
+  s" ./IntroHelp.txt" F> 	| read file 
 
   | /\ /\ /\ |  4th.Cosy ( F6 )  | /\ /\ /\ |
   | ====================================================================== |
   | \/ \/ \/ |   Raw Reva Forth ( sF6 )    | \/ \/ \/ |
 
-One can now stay fairly easily executing at the 4th.CoSy list level . 
-But if you are excuting raw Forth and watch things on the stack
-
- shift F6 does not try to output the top item on the stack .
+One can now stay fairly easily executing at the 4th.CoSy list level using F6 . 
+But tapping shift F6 simply executes raw Forth leaving things on the stack
+ sF6 does not try to output the top item .
 
 | 20160605.1150 | implemented  ' forth> which eliminates regular need for 
  raw Reva Forth execution for getting Reva help .
@@ -123,20 +116,26 @@ But if you are excuting raw Forth and watch things on the stack
 |  This ` text and ` res are items in the ' R root dictionary saved by ctrl_s 
   R rho 	| |>| 2 	| ' rho is the APL word for # of items .
 
-| 3 generic functions | cognates of Forth || : @ Fetch ;  : ! Store ;  ||
+| 3 generic functions | cognates of Forth | : @ Fetch ;  : ! Store ; : ' address ||
+
 	|  ix   i@  i! 	| ( lst i -- r )  | Raw Indexing 
  	|  vx   v@  V! 	| ( lst _i -- r ) | indexing by name on dictionaries 
 	|  Dvx Dv@ Dv!  | ( _i -- r ) 	  | same using  ' _d dictionary
  	|       at at!  | ( lst iv -- r ) | top level get and put 
  
 | TYPES |
+ 
 
-  s" asdf \" \\qwert \" " 	| Strings  ( bytes ) 
-	\ is " escape " so must be doubled
-		| must use  s" \\ " and s" \" "  to embed these chars in strings 
+  s" asdf\qwert.code " 	| Strings  ( bytes ) 	| since 20180306 
+  | Note that the quote character itself cannot be in a string .
+  | Reva's " uses \ to escape the " character so it can be included in strings .
+  | ' s/" retains that behavior . Thus to get help on ' s" itself use :
+  s/" s\" " ??
+  | Thus must use  s/" \\ " and s/" \" "  to embed these chars in strings 
+ 
   i( 0 1 2 3 )i 	| integers 	also  | 123  _i | 123 456  2_i   |
   f( 2.28 2 2.e5 )f 	| Floats 	also  | 3.14 ' _f | 3.14 2.  2_f 
-		| Forth variable  sigdig sets output decimals . Set in  ` script0
+ 	| Forth variable  sigdig sets output decimals . Set in  ` script0
   `( asdf sym )` 			| symbols , strings with rho 1 =i  . See also  `
   s" asdf " i( 0 1 2 )i ,L 		| general lists . this creates a list of 2 items
   -1 _i i( 0 1 2 )i cL 			| same a ' ,L but catinates if same type  
@@ -1590,10 +1589,6 @@ macro  : _s" char " p: parse p: str ; forth
  _i
  `( q w e )`
  { `( q w e )` } execute
-
-: tst _s" Hello " reverse ;  
- tst
-
  macro : _s" 34 parse compiling? if (") ;then "" ; forth
  reset
  s" (\")"  ?? 
@@ -1622,7 +1617,6 @@ s" strallot" ?? ,L
 | deleted | ev refs+> value r | from CoSy.f . Unused . | 1708 | 
 
 | Finally back to ' s"  and related , 
-
  macro : "_ '" parse compiling? if (") ;then "" ; forth 
 : tst  "_  asdf \;df;l " _str ; 
  macro : s" p: "_ p: str ;  forth
@@ -1632,7 +1626,6 @@ s" strallot" ?? ,L
  f( 1 -1 )f { .s cr nil } 'm
  i( 1 -1 )i { _i } 'm
  see enc'
-
  10 _i  i1 >aux { r> +i } execute
  | ======================== | Tue.Mar,20180306 | ======================== |
  : tst i( 1 2 )i ; | bombs 
@@ -1685,16 +1678,116 @@ s" strallot" ?? ,L
 { aux@ 'm } 'm
 
  s"  " words> >t0> 10 _take
-  
 
  s" LUCIDA CONSOLE::10" t0 ` font v!
+ | ======================== | Mon.Mar,20180312 | ======================== |
+ 100000 _iota 1 _i + i>f +/
+ t0 +/ 
+   4 _iota 1 _i +i ' *i ./ 
+   s" ./CoSy/math.f" F> ^eval 
+  f( 1 6 3 4 )f avgf
+  6 10000 _rand >t0>
+  t0 1 _i =i +/
+  6 _iota enc'  t0 ' =i 'L ' +/ 'm ,/ |>| 1702 1710 1642 1639 1662 1645 
+ R0 +/
+t0 ,L
+ s" : daylncut" ??
+ | ======================== | Tue.Mar,20180313 | ======================== |
+: tst xwords> >aux> { 1 _at -1 _cut VMbl } 
+: tst >aux> { aux@ .s } 'm auxdrop ; 
+ 4 _iota >t0>
+ | ======================== | Wed.Mar,20180314 | ======================== |
+| prompted by Geo Perry's Pi Day post in SV-fig .
+ s" ./CoSy/math.f" F> ^eval 
+ s" " words>  10 _take
+ pi 18 _i fmtnF ,/
+   tau 
+: 1i 0. 1. 2_f cL  .. -1. _f *f reverse ,L ; | matrix form of imaginary unit 
+
+: >cmplxm  .. -1. 0. 2_ _f *f reverse ,L ;
+ f( 1 0 )f >cmplxm
+
+ 1i | f( 1 0 )f ' *f 'L
+ ' I _i  
+
+  ' 1i _i
+ xwords> .. ' dsc 'm swap { 1 _at -1 _cut VMbl } 'm { ,L enc } 'd >t0>
+ t0 { 1 _at rho } 'm  ,/ +/ 	|>| 2192 	| total words in Reva.CoSy 
+: sts 0. 1. 2_f cL ;
+ sts
+| renamed ' css to ' ssc  so sort together 
+| removed | \/ | from ' ssc . extranious after ' lower . 
+|  LR@ TypeC typechk 0if drop 2P z" args must be strings " throw then |
+  " asdfgjhkl )i qwerret )i asq[i[p " --aab "  )i "  search  2drop swap - _i
+: tst ( s0 s1 -- i ) 2refs+> 2dup >r van --aab r> van search 2drop swap - _i --cab 2refs- ; 
+| ( s0 s1 -- i ) starting index of s1 in s0 .
+ | ======================== | Thu.Mar,20180315 | ======================== |
+: ss1st 2refs+> 2dup >r van --aab r> van search 2drop swap - _i --cab 2refs- ; 
+  s" asdflkh  )i qwerret )i asq[i[p " s"  )i " ss1st
+ AF1  s" asdflkh  )i qwerret )i asq[i[p " s"  )i " tst  AF0
+: tst [ f( 1 2 )f ] literal ; 
+ see tst | tst  
+ | ======================== | Fri.Mar,20180316 | ======================== |
+| added ' ss1st to CoSy.f near  ' f? of which it is special case . 
+| haven't solved general ; tst f( 0 1 )f ; problem .
+: tst 1. _f ; 
+: tst " f( 0 1 )f " eval ; 	| this seems fool proof & best I can think of .
+: Im ( n -- n*n_IdentMat ) 1. 0. 2_f --abca rep take cL swap 2 _take take ;
+ 10 _i Im >t0> | .. { ['] dot aaply } 'L ' ,/ 'm
+
+ 1i | .. ' *f aaply
+ 1i 
+ 2 _i Im >t0>
+ t0 1i swap mmul
+   mmul 
+ flip ' ,/ 'm
+
+ ' Im _i
+: mmul { ['] dot aaply } 'R ['] ,/ 'm ;
+ 
+ 3 _i 1. 0. 2_f --abca rep take cL swap 2 _take take  
+  see mmul
+
+: >cmplxm  .. " f( 0 -1 )f " eval *f reverse ,L ;
+  f( 1 0 0 )f .. i( 2 2 )i take  
+ 
+ f( 1 0 )f >cmplxm
+  f( 1 0 )f f( 0 )f 
+ see tst | tst  
+ tst
+ | ======================== | Sun.Mar,20180318 | ======================== |
+ "bl words> 20 _take "bl MV
+ 2 _i Im >t0>
+  1i f( 1 2 3 4 )f i( 2 2 )i take { ['] dot 'R } 'L
+  1i 2 _i Im  { ['] dot 'L } 'R  
+ 1i t0 swap { ['] dot 'R ,/ } 'L
+ 1i t0 dsc ' dot 'R
+| this is one of those problems which requires exact thought . I hate that .
+ 
+
+  s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
+  newwdo 2_i cL >t0>
+ t0 0 _at >_ z" 300x200" setsize  t0 0 _at >_   1000 100 showXY  
+ t0 1 _at >_  ` ref Dv@ settxt  | works !
+ t0 1 _at >_ gettxt >t1> rho
+ t0 0 _at >_  destroy 
+ : gettab ( dlgH -- str ) z" TABSIZE" IupGetAttribute zcount str ;
+ t0 gettab
+ t0 0 _at >_ getsize zcount _str  |>| 516x470
+ t0 1 _at >_  z" HFONT" IupGetAttribute zcount str
+  
 
 
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@   ^eval 	| save . Then execute to redefine .
    forgettst
-  R0 DMP  ev >R0 R0 DMP  
+  R0 DMP cr  ev >R0 R0 DMP  
+  
+ mark forget 
+ s" ./CoSy/math.f" F> ^eval  
+ res> s" ./CoSy/math.f" >F 
+ forget
  | ######################## | e o current work | ######################## | 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |

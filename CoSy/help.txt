@@ -5,7 +5,7 @@
 sF6	Eval line under cursor in  text 
 cF6     Eval line in OS
 
-cF9	{ textwdo @ selected-text? www }  
+cF9	{ textwdo @ selected-text? www } | open URL in ` BROWSER
 
  F11	Insert timestamp ( |hm| ) at cursor
 sF11	Insert timestamp ( yyyymmdd.hhmm ) at cursor 
@@ -24,6 +24,13 @@ cS	saveText
   http://dev.ronware.org/p/reva/wiki?name=Contexts  
   http://dev.ronware.org/p/reva/wiki?name=Numbers 
 
+| Forth |
+http://astro.pas.rochester.edu/Forth/forth-words.html
+https://www.taygeta.com/forth/dpans.htm 	| ANS Forth Standard
+https://www.taygeta.com/forth/dpans6.htm#6.1 	| ANS standard Glossary 
+http://www.forth.org/ 	| Forth Interest Group
+http://www.complang.tuwien.ac.at/forth/gforth/Docs-html/ 	| Widely used Gforth 
+
 | The IUP GUI used in  Tui.f | © 1994-2005 Tecgraf / PUC-Rio and PETROBRAS S/A. 
   http://www.tecgraf.puc-rio.br/iup/
 
@@ -36,7 +43,10 @@ cS	saveText
   http://cosy.com/CoSy/4thCoSy/Help.html 	
 
 |  Other |\/|
-  http://astro.pas.rochester.edu/Forth/forth-words.html
+  
+
+
+
 
 
 
