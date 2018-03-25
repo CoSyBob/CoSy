@@ -1159,7 +1159,6 @@ Going to see if I can go directly to redirecting ' exception | 1418 |
   ' :; _i  { 1.15 _f *f } _i cL ' c>f _i cL >t0>  |>| 6448996 6507436 6489768 
   0. .5 2_f 5 _apv >t1 
   t1 t0 ' xeq 'R
-  
  res> >t0> rho
  t0
  | ======================== | Fri.Jan,20180119 | ======================== |
@@ -1775,15 +1774,74 @@ t0 ,L
  t0 gettab
  t0 0 _at >_ getsize zcount _str  |>| 516x470
  t0 1 _at >_  z" HFONT" IupGetAttribute zcount str
-  
+ | ======================== | Thu.Mar,20180322 | ======================== |
+Sam Falvo II | https://youtu.be/mvrE2ZGe-rs 
+| Over the Shoulder 1 - Text Preprocessing in Forth | example 
+ s" Mary had a ~iw little lamb, & it tasted <great> in the ~bw sandwich."   
+| in answer to | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1854810888152270/ 
+ 333 _iota 3 _i *i +/ 200 _iota 5 _i *i +/ +i |>| 265334 
+ 265334 _i 7 _iota 15 _i *i +/ -i |>| 265019 
+|
+ s" Mary had a ~iw little lamb, & it tasted <great> in the ~bw sandwich." >t0> 
 
+ s" &<>" 
+ `( &amp; &lt; &gt; )` | sym>str>' ,L | flip >t1>
+
+| alternatively | s" &amp;&lt;&gt;" .. s" &" ss cut
+
+  t0 t1 0 _at ssr t1 1 _at ssr t1 2 _at ssr >t0>
+  s" : ss" ??
+ t0 t1 ' ssr acrossYc >t0>
+  s" : acrossYc " ??
+--
+ t0 "bl VM >t1>   
+  s" ~iw "    s" <i>" s" </i>" ,L   ,L 
+  R0 enc  s" ~bw "   s" <b>" s" </b>" ,L   ,L enc cL >T0>
+
+ t1 s" ~iw" cconn | i1 +i at | s" <i>" s" </i>" ,L braket
+  s" : cconn" ??
+  s" : braket" ??
+
+  T0 enc  s" ~bw" s" <b>" s" </b>" ,L ,L enc cL >T0>
+  T0 0 _at | 1 _at
+
+ t1 t1 s" ~iw" cconn i1 +i at s" <i>" s" </i>" ,L braket
+ t1 
+ t1 t1 T0 0 _at  0 _at conn i1 +i at T0 0 _at 1 _at braket
+  
+| 2348 | 
+ | ======================== | Fri.Mar,20180323 | ======================== |
+prepare for demo |
+ t1 T0 { 2p L@ dup R@ dsc cconn i1 +i at R@ 1 _at braket 
+ t1 T0 
+ | ======================== | Sat.Mar,20180324 | ======================== |
+ t0 T0 0 _at 0 _at toksplt >t1>
+: 0cut i0 swap cL cut ; | same as ' cut but includes portion before 1st cut   
+| added to CoSy.f . needed reordering of ' cL to precede .
+  t1 1 _at .. "bl ss1st 0cut >T1> 
+ T1 0 ix dup @ T0 0 _at 1 _at braket swap rplc
+ T1
+ see tst
+: tst 2p> dsc toksplt 2P> ;
+ t0 T0 tst 1 ix @
+ dup  
+: tst1 2p L@ 1 _at R@  @ "bl ss1st 0cut 
+ T0 dsc >T0>
+ see rplc
+ @ lst
+ T0 0 _at | 1 _at 
+ t1
+ i0
+ T0  0 _at
+ | ======================== | Sun.Mar,20180325 | ======================== |
+ 
 
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@   ^eval 	| save . Then execute to redefine .
    forgettst
   R0 DMP cr  ev >R0 R0 DMP  
-  
+  1 _i
  mark forget 
  s" ./CoSy/math.f" F> ^eval  
  res> s" ./CoSy/math.f" >F 

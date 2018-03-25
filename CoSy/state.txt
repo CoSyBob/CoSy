@@ -9,14 +9,14 @@
  
   Dnames  | names of items in _d dictionary ( initially ' R , the Root ) 
  
-  s/" m* " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+  s/" : at" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
 	 	` sys Dv@ ` CoSySource v@ 	| list of scripts searched
 
   s" " words>	| defined words containg  phrase  . use "bl for all words
   
 | 		| ' forth>  executes raw Forth capturing and returning output |
   s" see put "  forth> 	| see x86 code for word  	
-  s/" help fill " forth>
+  s/" help prior " forth>
   s" res> Help " forth> 	| useful for looking at list of related words 
  
   ` text 	->
@@ -46,7 +46,8 @@
  
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
   s" text" Dv@ s" \4thCoSy\CoSy\text.txt" >F 
-
+  s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F 
+ 
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt
 
 | /\ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ----    | /\ |  

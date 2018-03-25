@@ -30,6 +30,10 @@ https://www.taygeta.com/forth/dpans.htm 	| ANS Forth Standard
 https://www.taygeta.com/forth/dpans6.htm#6.1 	| ANS standard Glossary 
 http://www.forth.org/ 	| Forth Interest Group
 http://www.complang.tuwien.ac.at/forth/gforth/Docs-html/ 	| Widely used Gforth 
+https://youtu.be/mvrE2ZGe-rs 	| Over the Shoulder 1 - Text Preprocessing in Forth
+	| /\ | by Sam Falvo . Clear clean expert use of Forth | /\ |
+https://www.forth.com/starting-forth/ 	| Leo Brodie 
+	| /\ | Classic . One of the greatest intros on a tek subject in any field ever | /\ |
 
 | The IUP GUI used in  Tui.f | © 1994-2005 Tecgraf / PUC-Rio and PETROBRAS S/A. 
   http://www.tecgraf.puc-rio.br/iup/
@@ -44,6 +48,7 @@ http://www.complang.tuwien.ac.at/forth/gforth/Docs-html/ 	| Widely used Gforth
 
 |  Other |\/|
   
+
 
 
 
