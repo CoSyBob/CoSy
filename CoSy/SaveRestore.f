@@ -9,16 +9,21 @@ cr ." | SaveRestore begin | " type cr
 
 | \/ SAVE LIST  \/ ========================================== \/
 
+| \/ | Index list | \/ |
+
  variable Ilst variable Ilst# 
  
+| increment the pointer and store the address 
 : Ilst! ( a -- ) Ilst @ Ilst# @>+! ( lengthen Ilst first ) 
    Ilst# @ Ilst @ cell+ !  ic! ;
-   | increment the pointer and store the address 
-    
+ 
 : Ilst? Ilst @ swap ['] = _f? ; 
 
-: IlstInit intVecInit refs+> Ilst ! 1 Ilst cell+ ! ( length to 1 ) Ilst# off ;  
+: IlstInit intVecInit refs+> Ilst !
+   1 Ilst cell+ ! ( length to 1 ) Ilst# off ;  
 
+| /\ |  Index list end  | /\ |
+   
  defer (storelst)
  
 : storelst ( lst -- clst cells )    | convert allocated list to linear form
@@ -68,18 +73,6 @@ cr ." | SaveRestore begin | " type cr
   s" del " COSYSTARTFILE cL s" .bk" cL { shell nil } onvan drop  
   s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL >r> van shell r> ref0del 
    COSYSTARTFILE s" .csy"  cL Foverwrite  ;
-
-0 [IF]
-: savedic ( -- ) | save dictionary	|
- $.s cr
-	R storelst str  | computed 1st , the left on stack  
-  s" del " COSYSTARTFILE cL s" .bk" cL { shell nil } onvan drop  
-  s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL  | 20170718.1349 			 
- $.s cr 
-| s" ren " COSYSTARTFILE cL s" .csy " cL 
-|   CoSyFile cL s" .bk" cL  shell^ 
-   COSYSTARTFILE s" .csy"  cL Foverwrite  ;
-[THEN]
 
 | ======== |
  |  CoSyDir 
