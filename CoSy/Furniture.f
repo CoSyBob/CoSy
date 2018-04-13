@@ -1,5 +1,6 @@
 | Furniture : fns to flesh out the living area .
-| Require CoSy APL object vocabulary . Does not require R dictionary obs 
+| Require CoSy APL object vocabulary . 
+| Do NOT require R dictionary obs 
 | Author: Bob Armstrong / www.CoSy.com
 | Reva's license terms also apply to this file.
 
@@ -124,7 +125,7 @@ variable AFptr
 | Cut text into day entries ( approximate as can be seen from def . )
  "lf s"  | ======================== | " cL refs+> value daylnTok 
 : daylncut ( str -- listOFstrings ) daylnTok tokcut ;
- 
+
 | \/ Calendar \/ | 
  
 | : dt time&date 6 s>iv ;
@@ -156,7 +157,7 @@ variable AFptr
 : partFind ( phr str delim -- occurances ) | splits str at occurances of delim
 	| and returns parts that contain phr .
   toksplt 
-  refs+> >r> { "bl cL swap css dup i# M->I _i swap free } eachright
+  refs+> >r> { "bl cL swap ssc dup i# M->I _i swap free } eachright
   ['] cL across &  r@ swap at r> refs- ;
  
 : partFindBl ( phr str -- occurances )  emptyLn partFind ; 
@@ -164,52 +165,32 @@ variable AFptr
 
 | /\ /\ | partitioned string fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
-| ~\/ | DictionaryTable > < .csv text | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
- 
-| I've used the term , abreviated ' DT , in K.CoSy with a rather substantial
-| vocabuary . It is the fundamental form of a Kdb columnar data base . 
-| A DT is a Dictionary whose first is a list of column labels and second is a
-| corresponding set of correlated lists of values . This vocabulary converts
-| back and forth between CoSy DTs and standard .CSV strings , the most 
-| universal format for bank ledger downloads . See 20171212 .
- 
-: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
-: lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
-: csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
- 
-|  | Example 
-| s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 
- 
-|  read in and check if line delimiter is "lf or "cr "lf . generally trailing .
- 
-| T0 "nl "ht ,L csv>DT >T1 	
-|  | Note the combining of the line and item delimiters by ' ,L 
- 
-| And the inverse 
-: DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
-: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
-: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
- 
-|  | Note that the delimiters have to be reversed . 
-| T1 "nl "ht ,L reverse DT>csv 
- 
-| ~/\~| DictionaryTable > < .csv text | \~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
-
 | \/ \/ | miscellaneous fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
-: words> ( str -- strL ) s" words " swap cL forth> VMbl -2 _i cut ;
-| see   s" help words" spool^ | use "bl arg all words 
+: _dasm ( adr n -- str ) cL fmtI "bl MV s"  disassemble " cL forth> ;
+| ' disassemble raised CoSy level .  n is number of cells to be disassembled . 
 
-: .needs^ ['] .needs (spool) str VMbl i-1  _ dsc ;
+: _DMP> ( addr -- str ) s"  DMP " forth> ; | returns ' DMP as str
+
+: words> ( str -- strL ) s" words " swap cL forth> VMbl -2 _i cut ;
+| see   s" help words" forth> | use "bl arg all words 
+
+: xwords> s" xwords " forth> "lf 2 _take toksplt dae
+   { "lf toksplt 2 _take } 'm  ;
+| all words in all contexts. returned  
+
+
+: .needs> ['] .needs (spool) str VMbl i-1  _ dsc ;
 
 : ^!! ( str -- ) dup van shell ref0del ;	| CS version of !! shell execute .
+
 
 | Convert character vec ( byte to integer ) 
 : c>i ( cv -- iv ) ['] _i  'm ,/ ;
 |  dup Type@ TypeC <>if ref0del z" must be character " throw ;then
 |  dup i# intVecInit >aux> 0 ?do dup i ib@ aux@ i ii! loop ref0del aux> ;
  
-| Convert integer to character vec 
+| Convert integer to character vec . | absurdly slow for some reason . 180218
 : i>c ( iv -- cv ) dup Type@ TypeI <>if ref0del z" must be integer " throw ;then
   dup i# byteVecInit >aux> 0 ?do dup i ii@ aux@ i ib! loop ref0del aux> ;
 
@@ -232,6 +213,7 @@ variable AFptr
 : +-splt ( iv -- v ) 1p> i-1 >i refs+> >r> & R@ swap at 
 	R@ r@ 0=i & at ,L r> refs- 1P> ; 
 
+| see also | math.f |
 | /\ /\ /\ |  MATH  | /\ /\ /\ |
 
 |  : ref " notepad \\cosy\\ref.txt" shell ;
@@ -243,11 +225,11 @@ variable AFptr
 | : saveres ( -- ) ;
 
 
-| \/ \/ | OPERATORS | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
+| \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
-| : ~=\ ( list -- bool ( not_equal scan )   ;
-  
-| /\ /\ | OPERATORS | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
+
+
+| /\ /\ | Accounting tools | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
 | \/ | ARK | \/ |
 

@@ -58,14 +58,19 @@ alias: gui gui-main-loop
 
 | : cb ( xt -- xt )  compile p[ add-callback gui-default ]p ;
 
-variable textwdo
-variable reswdo
+variable textwdo 	2variable res 
+variable reswdo 	2variable txt 
+variable statewdo 	2variable state 
+
 variable sWdo
 variable llWdo
 variable btnswdo
 
-2variable res 
-2variable txt 
+
+
+
+: win> ( handle -- str ) @ getval --bc str ;
+: >win ( str handle -- ) {  @ -rot setval drop } onvan ;
 
 ` res refs+> value `res
 
@@ -74,7 +79,8 @@ variable btnswdo
 : >resvar> dup : >resvar `resvar Dv! ;
 : resvar `resvar Dv@ ;
  
-: res> reswdo @ getval --bc str ( "lf>"nl ) ;  | conversion to Win std line brk
+: res> reswdo @ getval --bc str -1 _cut | cluge to drop trailing cr from ' lst
+   ( "lf>"nl ) ;  | conversion to Win std line brk
 | bombs for some reason if ' "lf>"nl uncommented 
 : saverestxt res> R `res v! ;
 : rtype ( a n -- ) reswdo @ -rot setval drop ; 
@@ -89,12 +95,19 @@ variable btnswdo
 
 : savetext text> R `text v! ;
 
+ 
+: state>  statewdo win> ;
+| : >state ( str -- ) { statewdo @ -rot setval drop } onvan ;
+: savestate state> " state" (sym) Dv! ; 
+
+: insert-state callback statewdo @ ( "  | |>| " insert ) reswdo @ getval --bc insert drop ; 
+
 : saveLastsave ymd.hms R " lastSave" (sym) v! ;
 
 (  :: savetext savedic time&date _ymdhms rtype ; 16 cb: saveText )
 
 | prior  ~util.save  |
-: save callback  savetext saverestxt  savedic saveLastsave ;
+: save callback  savetext saverestxt savestate savedic saveLastsave ;
 
 | : >text ( str -- ) dup van textwdo @ -rot setval drop ref0del ; 
 : >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
@@ -124,6 +137,7 @@ variable btnswdo
 
 : getcurln ( wdo -- str ) curln 2dup str addr L rplc ;
 
+
 : type>res (spool) 2dup res 2! rtype ;
 
 | Evaluate line under cursor 
@@ -132,7 +146,8 @@ variable btnswdo
 |	 $.s ;then
 |	depth 0 =if nil then ;
 
-: f6 { getcurln eval } catch ?dup if ['] caught type>res $.s cr DMP  ;then 
+: f6 { getcurln eval } catch ?dup if ['] caught type>res $.s cr DMP 
+	nil >R0 ;then 
     depth 0 =if nil then
     { >R0> ['] lst type>res } catch ?dup if ['] caught type>res ;then 
 	llUpdate  $.sUpdate ;
@@ -140,7 +155,7 @@ variable btnswdo
 : sf6 { getcurln ['] eval type>res } catch ?dup if ['] caught type>res then
 	llUpdate  $.sUpdate ;
 
-alias:  |>| |
+|
 | : f3 { getcurln eval } catch ?dup if ['] caught type>res ;then 
 |    depth 0 =if nil then >R0> ['] lst type>res 
 | 	llUpdate  $.sUpdate ;
@@ -177,18 +192,6 @@ alias:  |>| |
   file-open-dialog[
     " YES" attr: MULTIPLEFILES ]fd
   popup getval unixslash str swap destroy ;  
-
-: win> ( handle -- str ) @ getval --bc str ;
-: >win ( str handle -- ) {  @ -rot setval drop } onvan ;
-  
- variable statewdo  
- 2variable state 
- 
-: state>  statewdo win> ;
-| : >state ( str -- ) { statewdo @ -rot setval drop } onvan ;
-: savestate state> " state" (sym) Dv! ; 
-
-: insert-state callback statewdo @ ( "  | |>| " insert ) reswdo @ getval --bc insert drop ; 
 
  ." | \\/ DIALOG DEF \\/ | " $.s cr
 | \/ DIALOG DEF \/ | ===================== |
@@ -234,7 +237,7 @@ variable d1
 
 | \/ ` text KEY DEFS \/ | ===================== |
  
-    { s" keyhelp" >resvar> R swap v@ >res } key-F1-cb 
+    { s" help" >resvar> R swap v@ >res } key-F1-cb 
  	 
 	 ['] save key-cS-cb 
 	 
@@ -280,11 +283,14 @@ variable d1
      expand  " state " tip 
      " sys" (sym) Dv@ " Tui" (sym) v@ " font" (sym) v@ van attr: FONT 
 
-    { s" keyhelp" >resvar> R swap v@ >res } key-F1-cb
+    { s" help" >resvar> R swap v@ >res } key-F1-cb
 
      key-F5-cb: insert-state
 	 
-	 { { savestate save `res `resvar Dv! statewdo f6  gui-default } add-callback gui-default } key-F6-cb
+	 { { save `res `resvar Dv! statewdo f6  gui-default } add-callback
+      gui-default } key-F6-cb 
+	 
+|	 { save `res `resvar Dv! statewdo f6 gui-default } key-F6-cb 
 	 
 	{ { statewdo sf6  gui-default } add-callback gui-default } key-sF6-cb 
 
@@ -294,12 +300,13 @@ variable d1
 	
 	{ statewdo ins-dayln } key-F12-cb
 	
-	{ savestate save } key-cS-cb | save text to state . save envirnment 
+	{ save } key-cS-cb | save text to state . save envirnment 
 	 
      state 2@ setval dup statewdo ! ]w
 | /\ ` state WINDOW /\ | ===================== |
 	spacer
  "  $tack | ( stack contents in hex )  $.s |                                        "  label[ dup sWdo ! ]w
+
 
 | \/ BUTTON DEFS \/ | ===================== |
 	hbox[ dup btnswdo !
@@ -331,8 +338,11 @@ variable d1
 |	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
 	  " bye" button[  action: gbye " ( exit Reva.CoSy )" tip  ]w
 	  
-    ]c
+
+
+	  ]c
 | /\ BUTTON DEFS /\ | ===================== |
+
 
   ]d fullCoSyFile van title 
  ; 
@@ -353,4 +363,4 @@ variable tpmst
 
 cr $.s ." | Tui end | " cr
 
- : EoDefs ;
+: EoDefs ; 

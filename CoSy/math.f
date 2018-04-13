@@ -9,9 +9,13 @@
 
 : rad fpi 180. f/ _f ; 
 
-: gcd	( a b -- c) | Jack Browns recursive  greatest common divisor 
-    dup if swap over mod gcd else drop then ;
- | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
+: tau pi 2. _f *f ;
+
+| \/ | Matrix & Complex | \/ | 
+ 
+: Im ( n -- n*n_IdentMat ) 1. 0. 2_f --abca rep take cL swap 2 _take take ;
+
+: 1i 0. 1. 2_f cL  .. -1. _f *f reverse ,L ; | matrix form of imaginary unit 
 
 | \/ | ===== |  Most basic euclidian computations | ======== | \/ |
 
@@ -20,6 +24,12 @@
 : norm^2 dup rep dot ;
 |   f( -1 0 1 )f norm^2 		|>| 2.00 
 : norm norm^2 sqrtf ;
+
+
+| \/ | misc  | \/ |
+: gcd	( a b -- c) | Jack Browns recursive  greatest common divisor 
+    dup if swap over mod gcd else drop then ;
+ | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
 
 | /\ MATH /\ |
 | =============================================== |
@@ -109,4 +119,35 @@ end
    dup while   
    2drop ;
 
+0 [IF]
+: p2	( n -- next-higher-power-of-2 )		| for finding mem slots .
+  | from  http://ronware.org/reva/viewtopic.php?pid=5865#p5865
+  asm{
+    shl eax, 1		; multiply by 2
+    bsr eax, eax	; get exponent
+  }
+;
+
+: 2^n? ( n -- bool )	| returns non-zero ( 1 or -1 ) if n power of 2 .
+	| from Helmar ; http://ronware.org/reva/viewtopic.php?pid=5871#p5871
+  asm{ 	
+  cmp eax, 2
+  jc .q
+  lea ecx, [eax - 1]
+  xor ecx, eax
+  cmp eax, ecx
+  sbb eax, eax
+.q:
+ } ; 
+
+[THEN]
+
 ." | /\\ MATH /\\ | "
+
+
+
+
+
+
+
+

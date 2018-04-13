@@ -8,6 +8,9 @@ cr ." | UTIL begin | "
 alias: xeq execute
 alias: |\/| | 
 alias: |/\| |
+alias: |>|  |
+
+: :; ; 	| Do nothing . NOOP .
 
 | =============================================== |
 | redef  p:  and def  p[ . from Danny Reinholt
@@ -63,7 +66,7 @@ alias: |/\| |
 
 : pause ekey drop ;  
 
-: D> dup : DMP 32 dump ;
+: DMP 32 dump ;
 
 : .> dup . ;
 
@@ -100,7 +103,7 @@ alias: |/\| |
   | esi contains the current stack ptr ,
   |  , ie , the address of the item which was ToS when it was called .
  
-: esi! asm{ mov esi, eax } drop ; 
+: esi! ( inline{ 89 C6 8B 06 8D 76 04 } drop ; ) asm{ mov esi, eax } drop ; 
   | |(| esi@ esi! |)|  ends up doing nothing |
 
 : ndrop 0 ?do  drop  loop ;	| should be optimized
@@ -201,7 +204,7 @@ $7FFFFFFE constant 0I		| integer infinity . ( Largest pos Number )
 | =============================================== |
 
 : on2> --ababc : on2 ( LA RA f -- LAr RAr )	| applies f to each LA and RA . 
-| f must be monadica and return exactly 1 cell .
+| f must be monadic and return exactly 1 cell .
 | on2> leaves items on stack . No ref chk .
  >r swap r@ execute swap r> execute ;
 
@@ -420,28 +423,6 @@ forth
 
 | MATH \/ | =============================================== |
 
-0 [IF]
-: p2	( n -- next-higher-power-of-2 )		| for finding mem slots .
-  | from  http://ronware.org/reva/viewtopic.php?pid=5865#p5865
-  asm{
-    shl eax, 1		; multiply by 2
-    bsr eax, eax	; get exponent
-  }
-;
-
-: 2^n? ( n -- bool )	| returns non-zero ( 1 or -1 ) if n power of 2 .
-	| from Helmar ; http://ronware.org/reva/viewtopic.php?pid=5871#p5871
-  asm{ 	
-  cmp eax, 2
-  jc .q
-  lea ecx, [eax - 1]
-  xor ecx, eax
-  cmp eax, ecx
-  sbb eax, eax
-.q:
- } ; 
-
-[THEN]
 
 ." | UTIL end | "
 

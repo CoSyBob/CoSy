@@ -25,7 +25,7 @@ needs math/floats
 
 with~ ~doubles with~ ~floats
 
-needs math/mod	needs asm
+needs math/mod	needs asm 
 
 | ." big "
 | needs math/big
@@ -207,9 +207,7 @@ alias: Type@ @		alias: Type! !
 
 | { ." integer " } value TypeI
 
-: int TypeI swap ! ;	| convert type to int
-: int> dup int ;		| convert type to int , returning
-
+: int> dup : int TypeI swap ! ;	| convert type to int | int> returning
 
 : intVecInit ( n - objAdr )		| make header and allocate space for int vec of length n
    cellVecInit int> ;			| integer vector type -1
@@ -313,8 +311,6 @@ ev refs+> value t1
  
 : >t1> dup >t1 ;
 
-ev refs+> value r 
-
 | \/ Individual types \/ 
 
 : Type@^ ( v -- v ) Type@ _i ;
@@ -341,8 +337,10 @@ ev refs+> value r
 : eachMir eachMcr int> ;
 : eachDir eachDcr int> ;
 
+defer aaply
+
 macro
-: i(		| input integers up til " )i" -- IV |
+: i( 		| input integers up til " )i" -- IV |
   100 K* dup intVecInit 
    swap 0do parsews >single 
     if over i ic! 
@@ -360,9 +358,10 @@ forth
 : rho ( list -- #L ) dup i# _i swap ref0del  ;	
  | Same as i# but CoSy list result 
 
-
 i( )i refs+> constant zild	| 0 iota 
 
+1 [IF]
+| integer dyadic funtions on simple lists eg | 5 _iota i( 1 -1 )i  +i `|
 : +i ['] + eachDir ;	| add 2 integer vecs 
 : -i ['] - eachDir ;	| subtract 2 integer vecs 
 : *i ['] * eachDir ;	| * 2 integer vecs 
@@ -370,11 +369,27 @@ i( )i refs+> constant zild	| 0 iota
 : _modi ['] _mod eachDir ;	| _mod 2 integer vecs 
 : \/ : mini ['] min eachDir ;	| min 2 integer vecs . "or" on booleans . 
 : /\ : maxi ['] max eachDir ;	| max 2 integer vecs . "and" on booleans .
-
+ 
 : =i ['] =I eachDir ;	| = ( Iverson logic ) 2 integer vecs 
 : <>i ['] <>I eachDir ;	| not equal ( Iverson logic ) 2 integer vecs 
 : <i ['] <I eachDir ;	| < ( Iverson logic ) 2 integer vecs 
 : >0i i0 : >i ['] >I eachDir ;	| > 2 integer vecs 
+[THEN]
+
+0 [IF]
+: +i { ['] + eachDir } aaply ;	| add 2 integer vecs 
+: -i { ['] - eachDir } aaply ;	| subtract 2 integer vecs 
+: *i { ['] * eachDir } aaply ;	| * 2 integer vecs 
+: /i { ['] / eachDir } aaply ;	| div 2 integer vecs 
+: _modi { ['] _mod eachDir } aaply ;	| _mod 2 integer vecs 
+: \/ : mini { ['] min eachDir } aaply ;	| min 2 integer vecs . "or" on booleans . 
+: /\ : maxi { ['] max eachDir } aaply ;	| max 2 integer vecs . "and" on booleans .
+
+: =i { ['] =I eachDir } aaply ;	| = ( Iverson logic ) 2 integer vecs 
+: <>i { ['] <>I eachDir } aaply ;	| not equal ( Iverson logic ) 2 integer vecs 
+: <i { ['] <I eachDir } aaply ;	| < ( Iverson logic ) 2 integer vecs 
+: >0i i0 : { >i ['] >I eachDir } aaply ;	| > 2 integer vecs 
+[THEN] 
 
 | : =c ['] =I each ;	| = ( Iverson logic ) 2 integer vecs 
 | : <>c ['] <>I each ;	| not equal ( Iverson logic ) 2 integer vecs 
@@ -426,7 +441,9 @@ i( )i refs+> constant zild	| 0 iota
   --aab str swap free ;
 
 macro
-: s" p: " p: str ; 
+: "_ '" parse compiling? if (") ;then "" ; 	| 20180306
+: s" p: "_ p: str ; 	| like Reva ' " but no escape .
+: s/" p: " p: str ; 	| like Reav ' " . | NOT ANS s" I didn't know about . 
 forth 
 
 s" " refs+> constant zic 	| empty char string  
@@ -854,35 +871,39 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
     dup i# 0 ?do L@ R@ i i@ l0@ execute refs+> l1@ i i! loop 
    l1@ 2P> ;
 
-: aaplym ( LA fn -- r ) 
+| \/ |  Atomic Apply operators . Apply verb to simple leafs of noun  | \/ | 
+| see | 20180226 | 
+: aaplym ( n v -- r ) 
    swap 1p 
-   R@ Type@ 0if ." ( BRANCH ) " R@ i# cellVecInit >aux>		| Res 
+   R@ Type@ 0if  | ." ( BRANCH ) " 
+      R@ i# cellVecInit >aux>		| Res 
     	i# 0 ?do R@ i i@ L@ ( $.s cr ) aaplym refs+> aux@ i i! loop
     	1P drop aux>		| 
-	else  ." ( LEAF ) " | 
+	else | ." ( LEAF ) " | 
 	 R@ L@ ( $.s cr ) execute 1P> nip 
     then ;
-
-: aaply ( LA RA fn -- r ) 
+ 
+:: ( aaply LA RA fn -- r ) 
    --cab 2p 
    R@ Type@ 0if
-     L@ Type@ 0if ." ( BRANCH ) both nested "  
+     L@ Type@ 0if | ." ( BRANCH ) both nested "  
        LR@ longer_ cellVecInit >aux>
         i# 0 ?do LR@ i i@i@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
-   	  else ." ( L LEAF  R NEST ) " 
+   	  else | ." ( L LEAF  R NEST ) " 
    	  R@ i# cellVecInit >aux> 
    	   i# 0 ?do L@ R@ i i@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
    	  then
     else ( R LEAF )
-   	 L@ Type@ 0if ." ( R LEAF L NEST ) " 
+   	 L@ Type@ 0if | ." ( R LEAF L NEST ) " 
    	  L@ i# cellVecInit >aux> 
    	   i# 0 ?do L@ i i@ R@ 3 SF@ aaply refs+> aux@ i i! loop aux> 
-   	  else ." ( both LEAF ) "  
+   	  else | ." ( both LEAF ) "  
    	   LR@ 3 SF@ execute 
 	  then
 	then 
 	2P> nip 
 	;
+ is aaply
 
 : ^= ( LA RA -- Bool ) ['] =i aaply ;
 : ^+ ['] +i aaply ;
@@ -898,7 +919,7 @@ variable indentv   : indent indentv @ spaces ;
 	 dup @ TypeV  =if ['] v. lstitm ;then
 	 dup @ TypeA  =if ['] a. lstitm ;then
 	 dup @ TypeFv =if ['] fv. lstitm ;then
-	 dup @ _n     =if drop indent ."  _n " ;then
+	 dup @ _n     =if drop indent ."  _n " cr ;then
      drop indent ." ( " ." nonce " ."  )" cr ;
  
 : o ( list -- list ) | show CoSy obj leaving unchanged . useful for debugging
@@ -936,7 +957,7 @@ variable indentv   : indent indentv @ spaces ;
      1 ?do 2 pick i i@ 2 pick execute loop
    >r drop ref0del r> ;
  
-: acrossYc  ( r0 RA fn -- r )	| result returning "/" on cell lists 
+: Y./ : acrossYc  ( LA RA fn -- r )	| result returning "/" on cell lists 
 	rot		| RA fn r			| LA is initial result 	  
    2 pick i# 
      0 ?do 2 pick i i@ 2 pick execute loop
@@ -1022,7 +1043,7 @@ variable indentv   : indent indentv @ spaces ;
     i# 0 ?do over i i@ over aux@ execute		 
      if auxdrop 2refs- i unloop ;then loop
 	auxdrop 2refs- _n ;
-
+ 
 : f? ( lst RA boolF -- index )
 	| index of first item in LA on which { RA boolF }
 	| returns true . Returns LA rho ( bad idea : Returns _n ) if not found . 
@@ -1032,6 +1053,11 @@ variable indentv   : indent indentv @ spaces ;
     L@ i# 0 ?do L@ i _at R@ aux@ execute i_ 
      if auxdrop 2P i _i unloop ;then loop
 	auxdrop L@ rho 2P>  ;  
+
+| more efficient search for 1st occurance of string in string | 20180315
+: ss1st ( s0 s1 -- idx ) 2refs+> 2dup >r van 
+	--aab r> van search 2drop swap - _i --cab 2refs- ; 
+| thought it would be useful in making | : tst f( 1 0 )f ; | work .  
 
 0 [IF]
 : _f? ( lst RA boolF -- index | _n )
@@ -1131,6 +1157,40 @@ variable indentv   : indent indentv @ spaces ;
      else vbody aux@ van move then 
    then aux@ v?refs+ ref0del aux> ;
 
+
+: ,L ( O0 O1 -- O2 )    | most basic catination of objects . Lisp like
+  2 cellVecInit dup vbody dup
+  4 pick refs+> swap  ! 2 pick refs+> swap cell+ ! nip nip ;
+
+: cLsimple ( la ra -- r ) | except for symbols 
+  i#i# + over Type@ VecInit >aux
+  over van >r> aux@ vbody >r> swap move 
+  dup van r> r> + swap move 2ref0del aux> ;
+
+: cL local[ l0 l1 | n0 n1 adr -- adr ] 
+| catinate Lists . keeps matching simple simple .
+   l0 @  l1 @  or  if
+    l0 @ l1 @ =if	| both same simple 
+    l0 @ _n =if ." nil " cr  ,L ;then 	| nil is special .
+    l0 @ TypeS =if l0 l1 ,L ;then
+    l0 l1 cLsimple ;then 
+   then
+   
+   l0 ?enc if  l0 i#  else  1  then to n0
+   l1 ?enc if  l1 i#  else  1  then to n1
+   
+   n0 n1 + cellVecInit to adr
+  l0 ?enc if l0 i# 0 ?do l0 i i@ refs+> adr i i! loop 
+          else  l0 refs+> adr 0 i!  then
+  l1 ?enc if l1 i# 0 ?do l1 i i@ refs+> adr n0 i + i! loop 
+          else l1 refs+> adr n0 i! then
+     | l0 l1 n0 n1 $.s 2drop 2drop | debugging
+	 l0 ref0del l0 l1 <>if l1 ref0del then 
+	  adr ;
+
+: ,/ ( lst -- lst )		| discloses each item of lst . just returns simple 
+ 	dup Type@ if ;then  ['] cL across ;	
+
 | Kludge fix of bug in Reva  ' search on some strings 
 : search ( a1 n1 a2 n2 -- a3 n3 true | false ) 
    prior search 00; over 0 <if cr ." search error " $.s cr 3drop 0 then ; 
@@ -1144,13 +1204,12 @@ variable indentv   : indent indentv @ spaces ;
   dup vdup dup van strlwr 2drop swap ref0del ;   
 
 | indices of S1 in S0 | Modeled on K _ss function 
-: ss lower swap lower swap : css ( S0 S1 -- IV )	
-   2p LR@ TypeC typechk 0if drop 2P z" args must be strings " throw then
-   L@ i# 0if 2P 0 _iota ;then 
+| ' ssc is case sensitive . ' ss  is not . 
+: ss lower swap lower swap : ssc ( S0 S1 -- IV )  2p 
+   L@ i# 0if 2P 0 _iota ;then  | if L empty return empty 
    L@ vbody >aux L@ i# intVecInit >aux	| stk : ; aux : L.va res  
    L@ van -1 /string 	| L.va -1 , L.i# +1 
-   L@ i# 1+ 0do  1 /string R@ van search | L.i+ n- true | false
-| the 2 max cures bug when singleton 
+   L@ i# 1+ 0do  1 /string R@ van search | L.i+ n- true | false 
       if over auxx@ - aux@ i ii!	| S1 S1a S1n S0+ n- 
        else aux> i _take auxdrop leave
       then loop 2P> ; 
@@ -1184,7 +1243,9 @@ variable indentv   : indent indentv @ spaces ;
 : _cut _i : cut ( v i -- v ) | discloses if singlton index 
   dup i# >r cut\ r> 1 =if dsc then ; 
  
-alias: _ cut 
+alias: _ cut 	| The K name .
+ 
+: 0cut i0 swap cL cut ; | same as ' cut but includes portion before 1st cut   
 
 : partition >_ : _partition ( v n -- v ) | cuts v into n parts .
 | if v i# not multiple of n , last portion will contain the remainder .
@@ -1230,54 +1291,21 @@ alias: _ cut
 : filter ( la ra fn -- r )	| applies bool fn to la and ra returning true items
 	2 pick refs+> >r each & r@ swap at\ r> refs- ;
 
-: ,L ( O0 O1 -- O2 )    | most basic catination of objects . Lisp like
-  2 cellVecInit dup vbody dup
-  4 pick refs+> swap  ! 2 pick refs+> swap cell+ ! nip nip ;
-
-: cLsimple ( la ra -- r ) | except for symbols 
-  i#i# + over Type@ VecInit >aux
-  over van >r> aux@ vbody >r> swap move 
-  dup van r> r> + swap move 2ref0del aux> ;
-
-: cL local[ l0 l1 | n0 n1 adr -- adr ] 
-| catinate Lists . keeps matching simple simple .
-   l0 @  l1 @  or  if
-    l0 @ l1 @ =if	| both same simple 
-    l0 @ _n =if ." nil " cr  ,L ;then 	| nil is special .
-    l0 @ TypeS =if l0 l1 ,L ;then
-    l0 l1 cLsimple ;then 
-   then
-   
-   l0 ?enc if  l0 i#  else  1  then to n0
-   l1 ?enc if  l1 i#  else  1  then to n1
-   
-   n0 n1 + cellVecInit to adr
-  l0 ?enc if l0 i# 0 ?do l0 i i@ refs+> adr i i! loop 
-          else  l0 refs+> adr 0 i!  then
-  l1 ?enc if l1 i# 0 ?do l1 i i@ refs+> adr n0 i + i! loop 
-          else l1 refs+> adr n0 i! then
-     | l0 l1 n0 n1 $.s 2drop 2drop | debugging
-	 l0 ref0del l0 l1 <>if l1 ref0del then 
-	  adr ;
-
-: ,/ ( lst -- lst )		| discloses each item of lst . just returns simple 
- 	dup Type@ if ;then  ['] cL across ;	
-
 : braket ( str strs -- str ) 2p> 0 _at swap cL R@ 1 _at cL 2P> ; 
-| Prefixes str suffixes list with strs . Examples :  
-|     s" /4thCoSy/CoSy/Furniture.f "  s"  ( "  s"  ) " ,L >t0> braket 
-|  s"  ( /4thCoSy/CoSy/Furniture.f  ) " 
+| Prefixes and suffixes str with 2 item strs . Examples :  
+|      s" 2 item"  s" <i>" s" </i>" ,L braket
+|  s" <i>2 item</i>"
 |     s" /4thCoSy/CoSy/Furniture.f "  s"  | " enc braket
 |  s"  | /4thCoSy/CoSy/Furniture.f  | " 
 |     i( 5 6 5 )i 4 _i braket
 |  4 5 6 5 4 
 
 : tokcut ( str tok -- CV )	| cuts string at occurances of string `tok but includes segment before first token 
-  2p LR@ css i0 swap ,I L@ swap cut 2P> ;
+  2p LR@ ssc i0 swap ,I L@ swap cut 2P> ;
  
 : VM : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
    | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
-   2p LR@ swap cL >aux+> dup R@ css cut 	| appends 
+   2p LR@ swap cL >aux+> dup R@ ssc cut 	| appends 
    aux- R@ rho ['] cut eachleft  2P> ;
  
 | Finessing bomb on 0 occurances of tok . See Mon.Mar,20170306 |
@@ -1299,9 +1327,6 @@ alias: _ cut
 |  R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut 2P> ;
 
 | Quick ( to think ) and dirty . Could be highly optimized .
-
-: eachleftI --bac : eachrightI ( LA RA fn -- R ) | Lets get integer working 
-   >aux 2p ev R@ i# 0 ?do L@ R@ i _at\ aux@ execute cL loop aux> drop 2P> ; 
 
 : 'd ( LA RA fn -- R )  
    >r 2p r> LR@ longer_ ev swap
@@ -1348,7 +1373,7 @@ alias: _ cut
 | Like K's _lin for symbols . Returns 1 each mem of LA in RA . 
 
 : cconb ( strings str -- bool )	| returns bool where stings in LA contain RA 
-   2refs+> 2dup ['] css eachleft { i# sn _i } eachM> ,/ --cab 2refs- ;  
+   2refs+> 2dup ['] ssc eachleft { i# sn _i } eachM> ,/ --cab 2refs- ;  
  
 : cconn ( strings str -- idxs )	| returns indexs of stings in LA containing RA 
    cconb & ; 
@@ -1382,7 +1407,7 @@ $006346964 value TypeDic		| " dic"
 
 : () : ed ( -- emptyDic ) ev enc 2 _take ( TypeDic over Type! ) ;	
 
- ed  refs+> value R	 | initialize empty Root dictionary
+ ed  refs+> value R 	 | initialize empty Root dictionary
 
 : d#_ ( dic -- #items_raw )  0 i@ i# ;
  
@@ -1447,7 +1472,7 @@ $006346964 value TypeDic		| " dic"
 | delete item named sym from dictionary .
 : dts ( dic sym -- ) 2p> wheresym L@ swap dti 2P ;
 
-: Rnames R : dnames ( dic -- names ) 0 _at ; 
+: dnames ( dic -- names ) 0 _at ; 
 
 | \/ | look up symbol in dictionary , return address of corresponding val or _n 
 : vx_ ( dic sym -- adr of value | _n )
@@ -1463,6 +1488,9 @@ $006346964 value TypeDic		| " dic"
 
 | fetch value associated with symbol in dictionary
 : v@ ( dic sym -- val ) vx_ undefthrow @ ;	
+ 
+: vv@ ( D idx -- val )['] v@ Y./ ; 	| eg: | R `( a b c )` v@
+| if I were smarter , maybe I'd use | prior v@ | . need to play w first .
 
 | store value associated with symbol in dictionary
 : v! ( val dic sym -- )
@@ -1479,7 +1507,10 @@ $006346964 value TypeDic		| " dic"
 
 
 : >< ( sym val -- dic )		| creates dic with sym and val .
-	swap enc swap enc enc cL ; 
+	swap enc swap enc ,L ; 
+
+: djoin ( dic dic -- dic )  { cL enc } 'd ;
+| catinates each list of pair of lists , eg , dictionaries . see 20180218 .
 
 : symrplc ( dic oldsym newsym -- )
   >r swap 0 i@ --bba  ?sym_   dup _n =if 2drop z" undefined " throw then
@@ -1527,11 +1558,11 @@ needs Furniture.f	| Furniture : fns to flesh out the living area .
 cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 
  " COSYSTARTFILE" getenv str >value COSYSTARTFILE 
- COSYSTARTFILE dup s" \\" ss -1 _at i1 +i take >value CoSyDir
+ COSYSTARTFILE dup s" \" ss -1 _at i1 +i take >value CoSyDir
  
 : curdrive s" cd " shell> 2 _take ; 
 : fullCoSyFile curdrive COSYSTARTFILE cL ; 
-: CoSyFile  COSYSTARTFILE s" \\" toksplt -1 _at ; 
+: CoSyFile  COSYSTARTFILE s" \" toksplt -1 _at ; 
 
 needs SaveRestore.f
 
@@ -1545,12 +1576,14 @@ needs SaveRestore.f
 | loaded instead . 
 | CoSyFile dsc o restorefile ' R rplc
  
+
  COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
 
 | restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
 
  cr ." /\\ RESTORE /\\" cr
 
+: Rnames R dnames ; 
 
 | ' dup doesn't work in computations w refd lists . 
 | Need to ' rep to get 2 0 counted copies .
@@ -1597,9 +1630,9 @@ needs SaveRestore.f
 : lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
 : csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
  
-|  | Example 
-| s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 
+| \/ | Example | \/ | 
  
+| s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 	|>| 13 10
 |  read in and check if line delimiter is "lf or "cr "lf . generally trailing .
  
 | T0 "nl "ht ,L csv>DT >T1 	
@@ -1607,8 +1640,8 @@ needs SaveRestore.f
  
 | And the inverse 
 : DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
-: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
-: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
+: lst>csv ( lst d0,d1 -- csv ) 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
+: DT>csv ( DT d1,d0 -- csv ) 2p> --aba dnames sym>str>' swap MV 2P> ;
  
 |  | Note that the delimiters have to be reversed . 
 | T1 "nl "ht ,L reverse DT>csv 
