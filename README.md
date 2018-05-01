@@ -1,5 +1,5 @@
 # CoSy
-CoSy APL ala K level IDE in open Forth .
+**APL** ala **K** level IDE in open Forth .
 **The shortest path from the chip to the math .**
 
 See http://CoSy.com
