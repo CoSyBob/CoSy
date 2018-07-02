@@ -79,7 +79,8 @@ variable btnswdo
 : >resvar> dup : >resvar `resvar Dv! ;
 : resvar `resvar Dv@ ;
  
-: res> reswdo @ getval --bc str ( "lf>"nl ) ;  | conversion to Win std line brk
+: res> reswdo @ getval --bc str -1 _cut | cluge to drop trailing cr from ' lst
+   ( "lf>"nl ) ;  | conversion to Win std line brk
 | bombs for some reason if ' "lf>"nl uncommented 
 : saverestxt res> R `res v! ;
 : rtype ( a n -- ) reswdo @ -rot setval drop ; 
@@ -106,10 +107,10 @@ variable btnswdo
 (  :: savetext savedic time&date _ymdhms rtype ; 16 cb: saveText )
 
 | prior  ~util.save  |
-: save callback  savetext saverestxt savestate savedic saveLastsave ;
+: save ( callback ) savetext  saverestxt savestate savedic ." 5 " saveLastsave cr ;
 
-| : >text ( str -- ) dup van textwdo @ -rot setval drop ref0del ; 
 : >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
+
 : $.sUpdate spon ." $tack : "  $.s  spoff  
    sWdo @  z" TITLE"  spoolbuf lcount ( 2dup type cr ) zt IupStoreAttribute drop ; 
 
@@ -135,6 +136,7 @@ variable btnswdo
     @ caret-y? line-text? --bc ;
 
 : getcurln ( wdo -- str ) curln 2dup str addr L rplc ;
+
 
 : type>res (spool) 2dup res 2! rtype ;
 
@@ -209,7 +211,7 @@ variable d1
      " sys" (sym) Dv@ " Tui" (sym) v@ " res" (sym) v@ van size 
      expand  " Result " tip 
      " sys" (sym) Dv@ " Tui" (sym) v@ " font" (sym) v@ van 
-       attr: FONT 
+     attr: FONT 
  
     { s" res.help" >resvar> R swap v@ >res } key-F1-cb
     
@@ -236,9 +238,7 @@ variable d1
 | \/ ` text KEY DEFS \/ | ===================== |
  
     { s" help" >resvar> R swap v@ >res } key-F1-cb 
- 	 
-	 ['] save key-cS-cb 
-	 
+
 |     { { f6 insert-text  gui-default } add-callback gui-default } key-F3-cb
 	 
      ['] insert-text key-F5-cb
@@ -247,7 +247,7 @@ variable d1
      
 |	 ['] insert-R0 z" K_sF5" set-callback   | bombs [ for good reason ] 
 	 
-	 { { save `res `resvar Dv! textwdo f6  gui-default } add-callback gui-default } key-F6-cb
+	 { { save `res `resvar  Dv! textwdo f6  gui-default } add-callback gui-default } key-F6-cb
 	 
 	 { { textwdo sf6  gui-default } add-callback gui-default } key-sF6-cb
  
@@ -268,6 +268,8 @@ variable d1
  
 	 { textwdo ins-dayln } key-F12-cb
  
+	 ['] save key-cS-cb 
+
 | /\ KEY DEFS /\ | ===================== |
 
 	txt 2@ setval dup textwdo ! ]w
@@ -281,6 +283,7 @@ variable d1
      expand  " state " tip 
      " sys" (sym) Dv@ " Tui" (sym) v@ " font" (sym) v@ van attr: FONT 
 
+| \/ | Key DEFS | \/ |
     { s" help" >resvar> R swap v@ >res } key-F1-cb
 
      key-F5-cb: insert-state
@@ -333,11 +336,9 @@ variable d1
       
 	   " Save " button[ action: save " save everything " tip  ]w
 	  
-|	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
+	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
 	  " bye" button[  action: gbye " ( exit Reva.CoSy )" tip  ]w
 	  
-
-
 	  ]c
 | /\ BUTTON DEFS /\ | ===================== |
 
@@ -360,5 +361,3 @@ variable tpmst
 | : go d1 @ 0 0 show-xy 0 topmost >r  gui-main-loop  r> hide destroy  ;
 
 cr $.s ." | Tui end | " cr
-
-: EoDefs ; 

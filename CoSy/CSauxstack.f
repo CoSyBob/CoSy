@@ -33,7 +33,6 @@ context: ~CSauxstack ~CSauxstack
 : x>s ( -- n items restored from aux stack ) 
    aux> 0do aux> loop ;
 
-
 | : auxfence+ ( n -- ) (aux) dup @ dup @ 3 pick	| add n cells to the stack frame 
 |   cells rot + swap 3 pick +  over ! swap ! drop ;
 | Note these locals are not protected against overwriting
@@ -42,6 +41,24 @@ context: ~CSauxstack ~CSauxstack
 | of parameters will change by the number of cells added .
 
 | ----------------------------------------------------------------- |
+
+64 stack: (lpstk)
+ 
+: >lpstk (lpstk) push ;
+: >lpstk> dup >lpstk ;
+: lpstk@ (lpstk) peek ;
+: lpstk> (lpstk) pop ;
+ 
+: lpstk# ( -- int ) (lpstk) dup @ swap - cell / ;
+
+: >lpstkx lpstk> swap >lpstk >lpstk ;	| like ' tuck for lpstk stack
+: >lpstkx> dup >lpstkx ;
+: lpstkx@ (lpstk) @ cell- @ ;		| like ' over for lpstk stack .
+: lpstkx> lpstk> lpstk> swap >lpstk ;	| like ' nip  for lpstk stack
+ 
+: 2>lpstk >lpstk >lpstk ;		 : 2lpstk> lpstk> lpstk> ;  
+ 
+: lpstkdrop lpstk> drop ;
 
 | \/ | Need aux stack  | \/ |
 

@@ -9,17 +9,27 @@
 
 : rad fpi 180. f/ _f ; 
 
-: gcd	( a b -- c) | Jack Browns recursive  greatest common divisor 
-    dup if swap over mod gcd else drop then ;
- | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
+: tau pi 2. _f *f ;
 
-| \/ | ===== |  Most basic euclidian computations | ======== | \/ |
+| \/ | Matrix & Complex | \/ | 
+ 
+: Im ( n -- n*n_IdentMat ) 1. 0. 2_f --abca rep take cL swap 2 _take take ;
+
+: 1i 0. 1. 2_f cL  .. -1. _f *f reverse ,L ; | matrix form of imaginary unit 
+
+| \/ | ===== |  Most basic pythagorean ( aka euclidian ) computations | ======== | \/ |
 
 : dot *f +/ ;
 | f( -1 0 1 )f f( 1 2 3 )f dot  |>| 2.00 
-: norm^2 dup rep dot ;
+: norm^2 .. dot ;
 |   f( -1 0 1 )f norm^2 		|>| 2.00 
 : norm norm^2 sqrtf ;
+
+
+| \/ | misc  | \/ |
+: gcd	( a b -- c) | Jack Browns recursive  greatest common divisor 
+    dup if swap over mod gcd else drop then ;
+ | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
 
 | /\ MATH /\ |
 | =============================================== |
@@ -52,7 +62,7 @@ needs random/gm
 
 : rand ( i n -- iv )  2p L@ i_ R@ i_ _rand 2P> ; 	| n rands in  i iota . 
 
-: _perm ( n -- [ random permutation of n items ] )
+: perm >_ : _perm ( n -- [ random permutation of n items ] )
   dup _iota >aux dup dup _rand 
   swap 0 ?do dup i ii@ aux@ i ii@
   swap aux@ swap ix xchg aux@ i ii! loop free aux> ; 
@@ -110,3 +120,11 @@ end
    2drop ;
 
 ." | /\\ MATH /\\ | "
+
+
+
+
+
+
+
+

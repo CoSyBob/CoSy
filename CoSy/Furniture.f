@@ -1,11 +1,12 @@
 | Furniture : fns to flesh out the living area .
-| Require CoSy APL object vocabulary . Does not require R dictionary obs 
+| Require CoSy APL object vocabulary . 
+| Do NOT require R dictionary obs 
 | Author: Bob Armstrong / www.CoSy.com
 | Reva's license terms also apply to this file.
 
 cr ." | Furniture begin | "
 
-| |\/| MISC UTILS |\/|
+| \/ | MISC UTILS |\/|
 
 : str>pad_ ( str -- a n ) { pad place } onvan pad count ;
 | Move string < 1024 bytes to pad and free if ref count 0 . 
@@ -17,6 +18,8 @@ cr ." | Furniture begin | "
 : MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
 | Matrix to Vector . Ravels , eg : lists of strings LA inserting token RA
 | , eg : "bl or "lf , as a delimiter | in K | { ( # x ) _ ,/ x ,/: y }
+
+: rho' ['] rho 'm ;  | rho on each item of list . for convenience 
 
 | |/\| MISC UTILS |/\|
 
@@ -61,7 +64,7 @@ cr ." | Furniture begin | "
 | s" C:/4thCoSy/lib/alg/hsort" include^ >_ $.s if z" load fail : hsort " throw then
 | s" C:/4thCoSy/lib/helper" include^ >_ if z" load fail helper " throw then
 
-: forth> ( str -- str ) { ['] eval (spool) str } onvan ;
+: forth> ( str -- str ) { ['] eval spool } onvan ;
  | evaluates str spooling and returning output . | 20160605.1138
 
 : www ( str -- )  R s" BROWSER" v@  | open URL in BROWSER  
@@ -124,7 +127,7 @@ variable AFptr
 | Cut text into day entries ( approximate as can be seen from def . )
  "lf s"  | ======================== | " cL refs+> value daylnTok 
 : daylncut ( str -- listOFstrings ) daylnTok tokcut ;
- 
+
 | \/ Calendar \/ | 
  
 | : dt time&date 6 s>iv ;
@@ -147,8 +150,6 @@ variable AFptr
   2p> i#i# min 
    0do L@ i i@ R@ i i@ >sn ?dup if _i 2P> unloop ;then loop 2P i0 ; 
 
-| \/ \/ | partitioned string fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
- 
  "nl "nl cL refs+> value emptyLn
  | MS-DOS definition of blank line . must be changed for UNIX \n
  
@@ -156,7 +157,7 @@ variable AFptr
 : partFind ( phr str delim -- occurances ) | splits str at occurances of delim
 	| and returns parts that contain phr .
   toksplt 
-  refs+> >r> { "bl cL swap css dup i# M->I _i swap free } eachright
+  refs+> >r> { "bl cL swap ssc dup i# M->I _i swap free } eachright
   ['] cL across &  r@ swap at r> refs- ;
  
 : partFindBl ( phr str -- occurances )  emptyLn partFind ; 
@@ -172,9 +173,14 @@ variable AFptr
 : _DMP> ( addr -- str ) s"  DMP " forth> ; | returns ' DMP as str
 
 : words> ( str -- strL ) s" words " swap cL forth> VMbl -2 _i cut ;
-| see   s" help words" spool^ | use "bl arg all words 
+| see   s" help words" forth> | use "bl arg all words 
 
-: .needs^ ['] .needs (spool) str VMbl i-1  _ dsc ;
+: xwords> s" xwords " forth> "lf 2 _take toksplt dae
+   { "lf toksplt 2 _take } 'm  ;
+| all words in all contexts. returned  
+
+
+: .needs> ['] .needs spool VMbl i-1  _ dsc ;
 
 : ^!! ( str -- ) dup van shell ref0del ;	| CS version of !! shell execute .
 
@@ -184,9 +190,10 @@ variable AFptr
 |  dup Type@ TypeC <>if ref0del z" must be character " throw ;then
 |  dup i# intVecInit >aux> 0 ?do dup i ib@ aux@ i ii! loop ref0del aux> ;
  
-| Convert integer to character vec . | absurdly slow for some reason . 180218
+| Convert integer to character vec . 
 : i>c ( iv -- cv ) dup Type@ TypeI <>if ref0del z" must be integer " throw ;then
-  dup i# byteVecInit >aux> 0 ?do dup i ii@ aux@ i ib! loop ref0del aux> ;
+  dup i# byteVecInit >aux> i# 0 ?do dup i ii@ aux@ i ib! loop ref0del aux> ;
+| fixed missing ' i#  20180629 | absurdly slow for some reason . 180218
 
 : ilst ( RA -- indexed_list ) | appends index to list and flips  
 	1p> rho iota R@ ,L flip 1P> ;
@@ -207,6 +214,7 @@ variable AFptr
 : +-splt ( iv -- v ) 1p> i-1 >i refs+> >r> & R@ swap at 
 	R@ r@ 0=i & at ,L r> refs- 1P> ; 
 
+| see also | math.f |
 | /\ /\ /\ |  MATH  | /\ /\ /\ |
 
 |  : ref " notepad \\cosy\\ref.txt" shell ;
@@ -218,11 +226,11 @@ variable AFptr
 | : saveres ( -- ) ;
 
 
-| \/ \/ | OPERATORS | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
+| \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
-| : ~=\ ( list -- bool ( not_equal scan )   ;
-  
-| /\ /\ | OPERATORS | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
+
+
+| /\ /\ | Accounting tools | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
 | \/ | ARK | \/ |
 
