@@ -8,5 +8,5 @@
  
   BEWARE : 4th.CoSy is very much in an "R&D" form and on the "bleeding edge" of software creation . There is still lots to flesh out so proceed only if interested in following or contributing to that creative process .
  
-
-SEE http://www.cosy.com/Forum/viewtopic.php?id=3 for further instructions .
+| Sun.Jul,20180701 |
+Ask me anything .  bob@CoSy.com
