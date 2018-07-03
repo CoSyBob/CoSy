@@ -723,7 +723,7 @@ choices: ifetch	( vec idx type -- val )
 
 : i@i@ ( l r i -- lr rr ) >r swap r@ i@ swap r> i@ ;    
 
-: 0i@ dup 0 i@ swap ref0del ;	
+: >_ ( disclose  non-nested  and free if 0 refs ) dup 0 i@ swap ref0del ;
 
 : rplc ( new p0 -- )   | ref- and replace pointer at ' p0
   dup @ refs- swap refs+> swap ! ;
@@ -744,7 +744,7 @@ choices: istore
 
 : i_ dup 0 i@ swap ref0del ;  | raw first item of list . 
 
-: iota  0i@ _iota ;  : iotaf iota i>f ;
+: iota  >_ _iota ;  : iotaf iota i>f ;
 
 : t@ ( lst idx -- val type ) over @ >r> ifetch r> ; 
 
@@ -820,8 +820,6 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
 
 ." ---- " cr
 
-: >_ ( disclose  non-nested  and free if 0 refs ) dup 0 i@ swap ref0del ;
- 
 : dsc ( obj -- first_item ) | returns 0th item , | 20130923.230527 
   dup i# 0if ;then  	| If empty , just return 
   dup @ 0if dup 0 i@ refs+> (  to protect result from freeing if nested ) 
@@ -1102,7 +1100,7 @@ variable indentv   : indent indentv @ spaces ;
 : apvi ( start increment n -- a ) iota *i +i ;
 	| IBM's Arithmetic Progression Vector . Affine transform of  iota n .
  
-: _apv _i : apv ( start increment  n -- a ) iota i>f *f +f ; | floating 
+: _apv _i : apv ( start increment  n -- a ) iotaf *f +f ; | floating 
 
 : mem>iv ( adr n -- obadr )     | copy n cells from memory to IV
   dup intVecInit >r> 0 ix swap cells move r> ;
@@ -1132,8 +1130,11 @@ variable indentv   : indent indentv @ spaces ;
   swap ref0del ;
 
 : (' _n ; 
+
+ ." : (' " cr 	| replaced \/ w simply output of string . still don't understand 
+| 20180702
  
-help dup 	| totally bizarre . need invocation of ' help between defs of 
+| help dup 	| totally bizarre . need invocation of ' help between defs of 
 | ' (' and ' ')  or help  bombs ! | 20180502.1857 
 | see Sat.May,20180505 
  
@@ -1747,7 +1748,7 @@ cr ." here "  $.s cr
 | needs math/big
 
  ` script0 Dv@ ^eval
-| needs Job.f 	| doesn't run right from w/i script0 
+ needs Job.f 	| doesn't run right from w/i script0 
 
 needs Tui.f
 
