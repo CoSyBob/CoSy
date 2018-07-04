@@ -67,8 +67,6 @@ variable llWdo
 variable btnswdo
 
 
-
-
 : win> ( handle -- str ) @ getval --bc str ;
 : >win ( str handle -- ) {  @ -rot setval drop } onvan ;
 
@@ -107,7 +105,7 @@ variable btnswdo
 (  :: savetext savedic time&date _ymdhms rtype ; 16 cb: saveText )
 
 | prior  ~util.save  |
-: save ( callback ) savetext  saverestxt savestate savedic ." 5 " saveLastsave cr ;
+: save ( callback ) savetext  saverestxt savestate savedic align saveLastsave ;
 
 : >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
 
