@@ -11,6 +11,7 @@ cr ." Ron Aaron's " .ver ."  | http://ronware.org/reva/" cr cr
 with~ ~sys
 
 needs debugger
+
 needs os/shell needs os/dir needs os/fs
 
 : osfix ( a n -- a n ) os if unixslash then ; 
@@ -31,7 +32,10 @@ needs math/mod	needs asm
 | needs math/big
 | ." big " cr
 
-context: ~CoSy  ~CoSy
+context: ~CoSy  ~CoSy 	." | started | " 
+
+ cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
 | From Danny (?) to make loading directory independant 
@@ -41,15 +45,13 @@ context: ~CoSy  ~CoSy
 
 needs AltStackOps.f
 
-." | started | "
-
 needs util.f
 
 needs CSauxstack.f
 
 ' stkprmpt >defer prompt
  | set default prompt to show stack in hex . use " undo prompt " to reset to normal
-
+ 
 | \/ FOR DEBUGGING \/  ==================================== \/
  
 defer AT+> 	make AT+> ; 		
@@ -1774,7 +1776,7 @@ cr cr
 | cr cr
  [ELSE]
 ." In case of crash , execute  'restart' at command prompt ." cr
-." Execute 'restore' to replace CoSy.csy with backup CoSy.bk " cr 
+." Execute 'restore' to replace CoSy.csy with backup CoSy.bk " cr cr 
   go
  [THEN]
 | ################################################### |

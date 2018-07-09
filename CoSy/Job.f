@@ -13,7 +13,7 @@ cr ." | Job.f  begin | " cr
 
 with~ ~iup with~ ~ui
 
-.~ cr cr
+| .~ cr cr
 
 
 _n dup value dlgH  value txtH 
@@ -53,7 +53,6 @@ _n dup value dlgH  value txtH
 : svtxt ." svtxt | " $.> txtH gettxt R dlgH gettit v! ." | " $.> cr ;
 
 : closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
-
 
 
 | \/ | really nothing below here  | \/ | =========== |

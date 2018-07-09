@@ -91,6 +91,10 @@ variable btnswdo
 
 : text> textwdo @ getval str nip ;
 
+: >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ;  
+| Insert string in ` text window . Replaces current text in ` text window .
+| Necessary for replacing ` text with ` text from another .csy file . 20180708
+
 : savetext text> R `text v! ;
 
  
@@ -308,8 +312,8 @@ variable d1
 
 
 | \/ BUTTON DEFS \/ | ===================== |
-	hbox[ dup btnswdo !
-	
+	hbox[ dup btnswdo ! 
+
       | " Eval current line" button[ action: eval-current-line  " ( Evaluate the current line! )" tip  ]w
 	  
       | " Eval Selection!" button[ action: eval-selected-text  " Evaluate selected text!" tip  ]w
@@ -336,7 +340,7 @@ variable d1
 	  
 	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
 	  " bye" button[  action: gbye " ( exit Reva.CoSy )" tip  ]w
-	  
+
 	  ]c
 | /\ BUTTON DEFS /\ | ===================== |
 
