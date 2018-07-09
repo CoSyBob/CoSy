@@ -1,40 +1,36 @@
  | ###################################################################### |
 		| ----- |\/| Useful phrases |\/| ----- | 
- saveTSclone 	| Save timestamped clone of current environment | 
+ saveTSclone 	| Save timestamped clone of current environment | defined in ` script0
  Dnames 	| names in ' _d dictionary . initialized to ' R
  fileDialog 	| Get file name |
- 
+  
  ` script0 -> 	| display final startup script for editing . Set display parameters
   bye 		| close CoSy . If cmd wdo running , restart with Restart .
- 
-  Dnames  | names of items in _d dictionary ( initially ' R , the Root ) 
- 
-  s" i>c " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
-	 	` sys Dv@ ` CoSySource v@ 	| list of scripts searched
- 	res> VMlf s" 0L " con  
 
-  s" sel" words>	| defined words containg  phrase  . use "bl for all words
-  
-| ' forth>  executes raw Forth capturing and returning output |
-  s" see put "  forth> 	| see x86 code for word  	
-  s" help a[ " forth> 	| Reva Forth help for word . empty for overview
+| NB: examples below generally have whatever phrase I last searched for .
+ 
+  s/" .needs> " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+	 	`( sys CoSySource )` Dv@ 	| list of scripts searched
+
+  s" splt" words>	| defined words containg  phrase  . use "bl for all words
+ 		| ' forth>  executes raw Forth capturing and returning output |
+  s" see with~ "  forth> 	| see x86 code for word  	
+  s/" help .needs " forth>
   s" res> Help " forth> 	| useful for looking at list of related words 
-  http://dev.ronware.org/p/reva/ 	
-| online Reva help  
  
   ` text 	->
   ` help 	->
   ` ref 	->
   ` Addrs 	
-  ` ToDo 	 ->
+  ` ToDo 	->
   ` script0 	->
   ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
 
   R0 ->
   R0 Dv@ VMlf s" 'd " con 
   R0 Dv@ s" ( " toksplt s" morse" con 
-  ` text Dv@ daylncut >t0> s" job" con 
-  ` text Dv@ VMlf s" job" con
+  ` text Dv@ daylncut >t0> s" settxt " con reverse
+  ` text Dv@ VMlf s" " con
   res> >t0> 	| useful after editing list of "See also:" refs in help 
   s"  cr help " t0 nlfy ' cL eachright ,/  spool^ 	| help on each word in res |
   s" help " shell>
@@ -46,8 +42,10 @@
 | \/ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ---- | \/ | 
 
   `( ToDo text help state LanguageLinks )` sym>str>' >t0> 
- 
+ CoSyDir 
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
+  s" text" Dv@  s" \4thCoSy\CoSy\text.txt" >F 
+  s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F 
  
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt
 
@@ -105,7 +103,8 @@
  
  s" C:/4thCoSy/CoSy/CoSy.csy" 
  s" C:/4thCoSy/CoSy/CoSy.bk" 
- s" //COSYSTICK/4thCoSy/CoSy/CoSy.csy"
+ s" //COSYSTICK/c/4thCoSy/CoSy/CoSy.csy" 
+ 
 
 | \/ | parsing multiple file names returned using ctrlEnter w FileDialog . |
  s" //Cosy1511/d/CoSyBob/CoSy|CoSy - Copy (10).csy|CoSy.csy|" >t0>
@@ -113,14 +112,27 @@
  t0  0 _at s" /" cL  t0  i( 1 2 )i at ' cL 'R
 | /\ | 
 
- s" //Cosy1511/c/CoSy-4thCoSy/CoSy/CoSy - Copy (2).csy"
+ s" //Cosy1511/c/CoSy-4thCoSy/CoSy/CoSy - Copy (2).csy" F> >t0> rho
 
- R0 restorefile >t0> ' rho 'm 	| check shapes for integrity .
+ ' str>lst _i
+  txt 2@ setval dup textwdo !   
  
-  t0 dnames
+ R0 >t0> F> >t1> rho  	| check shapes for integrity .
+ R0 F> str>lst >t0> rho'
+  t0 ` text v@
   t0  ` text  >t1> v@ 	|  Stick in whatever object you want 
-  
+ s" needs" words> >t0> 
+ s" : text> " ??
+ see text>
+ text> >T0> 
+ T0
+  textwdo @ z" VALUE" ` T0 Dv@ van zt IupStoreAttribute _i
+: >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ; 
+ T0 >text
 
+
+rho |  ` text v@
+  T0 10 _take
    R0  R t1 v!	| replace local of object copy with one from file read . 
  ` ToDo ->
 
