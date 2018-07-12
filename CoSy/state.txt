@@ -3,19 +3,19 @@
  saveTSclone 	| Save timestamped clone of current environment | defined in ` script0
  Dnames 	| names in ' _d dictionary . initialized to ' R
  fileDialog 	| Get file name |
-  
+   
  ` script0 -> 	| display final startup script for editing . Set display parameters
   bye 		| close CoSy . If cmd wdo running , restart with Restart .
 
 | NB: examples below generally have whatever phrase I last searched for .
  
-  s/" .needs> " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+  s/" sigdig" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
 	 	`( sys CoSySource )` Dv@ 	| list of scripts searched
 
   s" splt" words>	| defined words containg  phrase  . use "bl for all words
  		| ' forth>  executes raw Forth capturing and returning output |
   s" see with~ "  forth> 	| see x86 code for word  	
-  s/" help .needs " forth>
+  s/" help  " forth>
   s" res> Help " forth> 	| useful for looking at list of related words 
  
   ` text 	->
@@ -41,12 +41,12 @@
 | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
 | \/ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ---- | \/ | 
 
-  `( ToDo text help state LanguageLinks )` sym>str>' >t0> 
+  `( ToDo text help state )` ( LanguageLinks ) sym>str>' >t0> 
  CoSyDir 
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
-  s" text" Dv@  s" \4thCoSy\CoSy\text.txt" >F 
+  s" text" Dv@  s" .\CoSy\text.txt" >F 
   s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F 
- 
+ s" dir cosy" shell>
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt
 
 | /\ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ----    | /\ |  

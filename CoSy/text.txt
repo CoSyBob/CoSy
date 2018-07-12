@@ -7,8 +7,9 @@
 			 write something . tap F11 .
  __________________________________________________________________________
 
+ 
 
-
+ 
  
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
@@ -2450,9 +2451,10 @@ f( 0 1 )f >t1>
 | added to CoSy.f | Thu.Jun,20180628 |
  | ======================== | Fri.Jun,20180629 | ======================== |
 | making 2D barcode for next card . Created w | https://barcode.tec-it.com/en
-| tested w | https://www.onlinebarcodereader.com/  |
+| tested w | 
+ https://www.onlinebarcodereader.com/  
  s" 42 6f 62 20 41 72 6d 73 74 72 6f 6e 67 0a 42 6f 62 40 43 6f 53 79 2e 63 6f 6d 0a 68 74 74 70 3a 2f 2f 43 6f 53 79 2e 63 6f 6d 0a 37 31 39 2e 33 33 37 2e 32 37 33 33 0a 0a" >t0> 
- t0 "bl VM hex { ^eval _i } 'm decimal ,/ i>c 	| hex string to char 
+ t0 "bl VM hex { ^eval _i } 'm decimal  ,/ i>c 	| hex string to char 
 | fixed error in ' i>c causing it to be extremely slow .
  
 | somewhen I did something which emptied a number of items in ' R , the root .
@@ -2510,8 +2512,42 @@ f( 0 1 )f >t1>
 | : hex> hex { ^eval _i } 'm decimal ; 	| debating untility of factoring this bit
 | t0 "bl VM hex> ,/ i>c
 | 1715 |  
+ R0 >T0> rho
+  T0 T0 { F> "nl ss rho } 'm ,L flip 
 
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ | ======================== | Tue.Jul,20180710 | ======================== |
+| 1426 | 
+ s" ./src/revacore.asm" 
+ T0 { F> "lf =i +/ } 'm
+ s" cd " shell>
+ T0 T0 { F> "nl ss rho } 'm ,L flip
+ (' T0 T1 ') rho'
+ 
+ CoSyDir
+| 1710 | help hanging in NR4PT for unknown reasons . Time to retire Reva ' help .
+
+ s" ./src/help.txt" F> >T1> rho
+ T1 s" def:" tokcut >t0> rho
+  t0 1 _at
+ s" cd" shell>
+" help " con
+: RevaHelp 
+ | ======================== | Wed.Jul,20180711 | ======================== |
+| | notes for | 20180711 Update | https://youtu.be/jsk-zhqz1Qs |
+| Factoring of nested references for v@ and v! vocabulary . eg:
+  ` sys Dv@ ` CoSySource v@
+  `( sys CoSySource )`  Dv@ 		| see ~ Sun.May,20180506 
+| Execution List 
+  2 _>sigdig
+    (' 20180709. _f ` PSBT ` BH  56.57 _f s" auto " ')
+  see (' see ') 	| sF6
+| 2D barcodes Fri.Jun,20180629 |
+ | 1548 | 
+  s" cd " shell>
+| 1602 | 
+
+
+ | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@ |  ^eval 	| save . Then execute to redefine .
    forgettst
@@ -2526,6 +2562,13 @@ f( 0 1 )f >t1>
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
  SKRIPT THOTS |
+
+		| NB: universal disclaimer : CoSy follows an
+
+		      IRRITIATION DRIVEN DEVELOPMENT
+
+				 agenda particularly wrt bugs |
+
  80 _iota 2 _i fmtnI flip ' ,/ 'm "lf MV
           1111111111222222222233333333334444444444555555555566666666667777777777
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
@@ -2538,7 +2581,7 @@ f( 0 1 )f >t1>
   Amount I don't know of anything other than APL & Forth massive .
     including even DOS & GitHub .  Really not intrested in programming .
 
-   Conceptual horizons Forth more than any other language recognises that language
+  Conceptual horizons Forth more than any other language recognises that language
    is a hierarchy . 
    A Forth system you can live in  | Straight Forward 
    A sense that attraction of APL invariance w size vs minimal .
@@ -2548,7 +2591,6 @@ f( 0 1 )f >t1>
    BOTH creation of vocabulary oriented rather than "programs" -- Sam Falvo 
   
  Programming an act of constructing sentences .
-
  
   Want basic Forth word by word interpretation with words knowing their
    meaning in context inside themselves not by reference to parsing tables .
@@ -2563,14 +2605,13 @@ f( 0 1 )f >t1>
     to "AI" 
   o Python challenges 
 
-
-
+--
    ? Know APL ? | Concatinative languages - Joy 
   Recursive defs . 
-    
   
    Alan Perlis : Epigrams in Programming #9 
   It is better to have 100 functions operate on one data structure than 10 functions on 10 data structures. 
+
 
   cosy.com/y16/CS(OS)2_1107.html#Scr1 
   cosy.com/y16/CS(OS)2_1107.html#Scr2

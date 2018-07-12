@@ -20,6 +20,7 @@ Bugs :
  o cannot create definition named ' --ca  . Some weird bug w IUP | 20150516
  o cF6 seems not to work
  o ' across  needs fixing . See 20161019
+ o ' .needs not returning anything 
 
  o Dappnd encing  
  o eachD | whole "mapping" vocab | see | Mon.Jan,20170116 |
@@ -27,12 +28,10 @@ Bugs :
  o F3  " |>| " result output fix looks easy 
  o parsing of  ` (  lists .
  o Functionalize ` lst | remove top nesting layer so reads as written .
- O words>  into real fn
  o make (spool) nestable .
  o make  {  }  true nestable quotations .
  o ' ilst ' Ilst names confusing
  o make ctrl-S ( shift S ) save timestamped copy of R 
- o need to change defs of ' cut ' cut*  to match ' at ' at\
  o make sF11 enclosed comment like F11 , eg : | 20170215.1503 | see that date .
  o factor delimiter ' emptyLn out of (CShelp) & related to allow , eg : "lf 
 
@@ -41,8 +40,6 @@ Bugs :
  unique aka nub  and there relatives 
  sort
  match | generally done .
-
-
 
 Other :
  o ' _perm  not uniform algo . Not good for serious work 
@@ -75,4 +72,5 @@ example lists :
 ( greek grocery ; 1843 Briargate Blvd. , w of N Academy )
 ( Schnitzel Fritz ; 4037 Tutt Blvd Colorado Springs CO 80922 ;
  Phone: (719) 573-2000 ; Website: http://www.SchnitzelFritz.com ) 
+
 
