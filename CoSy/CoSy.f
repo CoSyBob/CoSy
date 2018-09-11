@@ -34,7 +34,7 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
- cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+ | cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
