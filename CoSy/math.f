@@ -17,11 +17,11 @@
 
 : 1i 0. 1. 2_f cL  .. -1. _f *f reverse ,L ; | matrix form of imaginary unit 
 
-| \/ | ===== |  Most basic euclidian computations | ======== | \/ |
+| \/ | ===== |  Most basic pythagorean ( aka euclidian ) computations | ======== | \/ |
 
 : dot *f +/ ;
 | f( -1 0 1 )f f( 1 2 3 )f dot  |>| 2.00 
-: norm^2 dup rep dot ;
+: norm^2 .. dot ;
 |   f( -1 0 1 )f norm^2 		|>| 2.00 
 : norm norm^2 sqrtf ;
 
@@ -62,12 +62,12 @@ needs random/gm
 
 : rand ( i n -- iv )  2p L@ i_ R@ i_ _rand 2P> ; 	| n rands in  i iota . 
 
-: _perm ( n -- [ random permutation of n items ] )
+: perm >_ : _perm ( n -- [ random permutation of n items ] )
   dup _iota >aux dup dup _rand 
   swap 0 ?do dup i ii@ aux@ i ii@
   swap aux@ swap ix xchg aux@ i ii! loop free aux> ; 
 | not sure who in the Reva mail group offered this algo . Neat because it only
-| requires 1 rand , but I don't think it complete and uniform . see
+| requires 1 rand , but it's not complete and uniform . see
 | http://math.stackexchange.com/questions/1003779/show-whether-this-algorithm-produces-a-uniform-random-permutation
 
 : factors ( n _i -- factors ) .. i>f sqrtf f>i iota i1 +i .. --bac _modi 0=i & at ;
@@ -118,29 +118,6 @@ end
    then 
    dup while   
    2drop ;
-
-0 [IF]
-: p2	( n -- next-higher-power-of-2 )		| for finding mem slots .
-  | from  http://ronware.org/reva/viewtopic.php?pid=5865#p5865
-  asm{
-    shl eax, 1		; multiply by 2
-    bsr eax, eax	; get exponent
-  }
-;
-
-: 2^n? ( n -- bool )	| returns non-zero ( 1 or -1 ) if n power of 2 .
-	| from Helmar ; http://ronware.org/reva/viewtopic.php?pid=5871#p5871
-  asm{ 	
-  cmp eax, 2
-  jc .q
-  lea ecx, [eax - 1]
-  xor ecx, eax
-  cmp eax, ecx
-  sbb eax, eax
-.q:
- } ; 
-
-[THEN]
 
 ." | /\\ MATH /\\ | "
 

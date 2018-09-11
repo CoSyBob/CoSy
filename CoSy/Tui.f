@@ -67,8 +67,6 @@ variable llWdo
 variable btnswdo
 
 
-
-
 : win> ( handle -- str ) @ getval --bc str ;
 : >win ( str handle -- ) {  @ -rot setval drop } onvan ;
 
@@ -93,6 +91,10 @@ variable btnswdo
 
 : text> textwdo @ getval str nip ;
 
+: >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ;  
+| Insert string in ` text window . Replaces current text in ` text window .
+| Necessary for replacing ` text with ` text from another .csy file . 20180708
+
 : savetext text> R `text v! ;
 
  
@@ -107,10 +109,10 @@ variable btnswdo
 (  :: savetext savedic time&date _ymdhms rtype ; 16 cb: saveText )
 
 | prior  ~util.save  |
-: save callback  savetext saverestxt savestate savedic saveLastsave ;
+: save ( callback ) savetext  saverestxt savestate savedic align saveLastsave ;
 
-| : >text ( str -- ) dup van textwdo @ -rot setval drop ref0del ; 
 : >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
+
 : $.sUpdate spon ." $tack : "  $.s  spoff  
    sWdo @  z" TITLE"  spoolbuf lcount ( 2dup type cr ) zt IupStoreAttribute drop ; 
 
@@ -194,7 +196,7 @@ variable btnswdo
   popup getval unixslash str swap destroy ;  
 
  ." | \\/ DIALOG DEF \\/ | " $.s cr
-| \/ DIALOG DEF \/ | ===================== |
+| ################ \/ DIALOG DEF \/ | ##############===================== |
 variable d1  
 : define-dialog1 ( -- dialoghandle )
  | 32 32 dlg-icon-bitmap iup-image  dup " 0 0 255" attr: 0  dup " 255 0 255"  attr: 1  dup  z" myimage" swap iup-set-handle drop
@@ -211,18 +213,19 @@ variable d1
      " sys" (sym) Dv@ " Tui" (sym) v@ " res" (sym) v@ van size 
      expand  " Result " tip 
      " sys" (sym) Dv@ " Tui" (sym) v@ " font" (sym) v@ van 
-       attr: FONT 
+     attr: FONT 
  
     { s" res.help" >resvar> R swap v@ >res } key-F1-cb
     
  	{ reswdo curln str www } z" K_cF9" set-callback 
     { reswdo ins-hm } key-F11-cb
-	{ reswdo ins-ymd.hm } z" K_sF11" set-callback
-	
+	{ >- save reswdo ins-ymd.hm } z" K_sF11" set-callback
+
 	{ reswdo ins-dayln } key-F12-cb
 	
 	{ >- save } key-cS-cb | save res text to resvar . save envirnment 
-	 
+	
+	
      res 2@ setval dup reswdo ! ]w
 | /\ ` res WINDOW /\ | ===================== |
 	spacer
@@ -238,9 +241,7 @@ variable d1
 | \/ ` text KEY DEFS \/ | ===================== |
  
     { s" help" >resvar> R swap v@ >res } key-F1-cb 
- 	 
-	 ['] save key-cS-cb 
-	 
+
 |     { { f6 insert-text  gui-default } add-callback gui-default } key-F3-cb
 	 
      ['] insert-text key-F5-cb
@@ -249,7 +250,7 @@ variable d1
      
 |	 ['] insert-R0 z" K_sF5" set-callback   | bombs [ for good reason ] 
 	 
-	 { { save `res `resvar Dv! textwdo f6  gui-default } add-callback gui-default } key-F6-cb
+	 { { save `res `resvar  Dv! textwdo f6  gui-default } add-callback gui-default } key-F6-cb
 	 
 	 { { textwdo sf6  gui-default } add-callback gui-default } key-sF6-cb
  
@@ -266,10 +267,11 @@ variable d1
 	 
 	 { textwdo ins-hm save } key-F11-cb
 	 { textwdo ins-ymd.hm } z" K_sF11" set-callback
-|	 ['] ins-ymdhm z" K_sF11" set-callback
  
 	 { textwdo ins-dayln } key-F12-cb
  
+	 ['] save key-cS-cb 
+
 | /\ KEY DEFS /\ | ===================== |
 
 	txt 2@ setval dup textwdo ! ]w
@@ -283,6 +285,7 @@ variable d1
      expand  " state " tip 
      " sys" (sym) Dv@ " Tui" (sym) v@ " font" (sym) v@ van attr: FONT 
 
+| \/ | Key DEFS | \/ |
     { s" help" >resvar> R swap v@ >res } key-F1-cb
 
      key-F5-cb: insert-state
@@ -309,8 +312,8 @@ variable d1
 
 
 | \/ BUTTON DEFS \/ | ===================== |
-	hbox[ dup btnswdo !
-	
+	hbox[ dup btnswdo ! 
+
       | " Eval current line" button[ action: eval-current-line  " ( Evaluate the current line! )" tip  ]w
 	  
       | " Eval Selection!" button[ action: eval-selected-text  " Evaluate selected text!" tip  ]w
@@ -335,10 +338,8 @@ variable d1
       
 	   " Save " button[ action: save " save everything " tip  ]w
 	  
-|	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
+	  " Quit" button[  action: quit  " ( Quit Tui )" tip  ]w
 	  " bye" button[  action: gbye " ( exit Reva.CoSy )" tip  ]w
-	  
-
 
 	  ]c
 | /\ BUTTON DEFS /\ | ===================== |
@@ -362,5 +363,3 @@ variable tpmst
 | : go d1 @ 0 0 show-xy 0 topmost >r  gui-main-loop  r> hide destroy  ;
 
 cr $.s ." | Tui end | " cr
-
-: EoDefs ; 

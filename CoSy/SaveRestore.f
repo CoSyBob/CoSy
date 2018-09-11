@@ -52,7 +52,7 @@ cr ." | SaveRestore begin | " type cr
  
 ' ((storelst)) is  (storelst)
 
-: lst>str ( list -- string )  storelst --aab str swap free ;
+: lst>str ( list -- string ) 1p> storelst --aab str swap free 1P> ; 
 | main transformation between CoSy list structure an string .
 | This and its inverse were the start and heart of CoSy .
 	

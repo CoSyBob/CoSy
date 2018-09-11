@@ -201,6 +201,13 @@ $7FFFFFFE constant 0I		| integer infinity . ( Largest pos Number )
 
 |/\| CONSTANTS |/\|
 
+| \/ | convenience access to Reva ' temp variable | 20180908 | \/ | 
+ 
+: t! temp ! ; : t@ temp @ ; 
+ 
+: stkrvrs ( ... n -- ... reversed ) dup 1- t! 2/ 0 do i pick t@ i - 1+ pick
+	i 1+ put t@ i - put loop ;
+
 | =============================================== |
 
 : on2> --ababc : on2 ( LA RA f -- LAr RAr )	| applies f to each LA and RA . 
@@ -420,9 +427,6 @@ forth
  
 : anfn ( arg[s] word -- word_on_<arg[s]> ) 
   xt>name "  " strcatf 2swap strcatf eval ;
-
-| MATH \/ | =============================================== |
-
 
 ." | UTIL end | "
 

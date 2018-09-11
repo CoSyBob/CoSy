@@ -1,5 +1,6 @@
 | CoSy refcounted list parameter passing based on Stack Frames |
 
+cr ." | ParameterPushing > " 
 | |\/| StackFrames |\/| ================================== \/ |  
 ." |\\/| StackFrames |\\/| "  
  
@@ -49,7 +50,8 @@
 
 | \/ \/ | PARAMETER PUSHING & POPPING | \/ \/ |
 
-: >a> : >aux+> dup : >aux+ refs+> >aux ;
+| Aux stack fns w ref accounting .
+: >a> : >aux+> dup : >a : >aux+ refs+> >aux ;
 : a> : aux-ok> aux> dup refs-ok ;
 : a- : aux- aux> refs- ;
 
@@ -84,3 +86,4 @@
 : 2P> >aux+> 2P aux-ok> ; 
 
 | /\ /\ | PARAMETER PUSHING & POPPING | /\ /\ | 
+." < ParameterPushing | " cr 

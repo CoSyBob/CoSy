@@ -3,7 +3,7 @@
 | Reva's license terms also apply to this file.
 | Sat.May,20070526 
 
-cr ." | Derived begin | "  type cr 
+cr ." | Derived begin | " 
 | Words requiring ' R , Root , list
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -11,7 +11,7 @@ cr ." | Derived begin | "  type cr
  
 | \/ | raw Forth output .  Use sF6  | \/ |
 : Help ( cv -- ) | prints Reva help on multiple words .
-   "bl toksplt s"  cr .\" -------\" cr cr help " swap  ['] cL eachright  
+   "bl toksplt s/"  cr .\" -------\" cr cr help " swap  ['] cL eachright  
    ['] cL across ^eval ; 
 | /\ | raw Forth output .  Use sF6  | /\ |
 
@@ -29,7 +29,7 @@ cr ." | Derived begin | "  type cr
  		| which contain the phase passed
  
 : ?? : CShelp CShelpFul >aux+> dup ['] rho 'm ,/ i1 >i & at refs+> aux- refs-ok>  ; 
-| /\ |
+." Help /\\ " cr | /\ |
 
 | Returns only those file in which the phrase was found
 
