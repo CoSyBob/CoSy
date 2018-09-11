@@ -24,10 +24,11 @@ cr ." | Furniture begin | "
 | |/\| MISC UTILS |/\|
 
 | |\/| FILE & OS FNS |\/| with CoSy args
- 
+
 : dosslash^ ( str -- str ) { dosslash str } onvan ; | convert all / to \ |	
  
-: />\\  s" /" s" \\" ,L ssr ; 	| probably what you want vs dosslash^ 
+: />\  s" /" s" \" ,L ssr ; 	| probably what you want vs dosslash^ 
+| 20180815 | corrected for change in ' s" 
 
 : \>/ s" \\" s" /" ,L ssr ; 	| replaces DOS \ w RoW / .
 
@@ -48,14 +49,22 @@ cr ." | Furniture begin | "
 	--aab str swap nakedfree ;
 | Like "slurp" but takes and returns CoSy strings and frees original .
 
-
 : shell^ ( str -- str ) dup van shell ref0del ;
  
 : shell> ( str -- str ) dup van shell$ --aab str swap free swap ref0del ;
     | executes str in OS returns any output . 
 	| need to double \\ in strings since \ is the escape for \" .
 	| see also ` dosslash^  
+
+: dir s" dir " shell> ; 	| trumps Reva ~os dir 
+: cd s" cd " shell> -1 _cut ; 
+
+ " COSYSTARTFILE" getenv str >value COSYSTARTFILE 
+ COSYSTARTFILE dup s" \" ss -1 _at i1 +i take >value CoSyDir
  
+: fullCoSyFile cd COSYSTARTFILE cL ; 
+: CoSyFile  COSYSTARTFILE s" \" toksplt -1 _at ; 
+
 : start s" start C:\\Windows\\System32\\cmd.exe /k " swap cL shell^ ; 
 | start DOS program in separate command shell . 
 
@@ -75,11 +84,11 @@ cr ." | Furniture begin | "
 : WScut ( str -- list_of_strings_split_on_WhiteSpace ) dup WSb & cut ;
 
 : WStable ( str -- table ) ev temp ! 
-   VMlf { WScut enc temp @ swap cL temp ! } eachM temp @ ;
+   lfVM { WScut enc temp @ swap cL temp ! } eachM temp @ ;
 |  converts string containing table , eg read off browser screen , to CoSy
 | list of lists splitting rows on "cr"s and columns on any white space .
 
-
+| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ \/ Stack made with CoSy obs \/ \/ \/ |
 ev refs+> variable, stk			| set stk to an empty vector 
 
@@ -89,7 +98,7 @@ ev refs+> variable, stk			| set stk to an empty vector
    dup i# 0if drop ev refs+> ;then		| if empty return empty
    dup dsc  swap i1 _   stk rplc  dup refs-ok ; 
 | /\ /\ /\ Stack made with CoSy obs /\ /\ /\ |
-
+| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ \/ |  REF COUNTING  | \/ \/ \/ |
 | These fns are useful for checking that created obs get collected .
 | Useful phases are included in  ` state .
@@ -107,7 +116,6 @@ variable AFptr
 : AF1 AFptr off  AFbufON ; 		: AF0 AFbufOFF ; 	: AF> AFbuf AFptr @ _take ; 
  
 | /\ /\ /\ |  REF COUNTING  | /\ /\ /\ |
-
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ | Time Fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
  
@@ -143,7 +151,7 @@ variable AFptr
 [THEN]
 
 | /\ /\ | Time Fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
-
+| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ | partitioned string fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
 : strCmpr ( s0 s1 -- -0+ ) | returns -1 if s0 < s1 , 0 if identical up to length of shorter , 1 if s0 > s1
@@ -152,7 +160,25 @@ variable AFptr
 
  "nl "nl cL refs+> value emptyLn
  | MS-DOS definition of blank line . must be changed for UNIX \n
+
+| see 20180729
+: inb ( lst tok -- lst ) 2p> rho { take R@ match } 'L ,/ 2P> ;
+| bool of lines starting w tok 
+: in 2p> --aab inb & at 2P> ;
+| lines starting w tok 
+: ninb inb 0=i ;
+: nin 2p> --aab ninb & at 2P> ;
+| the obvious complements 
+: afteri ( str tok -- str ) tokcut 1 _at ;
+| portion of string after but including tok 
+: beforei >a> tokcut dsc a> cL ;
+| portion before but including tok 
  
+: braketed ( str tok0 tok1 ,L -- str ) 2p> dsc afteri R@ 1 _at beforei 2P> ;
+| portion of string between but including two token strings . eg :
+|   s" Gilgamesh Athorya <e9gille@hmail.com>," s" <" s" >" ,L braketed
+| <e9gille@hmail.com> 
+
 0 [IF]
 : partFind ( phr str delim -- occurances ) | splits str at occurances of delim
 	| and returns parts that contain phr .
@@ -164,7 +190,7 @@ variable AFptr
 [THEN]
 
 | /\ /\ | partitioned string fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
-
+| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ | miscellaneous fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
 : _dasm ( adr n -- str ) cL fmtI "bl MV s"  disassemble " cL forth> ;
@@ -172,7 +198,7 @@ variable AFptr
 
 : _DMP> ( addr -- str ) s"  DMP " forth> ; | returns ' DMP as str
 
-: words> ( str -- strL ) s" words " swap cL forth> VMbl -2 _i cut ;
+: words> ( str -- strL ) s" words " swap cL forth> blVM -2 _i cut ;
 | see   s" help words" forth> | use "bl arg all words 
 
 : xwords> s" xwords " forth> "lf 2 _take toksplt dae
@@ -180,10 +206,9 @@ variable AFptr
 | all words in all contexts. returned  
 
 
-: .needs> ['] .needs spool VMbl i-1  _ dsc ;
+: .needs> ['] .needs spool blVM i-1  _ dsc ;
 
 : ^!! ( str -- ) dup van shell ref0del ;	| CS version of !! shell execute .
-
 
 | Convert character vec ( byte to integer ) 
 : c>i ( cv -- iv ) ['] _i  'm ,/ ;
@@ -199,11 +224,16 @@ variable AFptr
 	1p> rho iota R@ ,L flip 1P> ;
 
 | /\ /\ | miscellaneous fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
-
-
+| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ \/ MOST MIMIMAL MATH \/ \/ \/ | 
 
+| Set & see significant digits variable used by formatting fns . 20180702 
+: _>sigdig _i : >sigdig >_ sigdig ! ; 	: sigdig> sigdig @ _i ; 
+
 : PoT 1p R@ R@ +/ %f 1P> ; | Proportion of Total . I find very useful 
+
+: 2sComplement i1 +i i-1 *i ; 	| useful for indexing from end   
+|  s" Hello World " 12 _iota 2scmplmnt at |>|  dlroW olleH | 20180724
 
 : c>f ( fv -- fv )  1.8 _f *f 32. _f +f ; 	| centigrade to farenheit | 20141124 
 : f>c ( fv -- fv )  32. _f -f 1.8 _f %f ; 	| farenheit to centigrade | 20141124 
@@ -225,10 +255,7 @@ variable AFptr
 | save res to value of 
 | : saveres ( -- ) ;
 
-
 | \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
-
-
 
 | /\ /\ | Accounting tools | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 

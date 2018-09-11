@@ -24,20 +24,25 @@ _n dup value dlgH  value txtH
  dup IupDialog swap 2_i cL ;
 
 : dhndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 0 i@ ;
-
+: thndl_ ( tui -- textHndl_ ) s" hndl" v@ 1 i@ ;
+ 
 : showXY ( dlgH X Y -- ) IupShowXY drop ; 
 
 : getX ( dlgH -- int ) z" X" IupGetAttribute zcount >single drop ;
 : getY ( dlgH -- int ) z" Y" IupGetAttribute zcount >single drop ;
 : getpos ( dlgH -- X Y ) dup getX swap getY ; | get UL corner pos of window .
 
-: setsize ( dlgH z" XxY" -- ) z" SIZE" swap IupSetAttribute drop ;
-: getsize ( dlgH -- z" XxY" ) z" SIZE" IupGetAttribute ;
+: setsize ( dlgH s" XxY" -- ) z" SIZE" swap van zt IupSetAttribute drop ;
+
+: getsize ( dlgH -- z" XxY" ) z" SIZE" IupGetAttribute zcount str ;
 
 
 : setAttr ( H lbl str -- ) dsc zt swap dsc zt swap IupSetAttribute drop ;  
 
-: settxt ( str txtH -- ) swap z" VALUE" swap van zt IupStoreAttribute drop ; 
+: setfont ( font thndl -- ) z" FONT" --bca van zt IupSetAttribute _i ;  
+
+: settxt ( str txtH -- ) z" VALUE" --bca van zt IupStoreAttribute _i ; 
+
 : gettxt ( txtH -- str ) z" VALUE" IupGetAttribute zcount str ; 
 
 : settit ( str dlgH -- ) swap z" TITLE" swap van zt IupStoreAttribute drop ; 
@@ -51,6 +56,20 @@ _n dup value dlgH  value txtH
 | saves text of text dialog based on title .
 
 : svtxt ." svtxt | " $.> txtH gettxt R dlgH gettit v! ." | " $.> cr ;
+
+
+
+: showWdo ( Job -- ) 1p  newwdo >a> R@ s" Tui" v@ >a> s" hndl" v! 
+| aux@ is Tui  auxx@ is hndl 
+| auxx@ lst aux@ lst  cr
+ auxx@ 0 i@ dup aux@ s" SIZE" v@ $.s cr setsize
+
+ ( dhndl ) aux@ s" posXY" v@ .. 0 i@ swap 1 i@ $.s cr IupShowXY drop 
+ auxdrop a-  1P 
+ ; 
+
+: closeWdo ( Job -- ) s" Tui hndl" blVM v@ >_ IupDestroy drop ; 
+
 
 : closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
 

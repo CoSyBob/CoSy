@@ -34,7 +34,7 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
-| cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+ cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
@@ -116,6 +116,12 @@ cr ." \\/ DYNAMIC \\/  "  $.s cr
 : ix    ( adr n -- adr of nth item in list ) | modulo indexing
   over i# ?dup 0if z" can't index empty " throw ;then 
    _mod over Ibytes * vbody + ;
+ 
+| Modulo indexing is a very fundamental feature of CoSy . 
+| It means an index can never go out of range because it simply wraps . 
+| It means the shorter of 2 lists is cyclically repeated to match the longer . 
+| A list can be addressed from the end with negative indices . eg 
+| See Furniture.f  2scomplement |
 
 | Objects are initialized with a reference count of 0 .
 | In general functions decriment the reference count on exit , freeing
@@ -660,7 +666,9 @@ cr ."  \\/ each \\/ " $.s cr
 : sqrtf ['] fsqrt eachMfr ; 
 : fracf ['] ffrac eachMfr ; 
 : lnf ['] fln eachMfr ; 	: l10f lnf 10. _f lnf %f ; 
-
+: sinf ['] fsin eachMfr ; 
+: cosf ['] fcos eachMfr ;
+: tanf ['] ftan eachMfr ;
 
 : f^2 fdup f* ; 	| not defined in lib/math/floats .
  | Much more efficient than { rep *f }  . Just 2 x87 instructions .
@@ -748,11 +756,11 @@ choices: istore
 
 : iota  >_ _iota ;  : iotaf iota i>f ;
 
-: t@ ( lst idx -- val type ) over @ >r> ifetch r> ; 
-
-: >^ ( val type -- 1#List ) 1 swap VecInit >r> 0 i! r> ;   
-
-: ^@ ( lst idx -- ^itm ) t@ >^ ;
+| appear to appear nowhere else  | 20180908.2146
+| : t@ ( lst idx -- val type ) over @ >r> ifetch r> ; 
+| : >^ ( val type -- 1#List ) 1 swap VecInit >r> 0 i! r> ;   
+| : ^@ ( lst idx -- ^itm ) t@ >^ ;
+| delete if no problem .
 
 : s>iv ( . . . n -- iv ) | makes int vec of top n items on stack 
   intVecInit >aux>  i# 0 ?do aux@ i ii! loop aux> ;
@@ -1009,6 +1017,7 @@ variable indentv   : indent indentv @ spaces ;
 | -------- 
 
 : scanf  ( RA fn -- r )	| result returning "\" on float lists 
+| fn must be raw floating fn . 
 	over i# 0=I z" nonce : empty , needs prototype " * throw 	
     over refs+> i# floatVecInit >lpstk 
 	over 0 if@ lpstk@ 0 if! 
@@ -1017,7 +1026,7 @@ variable indentv   : indent indentv @ spaces ;
 
 : scan ( RA fn -- r ) | result returning "\"
 	over i# 0=I z" nonce : empty , needs prototype " * throw 
-	dup fntype TypeFl =if scanf ;then
+	over Type@ TypeFl =if scanf ;then
 	over refs+> i# over fntype VecInit >lpstk 
 	over 0 i@ lpstk@ 0 i! 
     over i# 1 ?do lpstk@ i 1- i@  2 pick i i@ 2 pick execute lpstk@ i i! loop
@@ -1294,7 +1303,7 @@ alias: _ cut 	| The K name .
    i# 0 ?do dup i i@ (.) str refs+> aux@ i i! loop
    ref0del aux> ;
  
-: fmtnI >_ >aux { aux@ (.r) } 'm auxdrop ;
+: fmtnI >_ >aux { aux@ (.r) _str } 'm auxdrop ;
 
 : fmtI$ hex fmtI decimal ;
  
@@ -1339,12 +1348,14 @@ alias: _ cut 	| The K name .
 | : toksplt 2p> swap cL R@ prior toksplt 1 _cut 2P> ; 
 
 |  name from APL " Vector to Matrix " 
-: VMbl "bl toksplt ; 
+: blVM "bl toksplt ; 
  
-: VMnl ( str -- list_of_strings_split_on_cr ) "nl toksplt ;
+: nlVM ( str -- list_of_strings_split_on_crlf ) "nl toksplt ;
 |   Vector to Matrix on "newlines" . 
  
-: VMlf ( str -- list_of_strings_split_on_cr ) "lf toksplt ;
+: lfVM ( str -- list_of_strings_split_on_cr ) "lf toksplt ;
+
+: htVM ( str -- list_of_strings_split_on_tab ) "ht toksplt ; 
 
 : ssr ( str  s0 s1 ,L -- str ) | replaces occurences in str of s0 with s1   
   2p L@ R@ 0 i@ toksplt dup i# 1 =if refs- L@ 2P> ;then  
@@ -1516,7 +1527,7 @@ $006346964 value TypeDic		| " dic"
 | delete item named sym from dictionary .
 : dts ( dic sym -- ) 2p> wheresym L@ swap dti 2P ;
 
-: dnames ( dic -- names ) 0 _at ; 
+: dnames ( dic -- names ) 0 _at ;  : dvals 1 _at ; 
 
 | \/ | look up symbol in dictionary , return address of corresponding val or _n 
 : vx_ ( dic sym -- adr of value | _n )
@@ -1606,13 +1617,6 @@ needs Furniture.f	| Furniture : fns to flesh out the living area .
 
 cr ." \\/ RESTORE \\/  " $.s cr 	| =============== |
 
- " COSYSTARTFILE" getenv str >value COSYSTARTFILE 
- COSYSTARTFILE dup s" \" ss -1 _at i1 +i take >value CoSyDir
- 
-: curdrive s" cd " shell> 2 _take ; 
-: fullCoSyFile curdrive COSYSTARTFILE cL ; 
-: CoSyFile  COSYSTARTFILE s" \" toksplt -1 _at ; 
-
 needs SaveRestore.f
 
 | Reva takes first command line parameter as script to load , eg , this CoSy.f .
@@ -1631,8 +1635,6 @@ needs SaveRestore.f
 | restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
 
  cr ." /\\ RESTORE /\\" cr
-
-: Rnames R dnames ; 
 
 | ' dup doesn't work in computations w refd lists . 
 | Need to ' rep to get 2 0 counted copies .
@@ -1675,7 +1677,8 @@ needs SaveRestore.f
 | back and forth between CoSy DTs and standard .CSV strings , the most 
 | universal format for bank ledger downloads . See 20171212 .
  
-: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
+: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM dae R@ 1 _at ['] VM 'L 2P> ;
+| see also 20180719 
 : lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
 : csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
  

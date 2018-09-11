@@ -196,7 +196,7 @@ variable btnswdo
   popup getval unixslash str swap destroy ;  
 
  ." | \\/ DIALOG DEF \\/ | " $.s cr
-| \/ DIALOG DEF \/ | ===================== |
+| ################ \/ DIALOG DEF \/ | ##############===================== |
 variable d1  
 : define-dialog1 ( -- dialoghandle )
  | 32 32 dlg-icon-bitmap iup-image  dup " 0 0 255" attr: 0  dup " 255 0 255"  attr: 1  dup  z" myimage" swap iup-set-handle drop
@@ -219,12 +219,13 @@ variable d1
     
  	{ reswdo curln str www } z" K_cF9" set-callback 
     { reswdo ins-hm } key-F11-cb
-	{ reswdo ins-ymd.hm } z" K_sF11" set-callback
-	
+	{ >- save reswdo ins-ymd.hm } z" K_sF11" set-callback
+
 	{ reswdo ins-dayln } key-F12-cb
 	
 	{ >- save } key-cS-cb | save res text to resvar . save envirnment 
-	 
+	
+	
      res 2@ setval dup reswdo ! ]w
 | /\ ` res WINDOW /\ | ===================== |
 	spacer
@@ -266,7 +267,6 @@ variable d1
 	 
 	 { textwdo ins-hm save } key-F11-cb
 	 { textwdo ins-ymd.hm } z" K_sF11" set-callback
-|	 ['] ins-ymdhm z" K_sF11" set-callback
  
 	 { textwdo ins-dayln } key-F12-cb
  

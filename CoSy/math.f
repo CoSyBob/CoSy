@@ -67,7 +67,7 @@ needs random/gm
   swap 0 ?do dup i ii@ aux@ i ii@
   swap aux@ swap ix xchg aux@ i ii! loop free aux> ; 
 | not sure who in the Reva mail group offered this algo . Neat because it only
-| requires 1 rand , but I don't think it complete and uniform . see
+| requires 1 rand , but it's not complete and uniform . see
 | http://math.stackexchange.com/questions/1003779/show-whether-this-algorithm-produces-a-uniform-random-permutation
 
 : factors ( n _i -- factors ) .. i>f sqrtf f>i iota i1 +i .. --bac _modi 0=i & at ;
