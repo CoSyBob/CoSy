@@ -2,7 +2,7 @@
 
  F5	Insert  res  at cursor
  F6	CoSy evaluate | requires result to be CoSy object or empty stack 
-sF6	Eval line under cursor in  text 
+sF6	Eval line under cursor in raw Reva Forth 
 cF6     Eval line in OS
 
 cF9	{ textwdo @ selected-text? www } | open URL in ` BROWSER
@@ -23,6 +23,11 @@ cS	saveText
 | not well documented by Ron's ' help |
   http://dev.ronware.org/p/reva/wiki?name=Contexts  
   http://dev.ronware.org/p/reva/wiki?name=Numbers 
+
+| Sam Falvo' 20180324 SV-FIG YouTube on CoSy internals 
+ https://youtu.be/u46W-0KuP34
+| my annotation :
+ http://cosy.com/CoSy/y18/Re_SamFalvoSV-FIG_03.html
 
 | Forth |
 http://astro.pas.rochester.edu/Forth/forth-words.html
@@ -47,13 +52,5 @@ https://www.forth.com/starting-forth/ 	| Leo Brodie
   http://cosy.com/CoSy/4thCoSy/Help.html 	
 
 |  Other |\/|
-  
-
-
-
-
-
-
-
-
-
+ https://groups.google.com/forum/#!forum/comp.lang.forth   
+ https://groups.google.com/forum/#!forum/comp.lang.apl

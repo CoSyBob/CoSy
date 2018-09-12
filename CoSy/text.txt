@@ -1,15 +1,14 @@
  | ###################################################################### |
  | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ | revaver str |>| 7.0.10 
  | ###################################################################### | 
- | Tap F1 to see Key Help | 
+ | Tap F1 for Help | 
                                  First lesson :
  On a blank line below : tap F12 . tap  Enter .  
 			 write something . tap F11 .
  __________________________________________________________________________
 
- 
 
- 
+
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
@@ -19,9 +18,9 @@
  | \/ \/ \/ |  F6 executes the line under the cursor 	   | \/ \/ \/ |
  | The syntax of Forth is  { parse-a-word doIt repeat }    |
  | \/ | Put the cursor on lines below and tap F6      | \/ |
- 
-  s" Hello World " 		| return a CoSy character list , ie: string .
   
+  s" Hello World " 		| return a CoSy character list , ie: string .
+ 
   s" Hello World " reverse 	| See ! it was sitting on  Top of Stack 
 
   s" Hello World " rho 		| ` rho is APL for ` count   number of items .
@@ -46,9 +45,9 @@
 
 | NB : Note the difference between  `  and  ' .  Here are their definitions 
 
-  s" : ` " ?? 		| symbol ~ token ~ word | ' ??  
+  s" : ` " ?? 		| make next word into  symbol ~ token ~ word | 
 versus
-  s" help ' " forth> 	| the address of a raw Forth definintion .
+  s" help ' " forth> 	| the address of a raw Reva Forth definintion .
 
 To test if a word exists :
 
@@ -73,6 +72,8 @@ I use these a short hand in refering to words . Eg :
  VOCABULARY on LISTS
   R rho 	| APL word "count"  # of items in list  | raw :  i#	
   R ' rho 'm 	| count each ( monadic )
+same as 
+  R { rho } 'm  
 
   R dnames	| names in Root (  ` R  ) dictionary . 
    
@@ -81,7 +82,7 @@ I use these a short hand in refering to words . Eg :
  | ###################################################################### | 
  | \/ \/ \/ \/ |  help sources | \/ \/ \/ \/ | 
  
-F1 : Key Help  	| Tapping the F1 key lists all key shortcuts .
+F1 : Basic Help | Tapping the F1 key lists all key shortcuts .
  
  | ====================================================================== |
  | \/ \/ \/ |   4th.Cosy ( F6 )    | \/ \/ \/ |
@@ -124,7 +125,6 @@ But tapping shift F6 simply executes raw Forth leaving things on the stack
  	|       at at!  | ( lst iv -- r ) | top level get and put 
  
 | TYPES |
- 
 
   s" asdf\qwert.code " 	| Strings  ( bytes ) 	| since 20180306 
   | Note that the quote character itself cannot be in a string .
@@ -1673,11 +1673,7 @@ s" strallot" ?? ,L
  t0 { aux@ 'm } 'm
  | ======================== | Sun.Mar,20180311 | ======================== |
 : tst xwords> >aux> { 1 _at -1 _cut VMbl } 
-  
-{ aux@ 'm } 'm
-
  s"  " words> >t0> 10 _take
-
  s" LUCIDA CONSOLE::10" t0 ` font v!
  | ======================== | Mon.Mar,20180312 | ======================== |
  100000 _iota 1 _i + i>f +/
@@ -1763,10 +1759,9 @@ t0 ,L
  1i t0 dsc ' dot 'R
 | this is one of those problems which requires exact thought . I hate that .
  
-
   s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
   newwdo 2_i cL >t0>
- t0 0 _at >_ z" 300x200" setsize  t0 0 _at >_   1000 100 showXY  
+ t0 0 _at >_ z" 540x500" setsize  t0 0 _at >_   1000 100 showXY  
  t0 1 _at >_  ` ref Dv@ settxt  | works !
  t0 1 _at >_ gettxt >t1> rho
  t0 0 _at >_  destroy 
@@ -1806,9 +1801,7 @@ Sam Falvo II | https://youtu.be/mvrE2ZGe-rs
   T0 0 _at | 1 _at
 
  t1 t1 s" ~iw" cconn i1 +i at s" <i>" s" </i>" ,L braket
- t1 
  t1 t1 T0 0 _at  0 _at conn i1 +i at T0 0 _at 1 _at braket
-  
 | 2348 | 
  | ======================== | Fri.Mar,20180323 | ======================== |
 prepare for demo |
@@ -1817,72 +1810,1037 @@ prepare for demo |
  | ======================== | Sat.Mar,20180324 | ======================== |
  t0 T0 0 _at 0 _at toksplt >t1>
 : 0cut i0 swap cL cut ; | same as ' cut but includes portion before 1st cut   
-| added to CoSy.f . needed reordering of ' cL to precede .
+| added to CoSy.f . needed to reorder ' cL defs to precede ' cut .
   t1 1 _at .. "bl ss1st 0cut >T1> 
  T1 0 ix dup @ T0 0 _at 1 _at braket swap rplc
  T1
- see tst
 : tst 2p> dsc toksplt 2P> ;
  t0 T0 tst 1 ix @
- dup  
-: tst1 2p L@ 1 _at R@  @ "bl ss1st 0cut 
  T0 dsc >T0>
  see rplc
- @ lst
  T0 0 _at | 1 _at 
- t1
- i0
- T0  0 _at
+ T0 | 0 _at
  | ======================== | Sun.Mar,20180325 | ======================== |
- 
+Re : linux work |
+   : esi! asm{ mov esi, eax } drop ; 
+  | |(| esi@ esi! |)|  ends up doing nothing |
+ see esi! 
+00626A04  89 C6                       mov esi,eax
+00626A06  8B 06                       mov eax,[esi]
+00626A08  8D 76 04                    lea esi,[esi+04]
+00626A0B  C3                          ret
+: tst inline{ 89 C6 8B 06 8D 76 04 } ;
+ see tst
+ curdrive DMP
+ COSYSTARTFILE 
+| 2219 | 
+: tst1 ( str strs 2p L@ 1 _at R@  @ "bl ss1st 0cut 
+ | ======================== | Mon.Mar,20180326 | ======================== |  
+Want to finish thoughts on mary  
+ | ======================== | Thu.Mar,20180329 | ======================== |
+| Using ' acrossYc in Mary example showed me it was the answer to factoring
+| nested dictionary names which has been an outstanding ToDo . 
+| eg : 
+ _d ` sys v@ ` Types v@ ` TypeI v@
+ _d `( sys Types TypeI )` ' v@ acrossYc 
+| R ` Types vdel | cleaned up . Redundant since ` Types moved under ` sys .
+| Modified ' lst and ' res> to consistanly drop extranious trailing ' cr .
+ _d `( sys Types )` ' v@ Y./ >t0>
+ t0 ` TypeFv v@ fmtI$
+ $40000 _i t0 ` TypeFv v!
+ R `( sys Types TypeFv )` ' v@ Y./  fmtI$
+ res> R ` WP v@ ` cabin v@ ` text v!
+  `( WP cabin text )` ' v@ acrossYc 
+| 32. 5.5 2_f *f  16. _f %f 14.72 _f swap %f |>| 1.3381 || cost %lb Friskies cat shreds @ Walmart .
+ | ======================== | Sun.Apr,20180408 | ======================== |
+ | ======================== | Sat.Apr,20180414 | ======================== |
+: _fact _i : fact iota i1 +i ['] *i ./ ; 
+  5 _fact
+: combinations  
+ i( 3 4 )i .. ' _fact 'm ,/ ' *i _./ swap +/ fact ' i>f on2 %f
+ | ======================== | Sun.Apr,20180415 | ======================== |
+| 1114 | Happened to be sitting with General Norm Steen at the Colorado
+ Republican assembly yesterday . There were 7 candidates for Governor who
+ presented in the order :
+ WMO WME WMO WFE HMO BMO WFO  | using the labels
+ ( White Hispanic Black ; Male Female ; Establisment Outsider )
+ Norm and I noticed that the order was all the White Males , then the "diversity"
+ The order apparently was set by radom lot . But we wondered "what are the odds"
 
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
- ` tstScript -> 	| Test script for interactively editing multiline fns
-  ` tstScript Dv@   ^eval 	| save . Then execute to redefine .
-   forgettst
-  R0 DMP cr  ev >R0 R0 DMP  
-  1 _i
- mark forget 
- s" ./CoSy/math.f" F> ^eval  
- res> s" ./CoSy/math.f" >F 
- forget
+ I take such thing as a challenge to see how close or far CoSy is from Arthur
+ Whitney's K ( http://Kx.com ) from which it evolves . It gives me a reason to
+ implement some very basic probability functions . The major "noise" in the CoSy
+ definitions versus the K is that the CoSy is operating directly at the x86 
+ chip language level so needs to needs to convert raw numbers on the stack to
+ CoSy lists , and CoSy has not yet genericized operations on ,
+ eg: integers vs floats so operations and conversions are explicitly typed .
+ And , of course , CoSy is Forth's RPN " read a word , do it " syntax where K is
+ more or less APL's  " F of G of H 
+
+ The number of ways N items can be arranged is given by factorial N , eg: in this
+ case , 7 choices for the 1st spot , 6 for the next ... . In K 
+  fact : { */ 1 + ! x }
+  fact 7  />/ 5040
+ In CoSy 
+  : _fact _i : fact ( i -- i ) iota i1 +i ['] *i ./ ; 
+  | Factorial . _fact for convience takes naked integers on chip stack .
+  7 _fact  |>| 5040 
+ There are 5040 ways to order 7 distict items .
+ ( ! in K , iota in CoSy returns a list of the first N integers . )
+
+ Now , if we consider the 3 "WM" in one group and the 4 others in another , we 
+ can get the total orderings for the one followed by the other as , in K :
+  fact' 3 4 />/ 6 24 	/ where the ' means apply to each 
+ Similarly in CoSy 
+  i( 3 4 )i ' _fact 'm ,/  |>| 6 24 
+ And the total number of such combinations their product , in CoSy 
+  R0 ' *i ./ 	|>| 144   | where R0 always hold the result of last execution
+ Note , the CoSy lines are being execute right in these notes by tapping F6 
+  instead of Enter .
+
+ So , our final probability is 
+  144. _f 5040. _f %f 	|>| 0.02857 
+
+Putting together the whole computation ends up looking like
+ combfrac : { ( */ fact' x ) % fact @ +/ x }
+ combfrac 3 4 	/>/  0.2857 	/ in K
+
+: combfrac .. ['] _fact 'm ,/ ['] *i _./ swap +/ fact ['] i>f on2 %f ;
+ i( 3 4 )i combfrac 	|>| 0.02857 	| in current CoSy
+
+More complicated but still a single line .
+
+Note that these functions will apply to any sort of categorizing of the items .
+For instance , if the final WFO is considered in a class by herself as the
+perfect wrap up speaker , the the probability of the ordering by chance becomes 
+ i( 3 3 1 )i combfrac 	|>|  0.00714
+
+ Please accept my apologies for indulging myself , but following these sorts of
+ thoughts to their quantitative result is a pervasive motivation behind CoSy .
+ 
+ An extremely consequential difference betwee CoSy and K or any other APL , in deed
+ any other common language , is that it is open code all the way to the chip 
+ giving it unmatched flexibility .
+| 1518 | 
+ | ======================== | Wed.Apr,20180418 | ======================== |
+ s" ./CoSy/math.f" F>  
+ res> >t0> s" ./CoSy/math.f" >F  t0 
+| See Sun.Apr,20180415
+| Factorial . _fact for convience takes naked integers on chip stack .
+| gives the number of permutations of n items .  
+: _fact _i : fact ( i -- i ) iota i1 +i ['] *i ./ ; 
+|  7 _fact 	|>| 5040 
+ 
+| combinations of sets of items considered indistinguishable , ie: classified .
+: combinations ['] _fact 'm ,/ ['] *i ./ ; 
+|  i( 3 4 )i combinations 	|>| 144
+ 
+| Probability of some sequence of classified items . 
+: combfrac .. combinations swap +/ fact ['] i>f on2 %f ;
+|  i( 3 4 )i combfrac 	|>| 0.0285 
+ s" ./CoSy/math.f" F> ^eval
+ i( 3 3 1 )i combfrac
+| 1325 | 
+ s" dir " shell> 
+ s" git git://github.com/CoSyBob/CoSy gitCoSy" shell>
+ s" git clone --bare https://external-host.com/extuser/repo.git
+
+ | ======================== | Thu.Apr,20180419 | ======================== |
+| wanted totals of salaries , k$ , in proxy of officers of REFR . really need to 
+| clean up and genericize ' scan .
+  i( 450 255 160 100 35 35 35 )i ' + scanI  |>| 450 705 865 965 1000 1035 1070 
+ s" git help everyday" shell>
+ s" git clone 
+ | ======================== | Fri.Apr,20180420 | ======================== |
+| have wanted cleaner way to construct lists , particularly of account entries .
+| have been using , eg:
+ 20180406.0724 _f ` PSBT ` BH 165.54 _f s" auto" 4 times cL 
+| But have had a word around made long ago which catinates stack down to a ' _n 
+| so , simply 
+: (' _n ; 	: ') s_n>ev reverse ;
+ ('  20180406.0724 _f  ` PSBT  ` BH  165.54 _f  s" auto"  ')
+ (' `( White Hispanic Black )` `( Male Female )` `( Establishment Outsider )` ')
+ (' (' ` tst 5 _i ')  3.4 _f ')  fmt
+| Might be an alternative using the Stack Frame vocabulary .
+
+  dup @ 0if ( LIST ) indent ." ( " cr indentv ++ ['] lst eachM ."  )" indentv -- ;then   
+	 dup @ TypeI  =if ['] I. lstitm ;then
+	 dup @ TypeC  =if ['] C. lstitm ;then
+	 dup @ TypeS  =if ['] S. lstitm ;then
+	 dup @ TypeFl =if ['] F. lstitm ;then
+ 5 _iota ' I. spool
+ (' TypeI TypeC TypeS TypeFl s_n>iv reverse
+  ` sys Dv@ ` Types v@ flip
+ | ======================== | Sat.Apr,20180421 | ======================== |
+Sam Falvo CoSy talk | 
+ s" vdup " ?? 
+ syms probably not a good idea 
+ 19 56 2_i swap -i |>| 37 
+ https://youtu.be/StAwwWSLPzM?t=1h18m51s 
+ | ======================== | Sun.Apr,20180422 | ======================== |
+| annotating uploaded Sam's talk .
+ s" ./CoSy/CoSy.f" F> "nl VM >t0> rho 	|>| 1733 	| split on "cr "lf
+ t0 dae >t0> rho 	|>| 1375 	| delete all empty lines |
+| eliminate full line comments .
+ t0 t0 dae { 0 _at s" |" <>i } 'm ,/ & at >t0> rho 	|>| 1176 
+ t0 t0 { c>i 32 _i >i ['] maxi ./ } 'm ,/ & at rho 	|>| 1060 
+ | ======================== | Mon.Apr,20180423 | ======================== |
+ s" AS;DLFK WER" s" Ho" ' lower on2 ,L ssc
+ | ======================== | Thu.Apr,20180426 | ======================== |
+| 1321 | fed up w searches , eg: )| s" dic " ?? |( failing because of no
+| "bl at end of line or "ht rather than "bl following . Left as an exercise 
+  (' "ht "ht s" +" "ht ') ,/ | 3 times cL | "bl ,L
+| ` DIGITS Dv@   |>| s" 0123456789" 	| has been first on R dnames since
+| ` DIGITS Dvdel 	| very early testing . vestigal . removed 
+ 10 _iota { _i fmtI dsc } 'm ,/ 	| here's one clumsy way to make it .
+ s" 0123456789.e-" >t0> 	| allowed chars in numbers 
+ s" #$% 0123456789.e-" >t1>
+ | ======================== | Wed.May,20180502 | ======================== |
+| ` vectorization of dictionary referencing .
+| Rather major enhancement evolved working on accounts and toward K.CoSy ` Jobs . 
+| from
+ ` sys Dv@ ` Tui v@ ` font v@ 	|>| LUCIDA CONSOLE::14
+| to 
+ R `( sys Tui font )` ' v@ Y./ 	|>| LUCIDA CONSOLE::14
+| to a redefinition , ' encatom added to handle singletons 
+: Dv@ _d swap encatom ['] v@ Y./ ; 
+| to 
+: vv@ ( D idx -- val ) encatom ['] v@ Y./ ; 	| eg: | R `( a b c )` vv@
+ R ` sys vv@
+ see vv@
+ 
+ `( sys Tui font )` Dv@ 
+ | ` sys Dv@  1 _at ' rho 'm  | I used this line to see which values were Dics 
+ gui-close
+  see vv@
+: v@ ( D idx -- val ) ['] v@ Y./ ;  
+ _d `( sys Tui font )` vv@ 
+: tst s" tst0 " ;
+ ' tst _i 6507640 
+: tst prior tst ;  
+ ` WP Dv@ ` cabin v@ >t0> ` text v@ 
+ res> R `( WP cabin )` ' v@ Y./ ` text v! 
+ ` Fact Dv@ ` Planet#s v@ ` Mars v@ 
+ `( WP cabin text )`   Dv@
+ `( WP cabin text )` _d swap  ' v@ Y./
+ res> dup R `( WP cabin )` ' v@ Y./ ` text v!  res>
+| 1205 | | some credit card server for Brooke at door | 1349 | 
+ 
+: Dv@ _d swap encatom ['] v@  Y./ ; 
+  `( WP cabin tst )`  Dv@ 
+  ` WP encatom
+ Dv@ dnames
+  ` WP Dv@
+ res>
+: Rv! 2p L@ _d R@ -1 _cut ['] v@ Y./ R@ -1 _take dsc v! 2P ; 
+ see Rv!
+
+  s" stw"  `( WP cabin tst )` Rv!
+1p> -1 _cut R@  -1 _take dsc ,L 1P>
+
+| 1204 | Somehow Reva ' help  is broken on all my current copies ! BAD !
+ | ======================== | Sat.May,20180505 | ======================== |
+| 1346 | bizarre help bug . emailed > | 
+ https://groups.yahoo.com/neo/groups/CoSy-Alphas/conversations/messages/64
+| need to "Show message history" to see the whole thing online . 
+   ' norm _i |>| 0 
+ s" C:/4thCoSy/CoSy/math.f" F> | ^eval 
+   ' norm _i |>| 6523488 	| defined .
+ res> s" C:/4thCoSy/CoSy/math.f" >F 
+ see norm^2
+ 
+ f( 4 3 )f >t0> 
+ t0 2. _f ^f ' +f ./
+ t0 t0 dot
+ f( 4 0 )f f( 0 3 )f dot 
+f( 0 1 )f >t1>
+ t0 t1 *f norm
+ | ======================== | Sun.May,20180506 | ======================== || added /math.f to ` script0 |  
+| finally added ' fill , a useful variant of ' take  from K.CoSy to CoSy.f
+| like singleton ' take but fleshes out with last ite
+: _fill _i : fill ( l n -- l ) 2p L@ L@ rho i-1 +i R@ iota mini at 2P> ;
+| algorithm from K but not generaized to neg arg .
+| | like  x # y  but repeats last element of y if x > # y
+| | { :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
+| f( 1 0 )f 4 _fill |>| 1.0000 0.0000 0.0000 0.0000 
+| s" asdf " 10 _fill c>i |>| 97 115 100 102 32 32 32 32 32 32 
+ see _fill   see ~.fill
+
+| Made ' fill to make ' Imat | really need to make f( 1 0 )f state smart .
+: Imat ( n -- IdentityMat ) 1p> 1. 0. 2_f cL over i1 +i fill swap 2 _take take 1P> ;
+| returns n n identity matrix . 
+ 10 _i Imat
+| 1516 | Implementing nested v@ and v!  as I've worked out .
+
+| fetch value associated with symbol in dictionary
+: .v@ ( dic sym -- val ) vx_ undefthrow @ ;	
+ 
+: v@ ( D idx -- val ) encatom ['] .v@ Y./ ; 	| eg: | R `( a b c )` v@
+| if I were smarter , maybe I'd use | prior v@ | . need to play w first .
+ 
+: v@ ( D idx -- val ) ['] v@ Y./ ;
+ R `( sys Tui font )` v@ 	|>| LUCIDA CONSOLE::14
+ 
+: .v! v! ;
+: v! ( v D idx -- ) encatom swap >aux 2p L@ aux> R@ -1 _cut v@ R@ i-1 take dsc .v! 2P ; 
+
+ s" LUCIDA CONSOLE::12"  R `( sys Tui font )` v! 
+ | ======================== | Mon.May,20180507 | ======================== |
+ ` T0 Dv@ 
+ s" tst1q " ` T0 Dv!
+ | ======================== | Thu.May,20180510 | ======================== |
+| continuing from | 20180318 
+ s" C:/4thCoSy/CoSy/Job.f" F> ^eval 	| equivalent to ` needs
+  newwdo 2_i cL >t0>
+ t0 0 _at >_ z" 600x500" setsize
+ t0 1 _at >_ z" FONT" z" LUCIDA CONSOLE::10" IupSetAttribute _i
+ t0 0 _at >_   1000 100 showXY 
+ t0 1 _at >_  ` ToDo Dv@ settxt  | works !
+ t0 1 _at >_ gettxt >t1> rho
+ t0 0 _at >_  destroy 
+
+ t0 1 _at >_ gettxt >t1> rho
+ s" FONT" dup van zt swap ref0del 
+ t0 0 _at >_ z" Courier::10" z" FONT" IupSetAttribute
+ t0 1 _at >_ z" FONT" IupGetAttribute zcount _str
+ t0 1 _at >_ s" LUCIDA CONSOLE::12" attr: FONT
+| can't figure out why setting font doesn't work
+ | ======================== | Fri.May,20180511 | ======================== |
+| Just needed a damn ' swap !
+  res> t0 1 _at >_ res> settxt 
+ | ======================== | Sat.May,20180512 | ======================== |
+ ` text s" " >< ` .r Dv!
+ ` .r Dv@ ` text v@
+ ` sys Dv@ ` Tui v@  flip
+ (' (' s" SIZE" s" 600x500" ') (' s" posXY" 1000 100 2_i cL ')  ')
+ R0 (' s" FONT" s" LUCIDA CONSOLE::12" ') enc cL flip >t0>
+ t0 ` .r Dv@ ` Tui v!
+ `( .r Tui )` Dv@ 
+   newwdo 2_i cL ` .r Dv@ ` hndl v! 
+ ` .r Dv@ ` hndl v@ >t1>
+  t1 >_  z" SIZE" ` .r Dv@ ` Tui v@ ` SIZE v@ van zt IupSetAttribute _i
+  t1 >_  z" SIZE" IupGetAttribute 
+  ` .r Dv@ ` Tui v@ | ` posXY v@
+ t1 1 _at >_  z" FONT" ` .r Dv@ ` Tui v@ ` FONT v@ van zt IupSetAttribute _i
+ s" LUCIDA CONSOLE::10" 
+  t1 >_ 1000 100 showXY
+ z" FONT" IupGetAttribute zcount _str
+ | ======================== | Sun.May,20180513 | ======================== |
+ | ======================== | Mon.May,20180514 | ======================== |
+| ystdy on upgrade of WIN10  text not displaying ! I made bad non-obvious bug |
+ T0 >text
+ text> rho
+ s" : str" ??
+ statewdo 2@ 
+  s" //Cosystick/c/4thCoSy/CoSy/CoSy.f" F> VMlf rho
+  s" //Cosystick/c/4thCoSy/CoSy/Tui.f" F> VMlf >t0> rho
+  s" ./CoSy/Tui.f" F> VMlf >t1> rho
+  t0 t1 ' conn 'R
+ s" help fc" shell>
+ s" fc \\Cosystick\c\4thCoSy\CoSy\Tui.f .\CoSy\Tui.f" shell> >t0> 
+  reswdo win>
+ res> rho |  reswdo @ >win 
+ s" >text " ??
+ ` text Dv@  >T0>
+ T0 rh
+ T0 10000 _take  >text
+ text> rho
+: >win ( str handle -- ) {  @ -rot setval drop } onvan ;
+  
+ ` text Dv@ 100 _take textwdo >win
+ t0
+  txt 2@ | 2_i  
+   ` text Dv@ van textwdo @ -rot setval  
+ s" : >text " ??
+: text> textwdo @ getval str nip ;
+ text> rho |
+ res> >text
+ textwdo @ _i
+ reswdo @ _i
+ statewdo @ _i
+ help getval
+ textwdo @ getval str nip 
+ s" getval " ??
+ `( sys Tui text )` Dv@ 
+ 
+ | ======================== | Wed.May,20180516 | ======================== |
+| See | https://twitter.com/CoherentSystems/status/996787903425490944 |
+  ` .r Dv@ ` Tui v@ >t1> flip
+  s" C:/4thCoSy/CoSy/Job.f" F>  ^eval 	| equivalent to ` needs
+  newwdo 2_i cL >t0>
+ t0 0 _at >_ t1 ` SIZE v@ van zt setsize
+ t0 1 _at >_ ` FONT van zt t1 ` FONT v@ van zt   IupSetAttribute _i
+ t0 1 _at >_ ` FONT dup van zt t1 --bca v@ van zt   IupSetAttribute _i
+: tst ( hndl dic attr ) dup van zt  --bca v@ van zt IupSetAttribute _i ;
+ t0 >_ t1 ` SIZE  tst 
+ t0 1 _at >_ ` FONT tst  
+ t0 0 _at >_   1000 100 showXY 
+ t0 1 _at >_  ` ToDo Dv@ settxt  | works !
+ t0 1 _at >_ gettxt >t1> rho
+ t0 0 _at >_  destroy 
+    
+ s" C:/CoSyBob/CoSy/CoSy.csy" F> str>lst >T0> rho
+ T0 dnames s" .ml" con
+ res> | VMlf "bl MV
+ T0 `( CoSy.ml y2016.MSMM.ml Culver.ml )` dsc v@
+ t0 1 _at >_ T0 ` Culver.ml v@ settxt 
+ t0 1 _at >_ res> settxt
+ t0 1 _at >_ gettxt >T1> 
+ T1 s" C:/CoSyBob/y18/Culver63ml.txt" >F
+  T1 VMlf s" txc" con
+ res> >T0> 
+ T0 s" ," toksplt
+ res> >T0> 
+ T0 VMlf rho
+ T1  T0 cL  s" C:/CoSy/tmp.txt" >F
+ T1  s" C:/CoSy/tmp.txt" >F
+ T1 VMlf rho
+ | ======================== | Sat.May,20180519 | ======================== |
+| want to solidify satellite windows and nested indexing .
+
+  `( .r hndl )` Dv@
+  newwdo 2_i cL `( .r hndl )` Dv!
+  `( .r hndl )` Dv@ >_  1000 100 showXY 
+  `( .r hndl )` Dv@ >_ `( .r Tui SIZE )` Dv@ van zt setsize
+  `( .r hndl )` Dv@ 1 _at >_ z" FONT" `( .r Tui FONT )` Dv@ van zt IupSetAttribute _i
+ `( .r hndl )` Dv@ 1 _at >_  s" C:/CoSyBob/y18/Culver63ml.txt" F> >T0> settxt
+ T0 VMlf s" ko" con 
+ `( .r hndl )` Dv@ 1 _at >_ gettxt s" C:/CoSyBob/y18/Culver63ml.txt"  >F
+ `( .r hndl )` Dv@  `( .r Tui hndl )` Dv!
+  `( .r Tui )` Dv@ ` hndl v@
+  `( .r )` Dv@ ` hndl vdel 
+
+ savedic
+  saverestxt |
+  savestate | savedic saveLastsave 
+ savetext 
+ | ======================== | Mon.May,20180521 | ======================== |
+| 0936 | 
+ s" C:/CoSyBob/CoSy/CoSy.bk" F> str>lst >T0> rho
+ T0 `( sys CoSySource )` v@ `( sys CoSySource )` Dv@ ,L flip  | compare source lists
+ | ======================== | Sat.May,20180526 | ======================== |
+ | ======================== | Sun.May,20180527 | ======================== |
+| continuing . 20180603.1730 |
+ `( .r Tui )` Dv@ dnames |  ' fmt 'm "bl MV |>| SIZE posXY FONT hndl
+ ' newwdo _i
+ s" C:/4thCoSy/CoSy/Job.f" F> ^eval
+ `( .r Tui )` Dv@ >t0> dnames
+  newwdo dup t0 ` hndl v!
+ t0 ` posXY v@
+: dhndl_ ( tui -- dialogHndl_ ) ` hndl v@ 0 i@ ;
+: show ( dlgH X Y -- ) IupShowXY drop ; 
+ t0 ` hndl v@ 0 i@ t0 ` SIZE v@ van zt setsize
+ t0 ` hndl v@ 0 i@ t0 ` posXY v@ dup 0 i@ swap 1 i@ showXY 
+: setfont z" FONT" swap IupSetAttribute drop ;  
+ t0 ` hndl v@ 1 i@ t0 ` FONT v@ van zt setfont
+
+ `( .r text )` Dv@  t0 ` hndl v@ 1 i@ settxt
+ see settxt  see swap 
+ ( Tui attr -- ) 
+: setIupDAttr 2p L@ s" hndl" v@ 0 i@ R@ van zt L@ R@ v@ van zt IupSetAttribute drop 2P ;
+ s" 500x500" t0 ` SIZE v!
+
+ t0  s" SIZE" setIupDAttr
+  v@ >_ `( .r Tui SIZE )` Dv@ van zt setsize 
+
+: setIupEAttr 2p L@ s" hndl" v@ 1 i@ R@ van zt L@ R@ v@ van zt IupSetAttribute drop 2P ;
+ text> 100 _take `( .r text )` Dv!
+ t0
+  `( .r text )` Dv@ t0 ` hndl v@ 1 i@ swap settxt
+: settxt ( str txtH -- ) swap z" VALUE" swap van zt IupStoreAttribute drop ; 
+
+ z" FONT" `( .r Tui FONT )` Dv@ van zt IupSetAttribute _i
+  .r Dv@ ` text v@
+
+`( .r hndl )` Dv@ 1 _at >_  s" C:/CoSyBob/y18/Culver63ml.txt" F> >T0> settxt
+ T0 VMlf s" ko" con 
+
+`( .r Tui )` Dv@ >t0>  ` hndl v@ 	|>| 45335584 45335344 
+
+ `( .r hndl )` Dv@ 1 _at >_ gettxt s" C:/CoSyBob/y18/Culver63ml.txt"  >F
+ `( .r hndl )` Dv@  `( .r Tui hndl )` Dv!
+ `( .r Tui )` Dv@ ` hndl v@
+ `( .r )` Dv@ ` hndl vdel  
+ see destroy
+: show ( Job -- ) 1p newwdo R@ 
+ | ======================== | Tue.May,20180529 | ======================== |
+ `( sys CoSySource )` Dv@ 
+ | ======================== | Fri.Jun,20180601 | ======================== |
+ ` Fact Dv@ dnames
+ ` script0 ->
+ res> `( Fact Physics )` Dv! 	| moved Stefan Boltzman stuff to new item under ` Fact
+| 1351 | 
+ xwords> flip >t0> 	| all words in all Reva contexts . 
+ t0 dnames
+ t0 s" context: ~ui" v@ "bl VM >t1>
+ t1  i( 20 5 )i take { "bl MV } 'm
+ t1 28 _i partition { "ht MV } 'm 	| formatting a bunch of words to read more easily
+
+| Reordered args to ' v_cL | 1436 | 
+| bk to windows | 
+ | ======================== | Sat.Jun,20180602 | ======================== |
+ see fmt
+ 5 _iota ' lst spool >t0> rho
+: fmt ['] lst spool ; | finally doing the obvious to make general formatter | 20180602.1400  
+ 80 _iota fmt "bl VM -1 _cut flip >t1> rho | ' ,/ 'm |  "lf MV
+| some really strange behavior ' flip wrong depending on 1 space or more after cut
+| must be some sort of alignment problem need to look for . 
+| 1912 | 
+ 2  (.r) _str
+ 5 _iota { 3 (.r) _str } 'm  flip ' ,/ 'm
+ 5 _iota 3 >aux { aux@ . (.) _str } 'm aux> 
+
+| fixed long standing problem that loop fns , eg:  'm  use ' aux stack .
+| created ' lpstk vocab , 64 deep , in  ./CoSy/CSauxstack.f  to replace ' aux
+
+: fmtnI >_ >aux { aux@ (.r) _str } 'm auxdrop ;
+ 5 _iota 4 _i fmtnI
+ 3 >aux { aux> 
+ reset
+ 80 _iota 2 _i fmtnI flip ' ,/ 'm "lf MV
+ t0 flip  rho | 'm
+ t0 t1 ,L 
+ t0 t1 match 
+ see match
+ t0 rho
+ t0 ' rho 'm  ,/ 
+ t0 flip rho
+| 1420 |
+| 2259 | | 2321 | 
+ | ======================== | Sun.Jun,20180603 | ======================== |
+| continuing wdo wrk @ Sun.May,20180527 |
+| 1851 |  time to go thru | comp.lang.forth  ['] answers 
+ s" ./CoSy/Job.f" F> ^eval
+ ` newwdo _i   
+ `( .r Tui )` Dv@ dnames  
+ | ======================== | Tue.Jun,20180605 | ======================== |
+ ` Fact Dv@ flip 
+ f( 147.5e6 152.6e6 )f  ' %f ./
+
+: closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
+   see _./
+ ' >aux _i
+ | ======================== | Mon.Jun,20180611 | ======================== |
+ s" ./CoSy/Job.f" F> ^eval
+  
+ `( .r Tui )` Dv@ >t0> dnames
+  newwdo t0 ` hndl v!
+ t0 s" hndl" v@
+: dhndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 0 i@ ;
+ t0 dhndl_ t0 ` posXY v@ 
+: show ( dlgH X Y -- ) IupShowXY drop ; 
+ see showXY
+ 
+ t0 ` hndl v@ 0 i@ t0 ` SIZE v@ van zt setsize
+ t0 dhndl_ t0 ` posXY v@ dup 0 i@ swap 1 i@ showXY 
+: setfont z" FONT" swap IupSetAttribute drop ;  
+ t0 ` hndl v@ 1 i@ t0 ` FONT v@ van zt setfont
+ 
+: closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
+ t0 dhndl_ IupDestroy drop 
+ see closedlg 
+ 
+ {{ s" asdf " }}
+ | ======================== | Tue.Jun,20180612 | ======================== |
+ xwords> flip 1p> dup 1 _at swap dnames s" ~ui" conn at 1P> 
+| /\ | is example of constructing a line which should work & finding out it does .
+| it picks the words in the ~CoSy context out of the list of all words in all contexts
+| Really learning that ' 1p and ' 1P and kin to ensure the life of obs 
+| work ouside just starting & ending fn defs .
+ xwords> flip 1 _at ' rho 'm ,/ .. +/ ,L 
+ xwords> flip .. dnames swap 1 _at ' rho 'm ,L flip  | # words in each context 
+ xwords> | flip 1 _at | ,/ "bl VM ' rho 'm
+| number of words in each vocabulary and total 
+ xwords> flip 1 _at ,/ "bl VM ' rho 'm rho
+
+ s" ./CoSy/Job.f" F> ^eval 	| added to ` script0 | not yet working 
+: dhndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 0 i@ ;
+ `( .r Tui )` Dv@ >t0> dnames
+  newwdo t0 ` hndl v!
+: show ( Tui -- ) 1p> dhndl || dup 0 i@ swap 1 i@ IupShowXY drop 1P ;
+ t0 dhndl_ t0 ` posXY v@ .. 0 i@ swap 1 i@ IupShowXY drop 
+ t0 dhndl_ t0 ` SIZE v@ van zt setsize
+ t0 dhndl_ t0 ` posXY  showXY 
+: setfont z" FONT" swap IupSetAttribute drop ;  
+ t0 ` hndl v@ 1 i@ t0 ` FONT v@ van zt setfont
+
+: closedlg dlgH IupDestroy drop  _n dup addr dlgH 2! ;
+ 
+ t0 dhndl_ IupDestroy drop |
+  ev t0 ` hndl v! 
+ `( .r Tui hndl )` Dv@
+ | ======================== | Wed.Jun,20180613 | ======================== |
+| added | needs Job.f | to  CoSy.f  since problem w calling from ` script0 
+   
+: dhndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 0 i@ ; 
+ `( .r Tui )` Dv@ >t0> dnames
+  newwdo t0 ` hndl v!
+: setsize ( dlgH s" XxY" -- ) z" SIZE" swap IupSetAttribute drop ;
+ 
+ t0 dhndl_ t0 ` posXY v@ .. 0 i@ swap 1 i@ IupShowXY drop 
+ t0 dhndl_ t0 ` SIZE v@ van zt setsize
+ t0 dhndl_ t0 ` posXY  showXY 
+: show ( Tui -- ) 1p> dhndl || dup 0 i@ swap 1 i@ IupShowXY drop 1P ;
+
+: show ( Job -- ) 1p newwdo R@ 
+ | ======================== | Fri.Jun,20180615 | ======================== |
+| 1019 | figuring out whats wrong  in CoSyBob/CoSy 
+ s" C:/CoSyBob/CoSy/CoSy180521.csy" F> str>lst >t0> rho
+ t0 ` script0 v@ t1 ` script0 v!
+ t1 lst>str s" C:/CoSyBob/CoSy/CoSy.csy" >F
+| 1416 | 
+ | ======================== | Wed.Jun,20180620 | ======================== |
+| replacing  ' ?sym  w  ' ?str  fn names because that's was really tested .
+ | ======================== | Thu.Jun,20180621 | ======================== |
+| copy value from one dictionary to another . 20180621
+: vcopy ( d0 d1 v -- ) >a swap aux@ v@ swap a> v! ;  
+| I find I do | ' rho 'm | so often I'm adding 
+: rho' ['] rho 'm ; 	| to  ./CoSy/Furniture.f
+ | ======================== | Tue.Jun,20180626 | ======================== |
+| CoSy really is approaching parity with K.CoSy . I got a card at a
+| https://defenseentrepreneurs.org/ | meeting which has a 2D bar code on it 
+| but no email or url . I don't have a smart phone because I'll wait til I
+| can run CoSy on it one way or another . But , after finding the image from
+| my logitech screen cam couldn't focus , simply scanning the card could
+| be read by | https://www.onlinebarcodereader.com/ | which returned the text
+| and the hex . I took this as an excercise . How many CoSy words would it
+| take to convert the hex to text . I've scrambled the original hex string by
+
+  s" ./CoSy/math.f" F> ^eval
+  t0 "bl VM t1 rho perm at "bl MV
+| and inserting it in place of the original string . Just execute the lines .
+  s" 39 54 4c 69 43 65 6f 74 0a 67 6e 73 37 20 36 2d 6f 20 75 32 0 6b 39 72 6b 6d 79 32 42 0a 36 70 4c 43 20 37 65 30 6f 36 2d 69 53 6e" >t0     | enter it as a string in ' t0
+  t0 "bl VM hex { ^eval _i } 'm decimal ,/ >t1>     | split the string on blanks , evaluate each as hex
+                                                    | and ravel into simple integer list
+  ` ASCIIbrowser Dv@ "lf VM  t1 at     | Look up in the ASCII table I keep around
+| I left the issue there .
+ | ======================== | Wed.Jun,20180627 | ======================== |
+| Back around the 11th , somehow messed up my \CoSyBob\CoSy.csy file so it wouldn't
+| load . ( Lesson : use ' saveTSclone not infrequently ) . Task : improve backup method . 
+| The dictionary from the broken copy is importable . I don't have time to figure out what's wrong .
+   s" C:/CoSyBob/CoSy/CoSyt.csy" F> str>lst >T0
+| So , I updated ` text and important items , then wanted to check which others
+| were different . I had done a lot of restructing of what had been "flat" items
+| into items under sub dictionaries since "factoring" nested names back around 20180506
+| So , I've exercised and fleshed out several  K APL words that haven't previously
+| reached my Irritation Driven Development threshhold .
+| ' venn , which returns 3 lists :  ( x nin y ; x in y ; y nin x )
+| I've found very useful in K.Cosy . 
+
+: where ( L v -- idx )  ['] match f? ; 
+| Index of single v in list L . ' rho of L if not found .
+ 
+: memb ( L R -- bool ) over >a ['] where 'R ,/ a> rho <i ;
+| Bool of items of R which are in L
+ 
+: membv ( L R -- v ) 2p R@ L@ R@ memb & at 2P> ;
+| Items of R which are in L 
+
+: ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at 2P> ;
+ 
+: venn  2p (' R@ L@ ~membv LR@ membv LR@ ~membv ') 2P> ;
+| returns list of 3 lists :  ( x nin y ; x in y ; y nin x ) 
+ 
+ Dnames  T0 dnames  venn >t0> rho
+ t0 { sym>str>' "bl MV } 'm 
+
+| added to CoSy.f | Thu.Jun,20180628 |
+ | ======================== | Fri.Jun,20180629 | ======================== |
+| making 2D barcode for next card . Created w | https://barcode.tec-it.com/en
+| tested w | 
+ https://www.onlinebarcodereader.com/  
+ s" 42 6f 62 20 41 72 6d 73 74 72 6f 6e 67 0a 42 6f 62 40 43 6f 53 79 2e 63 6f 6d 0a 68 74 74 70 3a 2f 2f 43 6f 53 79 2e 63 6f 6d 0a 37 31 39 2e 33 33 37 2e 32 37 33 33 0a 0a" >t0> 
+ t0 "bl VM hex { ^eval _i } 'm decimal  ,/ i>c 	| hex string to char 
+| fixed error in ' i>c causing it to be extremely slow .
+ 
+| somewhen I did something which emptied a number of items in ' R , the root .
+  Dnames dup { Dv@ rho i0 =i } 'm ,/ & at  | which if any items are empty . 
+
+  s" C:/4thCoSy/CoSy/CoSy201806121019.csy" F> str>lst >T0 	| a recent save .
+  
+ (' R T0 ') { dnames sym>str>' "bl MV } 'm ' match ./ 	| check all names in both
+ Dnames (' R T0 ') { 1 _at rho' ,/ } 'm flip ' cL 'd 	| list names and sizes of each item
+| Dnames R 1 _at rho' ,/ i0 =i & at >t0> 	| get names of all empties | now ok
+
+ t0 { dup dup T0 swap v@ swap Dv! } 'm 	| This needs to be used to ` vectorfy ' vcopy
+ 
+ | ======================== | Sun.Jul,20180701 | ======================== |
+| 1731 | Uploading to GitHub because I said I would . 
+ | ======================== | Mon.Jul,20180702 | ======================== |
+| prompted by thead | https://www.facebook.com/groups/sliderule/permalink/1796878753731760/
+| found  : iotaf iota i>f ;  already existed . 
+| added \/ to bring significant digits setting to the CoSy level
+: _>sigdig _i : >sigdig >_ sigdig ! ; 	: sigdig> sigdig @ _i ; 
+ 2 _>sigdig 
+  1. .1 2_f 11 _i apv 
+  2. _f R0 *f R0 ,L
+( 
+ 2.0000 2.2000 2.4000 2.6000 2.8000 3.0000 3.2000 3.4000 3.6000 3.8000 4.0000 
+ 1.0000 1.1000 1.2000 1.3000 1.4000 1.5000 1.6000 1.7000 1.8000 1.9000 2.0000 
+ ) 
+ 
+| deleted ' 0i@ . same as ' >_ 	|
+| uploaded files newer than 3 mo | https://github.com/CoSyBob/CoSy/tree/NR4PT/CoSy
+| something wrong .
+ s" //Cosystick/c/NR4PT/CoSy/CoSy.csy" F> str>lst >T0> ` res v@ 
+| both running copies of CoSy TUI blew away when opened Paint Dialog in Irfanview
+| 2246 | 
+ | ======================== | Tue.Jul,20180703 | ======================== |
+| replaced bandaid ." 5 " w ' align in ' save . Seems to be working . | 1442 | 
+| replaced | help dup | w  ." : (' " cr | after def . still don't understand |
+| ' align didn't do the job .
+
+ | ======================== | Sat.Jul,20180707 | ======================== |
+| expanding on Chris's 
+ s" man git-clone "  linux>  
+ s" git clone https://github.com/CoSyBob/CoSy.git c://CoSyGit" shell> 
+ 
+ s" git help clone" shell>
+ | ======================== | Sun.Jul,20180708 | ======================== |
+| Finally implemented :
+: >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ;  
+| Insert string in ` text window . Replaces current text in this text window .
+| Necessary for replacing ` text with ` text from another .csy file .
+| Added to  tui.f 
+ | ======================== | Mon.Jul,20180709 | ======================== |
+  s/" t0 \"bl VM hex { ^eval _i } 'm decimal ,/ i>c" VMbl rho |>| 12 
+| didn't realize ' s" didn't "escape" ` " incorporated in words . But see problem .
+| : hex> hex { ^eval _i } 'm decimal ; 	| debating untility of factoring this bit
+| t0 "bl VM hex> ,/ i>c
+| 1715 |  
+ R0 >T0> rho
+  T0 T0 { F> "nl ss rho } 'm ,L flip 
+ | ======================== | Tue.Jul,20180710 | ======================== |
+| 1426 | 
+ s" ./src/revacore.asm" 
+ T0 { F> "lf =i +/ } 'm
+ s" cd " shell>
+ T0 T0 { F> "nl ss rho } 'm ,L flip
+ (' T0 T1 ') rho'
+ 
+ CoSyDir
+| 1710 | help hanging in NR4PT for unknown reasons . Time to retire Reva ' help .
+
+ s" ./src/help.txt" F> >T1> rho
+ T1 s" def:" tokcut >t0> rho
+  t0 1 _at
+ s" cd" shell>
+" help " con
+: RevaHelp 
+ | ======================== | Wed.Jul,20180711 | ======================== |
+| | notes for | 20180711 Update | https://youtu.be/jsk-zhqz1Qs |
+| Factoring of nested references for v@ and v! vocabulary . eg:
+  ` sys Dv@ ` CoSySource v@
+  `( sys CoSySource )`  Dv@ 		| see ~ Sun.May,20180506 
+| Execution List 
+  2 _>sigdig
+    (' 20180709. _f ` PSBT ` BH  56.57 _f s" auto " ')
+  see (' see ') 	| sF6
+| 2D barcodes Fri.Jun,20180629 |
+ | 1548 | 
+  s" cd " shell>
+| 1602 | 
+ | ======================== | Fri.Jul,20180713 | ======================== |
+ s" ./CoSy/Job.f" F> "lf VM s" : " con 	| essentially get names of all verbs in script
+ "bl words>
+ `( .r Tui )` Dv@
+ 
+: dhndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 0 i@ ; 
+ `( .r Tui )` Dv@ >t0> dnames
+ ...
+ | ======================== | Sun.Jul,20180715 | ======================== |
+| as far as I got on | https://groups.google.com/forum/#!topic/comp.lang.forth/sZZbahdDgZs
+| " There exists exactly one Pythagorean triplet for which a + b + c = 1000. 
+| Find the product abc. "  | something bombs .
+ 2 _i 30 _take ' *i ./
+ 5 _i iotaf 1. _f +f >t0> t0 *f >t1>
+  t1 { _f } 'm 
+ t1 t1 +f
+ 5 _iota  { _i } 'm
+  [ 20180902.2258 : answered by Steve Apter ]
+  | ======================== | Thu.Jul,20180719 | ======================== |
+| Doing | http://cosy.com/y18/CoSy_MMM2018.html | mail lists ran into bomb
+| w empty rows , mainly the last . So inserted ' dae  .
+: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM dae R@ 1 _at ['] VM 'L 2P> ;
+| probably should be dealt with at the ' toksplt level .
+ | ======================== | Fri.Jul,20180720 | ======================== |
+| really need extra editable windows even for MSMM mail list merging & cleaning
+ `( .r Tui )` Dv@ >t0> dnames
+  newwdo t0 ` hndl v!
+: setsize ( dlgH s" XxY" -- ) z" SIZE" swap IupSetAttribute drop ;
+ 
+ t0 dhndl_ t0 ` posXY v@ .. 0 i@ swap 1 i@ IupShowXY drop 
+ t0 dhndl_ t0 ` SIZE v@ van zt setsize
+ t0 dhndl_ t0 ` posXY  showXY 
+: show ( Tui -- ) 1p> dhndl  dup 0 i@ swap 1 i@ IupShowXY drop 1P ;
+ 
+ | ======================== | Sat.Jul,20180721 | ======================== |
+: tst 1p> s" Tui hndl" i1 2 _take --cab v! 1P ;
+  ` .r Dv@ s" Tui hndl" blVM v@ | i( 0 0 )i --cab v!
+  ` .r Dv@ tst 
+: tst 1p> s" Tui" v@ s" hndl" i1 2 _take --cab v! 1P ;
+  i( 2 2 )i ` .r Dv@ s" Tui hndl" "bl VM v!
+| renamed VMbl VMlf VMnl to blVM .. ..  | added htVM 
+: tst s" Tui hndl" blVM v! ;
+  i( 3 4 )i ` .r Dv@ tst 
+ see show
+ ` .r Dv@ showWdo 		| WORKS | | 1436 | 
+  `( .r Tui hndl )` Dv@ >_ IupDestroy _i
+| then got complicated & broke 
+  ` .r Dv@ showWdo  
+  `( .r Tui hndl )` Dv@
+  ` .r Dv@ closeWdo
+ | ======================== | Sun.Jul,20180722 | ======================== |
+| somehow lost notes on ` help trashing . & analysis using sF6 .
+
+| Enhancing file names . moving CoSy file words  from CoSy.f > Furniture.f
+| added 
+: dir s" dir " shell> ;
+: cd s" cd " shell> -1 _cut ; 
+
+| unfinished work on selecting comments . probably  ' ss approach be
+ s" ./CoSy/Furniture.f" F>  "lf s" |" cL tokcut >T0> | { lfVM rho } 'm 
+ T0 1 _at rho "lf ss |  lfVM rho
+lfVM -1 _cut >t0> | >a> 's" | " 
+ t0 { dsc s" | " =i } 'm
+| 1435 |  
+  s" C:/NR4PT/CoSy/CoSy.csy" F> str>lst ` help v@ ` help Dv!
+| restored ` help | /\ | | \/ | bk to ' Wdo vocab | \/ |
+  ` .r Dv@ showWdo 
+
+ `( .r text )` Dv@ `( .r Tui hndl )` Dv@ 1 i@ z" VALUE" --bca van zt IupStoreAttribute _i
+: settxt ( str txtH -- ) z" VALUE" --bca van zt IupStoreAttribute _i ; 
+ `( .r text )` Dv@ 
+ ` ref Dv@  `( .r Tui hndl )` Dv@ 1 i@ settxt
+  
+: thndl_ ( tui -- dialogHndl_ ) s" hndl" v@ 1 i@ ; | > Job.f
+
+  `( .r Tui )` Dv@ thndl_ gettxt  `( .r text )` Dv!
+
+: setfont ( font thndl -- ) z" FONT" --bca van zt IupSetAttribute _i ;  
+
+  t0 ` hndl v@ 1 i@ t0 ` FONT v@ van zt setfont
+  `( .r Tui FONT )` Dv@  `( .r Tui )` Dv@ thndl_ setfont
+| 1626 | going to upgrade Job.f | 
+ `( .r text )` Dv@ closeWdo
+
+ ` help ->
+ | ======================== | Tue.Jul,20180724 | ======================== |
+ 10 _i iotaf  ' f+ scanf	| only forms of ' scan implemented 
+ 10 _i iota  ' + scanI
+| lst>str bombed on 0 ref lists . fixed .
+: lst>str ( list -- string ) 1p> storelst --aab str swap free 1P> ; 
+ | ======================== | Wed.Jul,20180725 | ======================== |
+  ` ALPHabet Dv@ 26 _take >t0>
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+ t0 t0 s" TEA" enc' ' ss 'R ,/ 13 _i +i at
+: ROT13 t0 swap enc' ['] ss 'R ,/ 13 _i +i t0 swap at ;
+ s" TEA" ROT13
+GRN
+ R0 ROT13 
+TEA
+ | ======================== | Sun.Jul,20180729 | ======================== |
+: tst 1p { R@ } xeq 1P> ;  i1 tst 	| works . ' R@ & ' L@ not masked by quotation
+| Words I created in the process of cleaning CoSyMSMM mail lists : 
+
+: inb ( lst tok -- lst ) 2p> rho { take R@ match } 'L ,/ 2P> ;
+| bool of lines starting w tok 
+: in 2p> --aab inb & at 2P> ;
+| lines starting w tok 
+: ninb inb 0=i ;
+: nin 2p> --aab ninb & at 2P> ;
+| the obvious complements 
+: afteri ( str tok -- str ) tokcut 1 _at ;
+| portion of string after but including tok 
+: beforei >a> tokcut dsc a> cL ;
+| portion before but including tok 
+ 
+: braketed ( str tok0 tok1 ,L -- str ) 2p> dsc afteri R@ 1 _at beforei 2P> ;
+| portion of string between but including two token strings . eg :
+|   s" Gilgamesh Athorya <e9gille@hmail.com>," s" <" s" >" ,L braketed
+| <e9gille@hmail.com>
+ | ======================== | Mon.Aug,20180806 | ======================== |
+| fixing ' scan to look at argument rather than fn type for floats .
+ 3.14 _f 1p> Type@^ 1P>  TypeFl _i =i
+  f( 41.97 144.89 74.14 59.9 )f ' f+ scan
+ | ======================== | Sat.Aug,20180818 | ======================== |
+ s" ??" ??
+ | ======================== | Thu.Aug,20180823 | ======================== |
+| responding to | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1960246254275399/
+ s" ./lib/random/gm" F>
+  6 10 2_i  rand
+
+: sinf ['] fsin eachMfr ; 
+: cosf ['] fcos eachMfr ;
+: tanf ['] ftan eachMfr ;  
+| /\ | added to CoSy.f
+
+: fn 1p> 1%f sinf R@ ^2f cosf *f 1P> ; 
+ 3. _f fn 	|>| -0.2981 
+  
+ 0.0001 _f tau 8. _f %f 9 _i apv >t0>
+ R0 fn 
+ tau 16. _f %f
+ | ======================== | Sat.Aug,20180825 | ======================== |
+ s" ./CoSy/math.f" F>  ^eval   
+ 0.0001 _f tau 8. _f %f 9 _i apv >t0>
+: >xts { ['] find onvan _i } 'm ;
+ `( 1%f ^2f )` >xts >t1>
+ t0 t1 { >_ xeq } 'R
+ t0 t1 0 _at >_ xeq
+ { 1%f sinf } { ^2f cosf *f } 2_i ,L >t1>
+ t0 t1 { >_ xeq } 'R | bombs on garbage result 
+ | ======================== | Sat.Sep,20180901 | ======================== |
+| 1347 | Work on Talk notes & whatever | attacking corrupted ' R which 
+| causes corrupted ` saves which restart but bomb on execute .
+ 
+ s" C:/CoSyBob/CoSy/CoSy - Copy (19).csy" F> >t0> rho
+ t0 str>lst >t1> rho
+ t1 rho'
+: dvals 1 _at ; 	| too trivial to have defined before . added to /CoSy.f .
+| removed unused ' Rnames .
+
+ t1 dnames t1 vals  rho' ,L flip
+: step 
+ i-1 >t0>
+ t1 t0 i1 +i >t0> ' at 'L
+  find
+ see xeq
+ ` ref Dv@
+ t1 ` help v@
+ | ======================== | Sun.Sep,20180902 | ======================== |
+ ` ToDo ->
+  ` .r Dv@ 
+ 20180720
+ | ======================== | Sat.Sep,20180908 | ======================== |
+| in response to | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1969373516696006/
+| "reverse the order of all items in the stack"
+| 
+| Here is the function I just made for the stack in place . It just requires
+|  n 2/ | loops swapping head and tail items . 
+| Neat that it works on odd counts too . 
+| I split out the count so you can reverse the top n items rather than the whole stack .
+
+: t! temp ! ; : t@ temp @ ; 	| added to util.f
+: stkrvrs dup 1- t! 2/ 0 do i pick t@ i - 1+ pick i 1+ put t@ i - put loop ;
+ 0 1 2 3 4 5 6 7 stkrvrs
+
+| worked thru :
+ {{ 4 dup 1- t!  2/ 0 do i . t@ i - .  cr loop }}
+ reset 0 1 2 3 4 5 
+ {{ 6 dup 1- t!  2/ 0 do i pick . t@ i - pick .  cr loop }}
+ {{ 6 dup 1- t! 2/ 0 do i pick t@ i - 1+  pick .s i 1+ put .s t@ i - .s put .s cr loop }}
+
+| needs to have ' stkswap ( ... l r -- stack w positions l and r swapped ) factored . 
+
+ | ======================== | Tue.Sep,20180911 | ======================== |
+
+
+
  | ######################## | e o current work | ######################## | 
+ | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
+ ` tstScript -> 	| Test script for interactively editing multiline fns
+  ` tstScript Dv@ ^eval 	| save . Then execute to redefine .
+   forgettst
+  DMP | R0 DMP cr  ev >R0 R0 DMP 	| sF6 . useful for executing when ' save bombs  
+ Dnames | { Dv@ rho } 'm lst 	| sF6 . check if any ' rho' crazy 
+  1 _i
+  s" dir cosy" shell> 
+ s" .\CoSy\CoSy.bk" F> str>lst ` help v@ rho
+ ev ` help Dv! 
+rho lst
+ mark forget 
+ 
+ s" ./CoSy/math.f" F> | ^eval  
+ res> s" ./CoSy/math.f" >F 
+ 
+ forget
+
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
- SCRIPT THOTS |
+ SKRIPT THOTS |
 
-   ? Know APL ? | Concatinative languages - Joy 
-  Recursive defs . 
-    
- A Forth system you can live in 
+ 80 _iota 2 _i fmtnI flip ' ,/ 'm "lf MV
+          1111111111222222222233333333334444444444555555555566666666667777777777
+01234567890123456789012345678901234567890123456789012345678901234567890123456789
 
-  Amount I don't know of anything other than APL & Forth massive .
-    including even DOS & GitHub .  Really not intrested in programming .
+				http://cosy.com/
+		   http://cosy.com/y16/CS(OS)2_1107%23Scr0.jpg
 
-   Conceptual horizons Forth more than any other language recognises that language
-   is a hierarchy . 
-  
-   A sense that attraction of APL invariance w size vs minimal .
+		| NB: universal disclaimer : CoSy follows an
+		      IRRITIATION DRIVEN DEVELOPMENT
+				 agenda particularly wrt bugs |
 
-   BOTH Iverson & More insisted on Interactive environment . 
+ 			      | Electronic Paper |
+
+ 				 { dP%dt max } 
+
+			 | Your CockPit  |  Sandy Steier abt K.CoSy
+			 https://www.1010data.com/company/our-story/
+
+
+
+|  Amount I don't know of anything other than APL & Forth massive .
+   including even DOS & GitHub .  Really not intrested in programming per se |
+
+
+  HORIZONS : Conceptual . 
+  	Forth more than any other language recognises that
+	language is a hierarchy . 
+     However : all languages have a focus on some level
+ 		can't descect below . diffusion above 
+
+ 
+   BOTH Iverson & Moore insisted on Interactive environment . 
    
    BOTH creation of vocabulary oriented rather than "programs" -- Sam Falvo 
+	       Programming an act of constructing sentences .
+
+	https://twitter.com/CoherentSystems/status/1030908216987639808
+	http://cosy.com/Science/NotationIverson.gif
+
  
-  Want basic Forth word by word interpretation with words " knowing their meaninig
-   inside themselves
+	|	FORTH IS THE MAINLINE TO THE SILICON 	  |
+	  A Forth system you can live in  | Straight Forward |
 
-  CoSy ref counted lists of lists complementary to other vocs . 
+	|  APL  WHOLE OBJECT VOCABULARY LIKE FOURIER TRANSFORM TO SCALAR |
 
-       o  Whole system or as component Component
+   	APL invariance w size
+ 
+  Want basic Forth word by word interpretation with words knowing their
+   meaning in context inside themselves not by reference to parsing tables .
+
+  CoSy ref counted lists of lists complementary to other vocs .
+
+     o vocabulary of logic & computations ordered sets 
+ 
+     o  Whole system or as Component
+
+		
+	o THE ONLY APL NOT WRITTEN IN  C | TRANSPARENCY 
+	o FAR MORE FLEXIBLE THAN ANY TRADITIONAL APL 
+		. interplay of stack and lists unexpected
+		
+	o WANT ON MY PHABLET 
+
+		MAKE A BUSINESS , ie: CASH FLOWING ECOSYSTEM 
+ 
+ 
+
 	
      o Need New TUI . Replace IUP 
 
   o Uses from smart phone environment to hearing aids to modeling the planet
     to "AI" 
-  o Python chalenges 
+  o Python challenges 
+
+--
+   ? Know APL ? | Concatinative languages - Joy 
+  Recursive defs . 
   
    Alan Perlis : Epigrams in Programming #9 
   It is better to have 100 functions operate on one data structure than 10 functions on 10 data structures. 
+
 
   cosy.com/y16/CS(OS)2_1107.html#Scr1 
   cosy.com/y16/CS(OS)2_1107.html#Scr2
