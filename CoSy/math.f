@@ -51,6 +51,34 @@
 | /\ | Stats | /\ |
 | =============================================== |
 
+| \ 32-bit PRNG XorShift algorithm by Michel Jean 
+| https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/1991574754475882/
+0 [IF]
+code um*
+mov ecx, edx 
+pop eax 
+mul ebx 
+push eax 
+mov ebx, edx 
+mov edx, ecx
+next,
+end-code
+
+Maybe useful? In a few lines, a pseudo-random generator very reliable :
+\ 32-bit PRNG XorShift algorithm
+variable seed
+seed seed ! \ initialize seed with its address
+: random32 ( n1 -- n2 ) \ return a number < n1
+seed @
+dup 13 lshift xor
+dup 17 rshift xor
+dup 5 lshift xor
+seed !
+seed @  ( swap mod ) UM* NIP 	| improvement by Johan Kotlinski 
+ ;
+
+[THEN]
+
 needs random/gm
  
 : _rand_ ( n -- a ) dup intVecInit >aux
