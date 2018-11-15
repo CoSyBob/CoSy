@@ -35,4 +35,32 @@ cr ." | Derived begin | "
 
 | /\ /\ | CoSy Help System | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
+
+| \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
+| Accounting is one of the highest value uses for any computing language
+| If you are good at number crunching , the numbers with the greatest return
+| on crunching are ones with currency symbols attached .
+| That's why , despite one early APL company being named ` STSC	for
+| Scientific Time Sharing Company , even its major market was complex financial
+| applications in global money center cities .
+
+| I currently keep a simple list :
+|   `( TimeStamp From To amount notes )` 
+| constructed by lines like 
+|    (' 20181015. _f ` PSBT ` IREA  f( 136.67 10 )f  s" acnts -792 -787 " ')
+| to give an example with multiple amounts to be summed 
+| 
+| I then append these to a ` LedgerList in R . 
+| here's a word specific to my current use , here for convenience
+ 
+: LL_cL enc s" LedgerList"  Dv_cL ; 	| append enclosed list to ledger .
+ 
+| eg: 
+|  (' 20180909.1523 _f ` PSBT ` visa  337.34 _f  s" pif " ') LL_cL
+| to post an entery directly to ` LedgerList .
+
+| /\ /\ | Accounting tools | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
+
+
+
 ." | Derived end | "

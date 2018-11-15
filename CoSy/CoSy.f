@@ -34,7 +34,7 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
-| cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+ cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 ." chk " cr 
@@ -647,6 +647,7 @@ cr ."  \\/ each \\/ " $.s cr
   dup 0 <if 0 swap else 0 then		| if n neg , 0 n  do 
   ?do dup i ii@ aux@ i ii! loop ref0del aux> ; 
 
+| APL's iota on naked n .  Returns 1st n integers .  0 is the 1st integer .
 : _iota ( n -- adr )
   dup intVecInit
   dup vbody rot                |  adr bodyadr n
@@ -662,7 +663,8 @@ cr ."  \\/ each \\/ " $.s cr
 : ^f swap ['] f^ eachDfr ;	| LA ^ RA . Note arguments swapped from Intel order to standard 
  
 : 1%f ['] 1/f eachMfr ;
-: floorf ['] ffloor eachMfr ; 	| 3.14 -> 3.00  
+: floorf ['] ffloor eachMfr ; 	| f( 3.14 -3.14 )f floorf 	|>| 3.0000 -4.0000 
+: intf ['] fint eachMfr ; 		|  f( 3.14 -3.14 )f intf 	|>| 3.0000 -3.0000  	
 : absf ['] fabs eachMfr ; 		| -n.m -> n.m 
 : sqrtf ['] fsqrt eachMfr ; 
 : fracf ['] ffrac eachMfr ; 
@@ -755,6 +757,7 @@ choices: istore
 
 : i_ dup 0 i@ swap ref0del ;  | raw first item of list . 
 
+| APL's ` iota on a CoSy integer singleton . And version returning float .
 : iota  >_ _iota ;  : iotaf iota i>f ;
 
 | appear to appear nowhere else  | 20180908.2146
@@ -1221,13 +1224,17 @@ variable indentv   : indent indentv @ spaces ;
 
 | \/ filterd to chars )| 256 _iota |( from C:\4thCoSy\src\reva.f
 : lc ( c -- c' ) dup 65 90 between if $20 or then ;  
- 
 | \/  copied from  C:\4thCoSy\lib\string\misc unchanged  .
-: strlwr ( a n -- a n ) 2dup bounds do i c@ lc i c! loop ;
+: strlwr ( a n -- a n ) 2dup bounds do i c@ lc i c! loop noop ;
 : lower ( str -- str ) | convert string to lower case 
   dup vdup dup van strlwr 2drop swap ref0del ;   
 
-| String Search . Returns indices of all occurances of S1 in S0 
+: uc dup 97 122 between if $df and then ;
+: strupr ( a n -- a n ) 2dup bounds do i c@ uc i c! loop noop ;
+| : upper 1p> .. dup van strupr 2drop 1P> ; 	| 20180915
+
+  
+| String Search . Returns indices of all occurences of S1 in S0 
 | modeled on K _ss function 
 | ' ssc is case sensitive . ' ss  is not . 
 : ss ['] lower on2 : ssc ( S0 S1 -- IV )  2p 
@@ -1337,7 +1344,7 @@ alias: _ cut 	| The K name .
 |     i( 5 6 5 )i 4 _i braket
 |  4 5 6 5 4 
 
-: tokcut ( str tok -- CV )	| cuts string at occurances of string `tok but includes segment before first token 
+: tokcut ( str tok -- CV )	| cuts string at occurences of string `tok but includes segment before first token 
   2p LR@ ssc i0 swap ,I L@ swap cut 2P> ;
  
 : VM : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
@@ -1345,7 +1352,7 @@ alias: _ cut 	| The K name .
    2p LR@ swap cL >aux+> dup R@ ssc cut 	| appends 
    aux- R@ rho ['] cut eachleft  2P> ;
  
-| Finessing bomb on 0 occurances of tok . See Mon.Mar,20170306 |
+| Finessing bomb on 0 occurrences of tok . See Mon.Mar,20170306 |
 | : toksplt 2p> swap cL R@ prior toksplt 1 _cut 2P> ; 
 
 |  name from APL " Vector to Matrix " 

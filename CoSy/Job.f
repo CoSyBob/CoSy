@@ -41,6 +41,7 @@ _n dup value dlgH  value txtH
 
 : setfont ( font thndl -- ) z" FONT" --bca van zt IupSetAttribute _i ;  
 
+
 : settxt ( str txtH -- ) z" VALUE" --bca van zt IupStoreAttribute _i ; 
 
 : gettxt ( txtH -- str ) z" VALUE" IupGetAttribute zcount str ; 

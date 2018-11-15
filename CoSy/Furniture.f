@@ -255,10 +255,6 @@ variable AFptr
 | save res to value of 
 | : saveres ( -- ) ;
 
-| \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
-
-| /\ /\ | Accounting tools | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
-
 | \/ | ARK | \/ |
 
 | `( Type0 TypeC TypeI TypeFl TypeS TypeV TypeA TypeFv )` dup+
