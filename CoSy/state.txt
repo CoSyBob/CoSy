@@ -9,16 +9,16 @@
 
 | NB: examples below generally have whatever phrase I last searched for .
  
-  s/" dayln" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+  s/" : setfont " ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
 	 	`( sys CoSySource )` Dv@ 	| list of scripts searched
   
-  s" /" words>	| defined words containg  phrase  . use "bl for all words
+  s" " words>	| defined words containg  phrase  . use "bl for all words
  	| ' forth>  executes raw Forth capturing and returning output |
   s" see r@ see rr@ see rpick "  forth> 	| see x86 code for word  	
-  s/" help t! " forth>
+  s/" help search " forth>
   s" res> Help " forth> 	| useful for looking at list of related words 
  
-  ` text 	->
+  ` text 	-> 	daylncut >t0> s" unique " con
   ` help 	->
   ` ref 	->
   ` Addrs 	
@@ -46,6 +46,8 @@
  CoSyDir 
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
   s" text" Dv@  s" .\CoSy\text.txt" >F 
+  s" .\CoSy\text.txt" shell^ 
+
   s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F 
  s" dir cosy" shell>
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt

@@ -28,9 +28,9 @@ alias: --abcdabcd	4dup
 alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 
 |		can't be inlined , caused bugs !
-: --aaa 	dup dup ;
-: --aab 	over swap ;
-: --aaba    	over swap over ;
+: --aaa		dup dup ;
+: --aab		over swap ;
+: --aaba    over swap over ;
 : --aabc	2 pick -rot ;	| better than Danny's | >r >r dup r> r> swap 
 : --aacb	--aabc swap ;
 : --abaa 	over dup ;
@@ -45,9 +45,9 @@ alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 : --bba		tuck swap ;		| or | dup rot 
 : --bc		rot drop ;
 
+: --c		nip nip ;
 | : --ca 		-rot drop ; 	| For some reason defining this name causes IUP to bomb on any execute ? 
 : --cba		swap rot ;
-: --cabd 2swap rot ;
 
 : underswap  ( a b c -- b a c )	| cellarguy 	
    inline{  8B 5E 04 8B 0E 89 1E 89 4E 04 } ;
