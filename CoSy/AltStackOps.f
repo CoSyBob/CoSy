@@ -28,8 +28,8 @@ alias: --abcdabcd	4dup
 alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 
 |		can't be inlined , caused bugs !
-: --aaa 	dup dup ;
-: --aab 	over swap ;
+: --aaa		dup dup ;
+: --aab		over swap ;
 : --aaba    	over swap over ;
 : --aabc	2 pick -rot ;	| better than Danny's | >r >r dup r> r> swap 
 : --aacb	--aabc swap ;
@@ -38,7 +38,6 @@ alias: --ababc	_2dup		| Ron's def ( >r 2dup r> ) .
 : --abca	2 pick ;
 : --abac	2 pick swap ;
 : --acab	2 pick rot ;
-: --acdb 	2swap rot ;
 : --abcda	3 pick ;
 : --abcab	2 pick 2 pick ;
 : --bab		dup -rot ;
