@@ -7,9 +7,10 @@
 			 write something . tap F11 .
  __________________________________________________________________________
  
- res> >t0>
- T1
- t0 >T1>
+
+
+
+
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
