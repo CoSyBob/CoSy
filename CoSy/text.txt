@@ -6,13 +6,14 @@
  On a blank line below : tap F12 . tap  Enter .  
 			 write something . tap F11 .
  __________________________________________________________________________
-
-
-
+ 
+ res> >t0>
+ T1
+ t0 >T1>
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
-	   | Skip down t bottom of log for most current work |
+	   | Skip down to bottom of log for most current work |
  | ====================================================================== |
  | A ` word in Forth is any non blank string of characters |
  | \/ \/ \/ |  F6 executes the line under the cursor 	   | \/ \/ \/ |
@@ -38,7 +39,7 @@
  HelloWorld i( 7 23 )i take >t0> 	| Here's an APLish demo 
  t0 dup ' reverse 'm ' cL 'd 		| execute each line in turn to see 
  R0 dup reverse cL 			| what Forth CoSy APL vocabulary can do .
-
+ t0 rho'
 | NB : vocabulary is case sensitive |
 
  | ====================================================================== |
@@ -2558,7 +2559,7 @@ f( 0 1 )f >t1>
  t1 t1 +f
  5 _iota  { _i } 'm
   [ 20180902.2258 : answered by Steve Apter ]
-  | ======================== | Thu.Jul,20180719 | ======================== |
+ | ======================== | Thu.Jul,20180719 | ======================== |
 | Doing | http://cosy.com/y18/CoSy_MMM2018.html | mail lists ran into bomb
 | w empty rows , mainly the last . So inserted ' dae  .
 : csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM dae R@ 1 _at ['] VM 'L 2P> ;
@@ -2734,8 +2735,135 @@ TEA
 | needs to have ' stkswap ( ... l r -- stack w positions l and r swapped ) factored . 
 
  | ======================== | Tue.Sep,20180911 | ======================== |
+ | ======================== | Sat.Sep,20180915 | ======================== |
+ s" C:\4thCoSy\lib\string\misc" F> 
+Added ' upper like ' lower  to CoSy.f
 
+: uc dup 97 122 between if $df and then ;
+: strupr ( a n -- a n ) 2dup bounds do i c@ uc i c! loop noop ;
+: upper 1p> .. dup van strupr 2drop 1P> ; 
 
+Motivated by desire to emphasize the simple reason why there is a universal
+tradeoff of gravitational and thermal energy to someone who is hard of learning .
+
+ s" A particle moving up slows down ; moving down speeds up " >t0>
+ t0 upper |>| A PARTICLE MOVING UP SLOWS DOWN ; MOVING DOWN SPEEDS UP 
+ | ======================== | Thu.Oct,20181025 | ======================== |
+ 1000 _i iota 1000 _iota match  |>| 1
+ i( 1 2 3 42 )i i( 10 100 1000 10000 )i +i 	|>| 11 102 1003 10042 
+ R ` sys v@ dnames
+ R `( sys CoSySource )` v@
+| 1412 | 
+ s" C:/4thCoSy/lib/random/gm" F>
+ s" ./CoSy/math.f" F>
+ | ======================== | Sat.Oct,20181027 | ======================== |
+ see *   
+ | ======================== | Thu.Nov,20181101 | ======================== | | 1402 | 
+Finish ' group | ( 20181107.1250 . wishful thinking )
+ | ======================== | Wed.Nov,20181107 | ======================== | 
+ See | https://twitter.com/BobArmstrong/status/1060691890666901505 |
+  81118. _f 2. _f %f  |>| 40559.00 
+  R0 sqrtf 	|>| 201.39 
+  40559. _f  1. 1. 2_f  201 _i apv %f >t0> |>| 40559.00 20279.50 13519.66 10139.75 ...
+  t0 t0 floorf =f & |>| 0 
+ 
+ 81118. _f >t0> 
+ dup sqrtf f>i 2. 1. 2_f --bca apv %f .. intf =f & 2 _i +i i>f .. t0 swap %f ,L 
+ t0 sqrtf f>i
+
+: factors 1p> dup sqrtf f>i 2. 1. 2_f --bca apv %f  .. intf =f & 2 _i +i i>f .. R@ swap %f ,L 1P> ;
+    81118. _f factors
+  24. _f factors
+
+: intf ['] fint eachMfr ;
+ f( 3.14 -3.14 )f intf 		|>| 3.0000 -3.0000 
+ f( 3.14 -3.14 )f floorf        |>| 3.0000 -4.0000 
+|( 20181114.1345 | already had verson of ' factors in math.f )| 
+ | ======================== | Sat.Nov,20181110 | ======================== |
+| 1906 |  Watching Ting . Very APLish operations much more verbose in Python . 
+Need to finish ' group ' unique |  
+ | ======================== | Sun.Nov,20181111 | ======================== |
+  ` .r Dv@ 
+ | ======================== | Mon.Nov,20181112 | ======================== |
+ ' showWdo _i
+ ` tstScript -> 	| Test script for interactively editing multiline fns
+ `( .r Tui hndl )`Dv@ rho
+ ` .r Dv@ showWdo
+ `( .r text )` Dv@ `( .r Tui hndl )` Dv@ 1 i@ settxt 
+ `( .r Tui hndl )` Dv@ 1 i@ gettxt .. `( .r text )` Dv!
+  `( .r Tui FONT )` Dv@ 
+  see setfont
+: setfont ( txtH s" font" -- ) z" FONT" swap IupSetAttribute drop ;
+  
+ ` .r Dv@ closeWdo
+: setsize ( dlgH s" XxY" -- ) z" SIZE" swap van zt IupSetAttribute drop ;
+
+ : settxt ( str txtH -- ) z" VALUE" --bca van zt IupStoreAttribute _i ; 
+
+: gettxt ( txtH -- str ) z" VALUE" IupGetAttribute zcount str ; 
+ | ======================== | Wed.Nov,20181114 | ======================== |
+| 1340 |  
+ `( .r Tui hndl )` Dv@ | |>| 44220912 44220752 
+ ` .r Dv@ >t0> showWdo
+  t0 ` Tui v@ >t1> ` hndl  v@ |>| 45073360 45073200 
+: setfont ( font thndl -- ) z" FONT" --bca van zt IupSetAttribute _i ;  
+ t0 `( Tui FONT )` v@ 
+  t0 `( Tui hndl ) v@ 1 i@ .
+setfont 
+  t0 
+ | ======================== | Thu.Nov,20181115 | ======================== |
+
+  s" scri" ??
+ ` script0 ->
+ | ======================== | Fri.Nov,20181116 | ======================== |
+| 1153 | 
+The Nature of CoSy --- Bob Armstrong
+• The every day practical use of CoSy which is rapidly reaching parity with
+ K.CoSy and in many areas exceeding . In particular , the everyday
+ dealing with accounts has taken a big step forward with defining ' (' and '
+ ') to form a list from whatever is stacked between them .
+
+• Answer questions arising from Sam Falvo's talk on CoSy internals .
+
+• Following my NU Prof Don Campbell's Fish-scale Model of Omniscience ,
+ I want to quire the assembled choir about all that I don't know -- starting
+ with replacing the stale and buggy IUP GUI with some universal sockets
+ interfaced interface .   
+  s" c:\\FishScale.jpg" shell>
+ | ======================== | Sat.Nov,20181117 | ======================== |
+| 1158 | DEMO 
+ | ======================== | Wed.Dec,20181205 | ======================== |
+With steers from DennisRuffer & Kevin Appert from SV-FIG I think I figured out
+ how to revert my last GitHub commit using their newer less aweful desktop :
+https://help.github.com/desktop/guides/contributing-to-projects/reverting-a-commit/
+
+And I've split out and uploaded to the 
+ 
+ text> lfVM >t0> daylnTok 1 _cut conn >t1>
+ t0 t1 1 _at at >T0>
+ 
+  s" 0123456789"  swap  membv
+| s"  | ======================== | Sat.Jul,20170701 | ======================== | "  >T
+ 
+ ' ALPHabet _i
+David Smith1 day ago
+ 
+: where ( L v -- idx )  ['] match f? ; 
+| Index of single v in list L . count of L if not found .
+ 
+: memb ( L R -- bool ) over >a ['] where 'R ,/ a> rho <i ; 
+| Bool of items of R which are in L | See 20180627 
+  T0 s" 0123456789" { 
+  T0 s" 0" { =c
+ ' c= _i
+ s" : ss " ??
+ res> >T1> 
+ .\
+ s" DS | "  T1 lfVM ' cL 'R 
+ s" dir .\" shell>
+ s" C:/4thCoSy/CoSy/CoSy - Copy (2).bk" F> >t0> rho
+ t0 str>lst >t1> ` res v@ >T1>
+ T1
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
@@ -2778,11 +2906,20 @@ rho lst
 			 | Your CockPit  |  Sandy Steier abt K.CoSy
 			 https://www.1010data.com/company/our-story/
 
+ | ======================== | Thu.Nov,20181108 | ======================== |
+ | ======================== | Sun.Nov,20181111 | ======================== |
+
+	o Conceptual Horizon Stack 
+	o lists like Fourier transform domain . Entire object vs point .
+	o vocabulary of operations on lists . `( logical arithmatic selection order )`
+	o delimiting strings . 
+
 
 
 |  Amount I don't know of anything other than APL & Forth massive .
    including even DOS & GitHub .  Really not intrested in programming per se |
-
+		http://cosy.com/y16/CS(OS)2_1107%23Scr0.jpg
+		file:///C:/cosyweb/y16/CS(OS)2_1107%23Scr0.jpg
 
   HORIZONS : Conceptual . 
   	Forth more than any other language recognises that
@@ -2826,8 +2963,6 @@ rho lst
 		MAKE A BUSINESS , ie: CASH FLOWING ECOSYSTEM 
  
  
-
-	
      o Need New TUI . Replace IUP 
 
   o Uses from smart phone environment to hearing aids to modeling the planet
