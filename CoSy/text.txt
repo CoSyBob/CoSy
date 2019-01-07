@@ -7,9 +7,8 @@
 			 write something . tap F11 .
  __________________________________________________________________________
  
-
-
-
+ 
+ 
 
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
@@ -168,908 +167,7 @@ Some numerical examples :
  		|\/| MY almost RAW SCRIPT UP TO THIS POINT |\/| 
  
 			  s" ./CoSy/y2017.txt" F> 
-...
- | ======================== | Thu.Jun,20170629 | ======================== |
-| 1356 | following : Git Tutorial for Beginners: Command-Line Fundamentals
-  https://www.youtube.com/watch?v=HVsySz-h9r4
- s" git --version " shell>  |>| git version 2.12.1.windows.1
- s" git config --help " shell>
- s" git help config " shell>
- s" git config --list " shell>
- s" cd " shell 
- s" git status --help " shell>
- | ======================== | Sat.Jul,20170701 | ======================== |
- "ht c>i 	| bombed on singleton . Problem traced to ' across | fixed 20170702.1838
- | ======================== | Sun.Jul,20170702 | ======================== |
-Realized it would be useful to integrate Ron Aaron's ' help which outputs directly
-: help> s" help " swap cL forth>  ; Make a CoSy string returning word 
-  s" {{ " help>
-  0 2 {{ >if i1 else i0 then }}  
- s" help> " ??
-  ` tstScript ->
-: ??? >aux+> CShelp s" | \\/ | Reva Forth word help | \\/ | " "lf braket cL cL
- s" help " CShelp s" | \\/ | Reva Forth word help | \\/ | " "lf braket cL 
-  ` tstScript Dv@ ^eval
-  s" help " ???
- | ======================== | Sun.Jul,20170716 | ======================== |
-| something wrong w "outer product " . 
-| from CoSyBob/CoSy Wed.Jul,20170712  | 1324 | print invites . calculating 
-| print lanyout . pixels @ 300 % in 
- f( 8.5 11 )f 300. _f *f |>| 2550.00 3300.00 
- f( 2550 3300 )f f( 312 498 )f %f  |>| 8.17 6.62 
- f( 2550 3300 )f reverse f( 312 498 )f %f | |>| 10.57 5.12 
-| /4thCoSy/CoSy/Tui.f                    /^\
-|  alias:  |>| | 
-| doesn't work on those lines with ' reverse  ! ?? !  wierd . needs real | .
-| but want outer product  
- 
- f( 2550 3300 )f f( 312 498 )f { _f %f } 'R
- 5 _iota i( 1 -1 )i {  _i *i } 'R 
-8.17 6.62 
- 
- f( 2550 3300 )f f( 8.5 11. )f %f
- 625. _f 5 _iota i>f *f |>| 0.00 625.00 1250.00 1875.00 2500.00 
- 1.14 337. 2_f *f |>| 384.18  | $  EuroForth
- | ======================== | Sat.Jul,20170722 | ======================== |
-  s" dir C:\\4thcosy\\cosy " shell>
-  s" help ren " shell>
-  COSYSTARTFILE s" \\" toksplt -1 _at
- 
-  CoSyDir
-  curdrive ; 
-  fullCoSyFile  
-  CoSyFile.csv
 
- {{  s" ren " COSYSTARTFILE s" .csy " CoSyFile s" .bk" 4 times cL  }}
- R0 shell
-
-: tst $.s cr ; 
- tst 
- | ======================== | Sun.Jul,20170723 | ======================== |
- 12. f>s _i   |>| 12
- 
-: 'M ( v fn -- ) >aux 1p> i# 0 ?do i l0!  R@ i i@ aux@ execute loop auxdrop 1P ;
- 5 _iota ' . 'M 	| works
-: 'M >aux 1p> i# 0 ?do i . R@ i i@ aux@ execute loop auxdrop 1P ;
- AF1  5 _iota { . cr } 'M  AF0  AF>  +/  | |>| 0 
-: 'M >aux 1p> i# 0 ?do i l0! l0@ . R@ i i@ aux@ execute loop auxdrop 1P ;
- AF1  5 _iota { . cr } 'M  AF0  AF>  +/  | |>| 0 
-
-  1 _i {{ 1p $.s RA $.> @ $. l0 $. R@ lst   1P }}
- 0 _i  1 _i {{ 2p $.s LA $. RA $. l0 $. l1 . R@ lst 2P }}
-
- see l0
-  5 _iota { . cr } 'M 
-
-: tst 1p i . ;
-{{ 5 0 do tst loop }}
- 
-: f_ 1p> i# intVecInit >aux { f>s 
- 
- 4 _iota { drop i _i lst } eachM
- | ======================== | Mon.Jul,20170724 | ======================== | 
- ' I _i
- R0 >T0>
- T0 s" See also: " toksplt >t1>
- t1 dsc  s"  " =i  | f?m _i
- s" t1 1 _at Help " forth>
-
-  1 _i {{ 1p $.s  RA $.> @ $. l0 $. 0 l0@ . R@ lst   1P }}
-| just realized how must use locals by first putting value on stack .
-| Updating | /4thCoSy/CoSy/CSauxstack.f | documentation .
-| Split out   ParameterPushing.f  from  CoSy.f 
- s" dir CoSy" shell>
-
-| adding assember core to files searched by ' ??
-    ` sys Dv@  ` CoSySource v@ | s" /4thCoSy/src/revacore.asm" cL
-|  R0 ` sys Dv@  ` CoSySource v!
-  R0 >T0> rho
- T0 { F> VMlf rho } 'm
-  s" C:/CoSyBob/CoSy/CoSy.csy" restorefile ` sys v@ ` CoSySource v@
-  s" /4thCoSy/CoSy/Derived.f" F>
- | ======================== | Thu.Jul,20170727 | ======================== |
-| ' ?? bombing |
- ` sys Dv@  ` CoSySource v@ >t0>   i-1 >t1 
- s" : 1p " t0  t1 i1 +i >t1> at o (CShelp)    | inc thru each file
-  emptyLn c>i  |>| 13 10 13 10 
-| cause " no "cr "lf line delimiter not match ' emptyLn 
- s" /4thCoSy/src/revacore.asm" F> >t0> 
-| really a problem that ' tokcut should handle empty case . 
- t0 "lf 2 _take tokcut rho
- t0  emptyLn css 
- | ======================== | Fri.Jul,20170728 | ======================== |
-| traced bomb back to ' ix throwing on empty . not clear best soln .
-| just converted to WiTel "cr "lf cL
- s" /4thCoSy/CoSy/ParameterPushing.f" F>
-  t0 "lf MV  | paste file name into text display . 
- res> >t1> "lf VM | convert back to list 
-| R0 ` sys Dv@  ` CoSySource v!
- | ======================== | Sat.Jul,20170729 | ======================== |
-| Want to finish work on accesing index from w/i a map operator 
-| Moved Stack frame vocab from CSauxstack.f to ParameterPushing.f
-   1 _i {{ 1p $.s  RA $.> @ $. l0 $. 0 l0@ . R@ lst   1P }} | test of stackFrames
-: 'M >aux 1p> i# 0 ?do i l0! l0@ . R@ i i@ aux@ execute loop auxdrop 1P ;
- AF1  5 _iota { l0@ . . cr } 'M   AF0    AF>  +/  | |>| 0  | no leak  
-: 'M >aux 1p> i# 0 ?do i l0! R@ i i@ aux@ execute loop auxdrop 1P ;
-  5 _iota 10 _i *i { l0@ 10 * $.s . cr } 'M 
-  5 _iota >t0> |
-  { _i t0 l0@ _at!  } 'M 
-| working toward simpifying "each" maps and adding accessable index | 2046 | 
- | ======================== | Sun.Jul,20170730 | ======================== |
- text> VMlf 10 _take >t0> ' rho 'm
- t0 flip ' rho 'm
- | ======================== | Mon.Jul,20170731 | ======================== |
-| Wanting to discard portions of names in my mailing lists commented out with s" | "
-| fixed long standing bomb in ' toksplt  on strings not containing the token
-| Simply needed to change ' cut which discloses singletons to ' cut\ | which doesn't .
-   | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   )
-   2p LR@ swap cL >aux+> dup R@ css cut\ aux-    | appends
-   R@ rho ['] cut eachleft  2P> ;
-| simply needed to change ' cut which discloses singletons to ' cut\ which doesn't
-: VM : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
-   | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
-   2p LR@ swap cL >aux+> dup R@ css cut\ aux-	| appends 
-   R@ rho oo cr ['] cut eachleft  2P> ;
-
-: dlb  1p> dup "bl ['] <>i f? cut 1P> ;  | Delete leading blanks | 20170731
-: dtb  reverse dlb reverse ; 	| Delete Trailing blanks 
-
- | ======================== | Wed.Aug,20170802 | ======================== |
- res> ` exampleScripts Dv!
- ` exampleScripts ->
- | ======================== | Tue.Aug,20170822 | ======================== |
-| Some recent new words \/ |
-
-| building up to ' norm , Euclidean length .  
- s" C:/4thCoSy/lib/math/floats" F> 	| look thru raw vocabulary 
-: _f^2_ fdup f* ;  	| square a float on fToS
-: f^2 ['] _f^2_ eachMfr ; 	| generalize to float lists 
-  10 _iota i>f f^2 	| 0.00 1.00 4.00 9.00 16.00 25.00 36.00 49.00 64.00 81.00 
-: +/^2 f^2 +/ ; 	| Sum of Squares
-  10 _iota i>f +/^2 	| 285.00 
-: f^%2 ['] fsqrt eachMfr ;
-: norm +/^2 f^%2 ;
-  10 _iota i>f norm
- 4000. _f 2 _take norm  |>| 5656.85 
-| My original motivation was findin how large a background square I needed
-| for | http://cosy.com/y17/StatismEclipse20170821.1030.jpg |
-
- | ======================== | Wed.Aug,20170823 | ======================== | 
-| implemented ' eachMfir , ' f_32  ' f_  all in /CoSy.f
-: f_32 f>d drop ;  | integer part of float on x86 f stack . note 32 bit limit
-: f_ ['] f_32 eachMfir ; | integer part ie : floor , on float list .
-  f( 3.14 24.56 )f f_ 	|>| 3 24 
- | ======================== | Sat.Aug,20170826 | ======================== |
- 4000 _iota >t0> 10 _take |>| 0 1 2 3 4 5 6 7 8 9 
- t0 { _i 3000 _iota +i } 'm >t1> rho
- t1 3 _take { 10 _take } 'm 
-  2. 31. 2_f ^f 
- R0 4000. _f %f
- 1000 _iota { _i 1000 _iota +i } 'm >t0> rho
-  t1 ' +/ 'm ,/ >t0> rho
-  t0 10 _take
- 
- 1. fexp fpi fswap f^ _f
- 
- s" C:/4thCoSy/lib/date/calendar" F> 
- 
-  700 lines 
- | ======================== | Thu.Aug,20170831 | ======================== |
-| How many kb in all the CoSy Source file ?
- ` sys Dv@ ` CoSySource v@ >t0> 	| CoSy source files
- s" dir " t0 dsc />\\ cL shell>
-  t0 dsc />\\ 
- s" help dir" shell>
-   
- s" dir \\4thCoSy\\CoSy " shell>
- | ======================== | Sun.Sep,20170903 | ======================== |
-Saving to GitHub | 1315 | 
-
---
-| not quite ready for prime time :
-: csv>DT ( str tok -- DTable ) | converts .csv string w lines delimited by
-| "lf and labels in first line to "Dictionary Table" essentially 
-| equivalent to K's
- swap VMlf swap ['] VM 'L >aux> 0 _at { dlb dtb } 'm enc aux> 1 _cut flip ,L ;
- | ======================== | Fri.Sep,20170922 | ======================== |
-1225 | Gatwick ( LGW ) -- DEN  2155 
-| 1538 |  sys was crashing on save because of  ' "lf>"nl added to res> ?
- : rest> reswdo @ getval --bc str "lf>"nl  ;  
- T0  
- res> >t0> "nl ss
- T0  "lf>"nl "lf ss
- T0 "lf VM ` sys Dv@ ` CoSySource v!
- t0 rho
-| 1658 | 
-
-: --cabd 2swap rot ;
-  1 2 3 4 --cabd  | 2swap rot 
-  --bca
- s" ./CoSy/AltStackOps.f" >t0> F>
- res> >T0> "lf>"nl t0 >F
- 5 _iota 1 _i +i i>f dup >t0> reverse ,L
- t0 t0 reverse ' ^f execute ' +f across^
-: dot --cabd execute swap across^ ;  
- t0 dup reverse ' +f ' ^f dot  
-| 1849 | 
-  R ` T0 s@ 
- Dnames
- s" tst " ` tst Dv!
-  R ` tst s@ m@ 
-  R ` tst a@ 
-| deleted '( ax a@ a! )' . remnants of 3 col K dic attribute structure
-| 1948 | 
- 
- s" test " ` tst swap >< ` tst v@ |  R ` tst s@ m! 
- R ` tst s@ m@ 
- DMP
- 
- s" ./CoSy/CoSy.f" F>
- | ======================== | Sat.Sep,20170923 | ======================== |
-| 1456 | 
- | ======================== | Sun.Sep,20170924 | ======================== |
-
-: --cabd 2swap rot ;
-  1 2 3 4 --cabd  | 2swap rot 
-  --bca
- s" ./CoSy/AltStackOps.f" >t0> F>
- res> >T0> "lf>"nl t0 >F
- 5 _iota 1 _i +i i>f dup >t0> reverse ,L
- t0 t0 reverse ' ^f execute ' +f across^
-: dot --cabd execute swap across^ ;  
- t0 dup reverse ' +f ' ^f dot    
-
- 5 _iota 1 _i +i i>f >t0> dup reverse ^f +/
-
-  5 _iota 1 _i +i i>f >t0> dup reverse ` +f e
- 
-  5 _iota 1 _i +i i>f 
-1.00 2.00 3.00 4.00 5.00 
-
-  R0 dup reverse ' +f ' ^f dot
-65.00 
- | ======================== | Thu.Sep,20170928 | ======================== |
- | ======================== | Tue.Oct,20171003 | ======================== |
-| Deleted from CoSy.f : 
-| | combine a name and a value into a 1 item dictionary 
-| : >d> ( sym val -- dic ) () >aux+> --bca dicapnd aux-ok> ; 
-| use  ' ><  instead .
- | ======================== | Thu.Oct,20171005 | ======================== |
-|  ' execute bombs on 0 .  ' xeq was aliased to execute in  /4thCoSy/CoSy/util.f
-: xeq  
- R0 rho
- | ======================== | Fri.Oct,20171006 | ======================== |
- | ======================== | Mon.Oct,20171009 | ======================== |
- res> VMlf >T0>
- T0 VMlf >T0> 
- T0 ' ^eval 'm >T0> 
- T0 ' Type@^ 'm 
-| hmm . See I already have defined a  ' dsel  . probably better def .
-| : Dsel ( D v -- D ) { --bab v@ ,L } 'R flip ;  
-| Returns Dic of items v selected from dic D  
-
- R T0 dsel >t0> dnames
- t0 R ` ark v!
- R ` ark v@  ` morse v@
-  
-  ` ark Dv@ dnames
-  R dnames 
- R T0 1 _cut { vdel R } _./
-| to be continued . Needs to be across . no each .
- Dnames
- R  T0 dsc vdel 
- | ======================== | Tue.Oct,20171010 | ======================== |
- Dnames >t0>
- 5 _iota i>f  1 _at\ dsc rho
- R t0 0 _at v@ t0 1 _at v@
-  ev _i { } _./
- | ======================== | Wed.Oct,20171011 | ======================== |
- Deleted from CoSy.f :
-
-| \/ | appears to be a bad idea   | \/ |
-| ev refs+> value ^R 	| CoSy Result holder . Makes results evaporate 
-| : >^R ( ob -- ob )      
-|   ^R refs-  refs+> to ^R ;
-| : >^R> dup >^R ;
-| /\ | appears to be a bad idea   | /\ |
-
-  ` sys Dv@ ` CoSySource v@
- s" /4thCoSy/CoSy/CoSy.f" F> VMlf >t0> rho
- t0 s" [IF]" s" [THEN]" ,L  ' cconn 'R
-see |  https://twitter.com/CoherentSystems/status/918204081696538624
- s" : dsc" ??
-added |   dup i# 0if ;then  	| If empty , just return  | no prototypes 
- | ======================== | Thu.Oct,20171012 | ======================== |
-| by its nature  |  0 _iota >_  | throws a " can't index empty " in ' ix  |
-| Added diagnostice and ToS DMP on catch which was leaving arg on stack .
-| Still needs watching & fixing 
-|  /4thCoSy/CoSy/Tui.f
-| 
-| : f6 { getcurln eval } catch ?dup if ['] caught type>res $.s cr DMP  ;then 
-|     depth 0 =if nil then
-|     { >R0> ['] lst type>res } catch ?dup if ['] caught type>res ;then 
-| 	llUpdate  $.sUpdate ; 
- 
- ` tstScript -> | ^eval
- | ======================== | Fri.Oct,20171013 | ======================== |
- res> s" /4thCoSy/CoSy/ParameterPushing.f" >F
- 4 _iota ' + _/ _i
-  DMP
- 1 _i
- s" /4thCoSy/CoSy/Tui.f" F> | "nl ss
- res>  "nl ss
-  resvar 
- | ======================== | Sun.Oct,20171015 | ======================== |
-Added to   ./CoSy/Furniture.f : 
- : Pi fpi _f ; 	: rad fpi 180. f% _f ; 	| self explanitory . Note ' pi is used in shell script
-Updated list of source files to be in loading order and root directory invariant
-|  s" C:/CoSyBob/CoSy/CoSy.csy" restorefile ` sys v@ ` CoSySource v@ 
-|  R0  ` sys Dv@ ` CoSySource v!
-|[ 20171022.1424 ; had an insight on (nonce) error . wish I made a note ]
- | ======================== | Sun.Oct,20171022 | ======================== |
-| 1431 | Give away , spread , the roots ; charge for the leafs | 1505 | 
- work on ' lst  (nonce) error :   
-| : lst  ... 
-|	 dup @ _n     =if drop indent ."  _n " ;then
-|     | drop indent ." ( " ." nonce " ."  )" cr ;
-|     drop z" 
- 
-back to ' _/  
- ' _/_ _i
- ` tstScript ->  | dup ^eval
-| realized I needed naked  ' 1P>  | but Float still sui generis 
- 2 _iota ' + _/_ _i	| works 
-
-  Dnames >t0>
-  
- R ` sys v@ ` CoSySource  v@ 
- R `( sys CoSySource )` { o v@ o } _/_
- cr
-
-: _/_  ( RA fn -- r ) | result returning "/" , "across" on naked fns
-| If empty or singlton , simply returns arg . 
-   over i# 2 <if drop ;then
-   >aux 1p> 0 i@ R@ 1 i@ aux@ execute 
-   $.s cr
-   R@ i# 2 ?do R@ i i@ aux@ $.s execute $.s cr loop
-   auxdrop $.s cr 1P_> ; 
-
-: _/  ( LA fn -- r ) | result returning "/" , "across" on naked fns
-| If empty or singlton , simply returns arg . 
-   over i# 2 <if drop ;then
-   >aux   refs+> >aux> 0 _at\ aux@ 1 _at\ auxx@ execute 
-   aux@ i# 2 ?do aux@ i _at\ auxx@ execute loop
-   aux> refs- auxdrop ; 
-
-| Thinking about angle to Hyderabad 
-: absf ['] fabs eachMfr ; 	| added to ...f fns in ` CoSy.f 
-
- | ======================== | Tue.Oct,20171024 | ======================== |
-| ' dup doesn't work in computations w refd lists . 
-| Need to ' rep to get 2 0 counted copies .
-
-: rep_ dup vsize ( a s ) dup allocate >r> swap ( a r s ) move r@ refs0 r> ; 
-| rep on simples .
-  1 _i dup rep_ +i |>| 2 
- 
-  -183. _f absf dup rep_ 360. _f swap -f 
-  183. 
-  1. 2. {{ fover fover f< if fswap then }} _f
-: fmin fover fover f< if fswap then ; 
-: fmax fover fover f> if fswap then ; 
-
-: minf ['] fmin eachDfr ;
-: maxf ['] fmax eachDfr ;
- 
- f( 1. 2. 3 )f f( 3 2 1 )f  minf
- words~ ~floats
- | ======================== | Fri.Oct,20171027 | ======================== |
-| 1318 | 
-  ` sys Dv@ ` CoSySource v@ >t0> rho
-  t0 t0 { F>  rho } 'm ,L flip
-  R0 ,/ +/
- | ======================== | Mon.Oct,20171030 | ======================== |
- s" asm{ " ??
- | ======================== | Tue.Oct,20171031 | ======================== |
-| 1203 | erased all downloads from NextBook . Cleaned all traces of CoSy
-  to get ' asm{ error if I can  | 1229 | Damn . CoSy RAN !
-  C:\Users\Bob\Downloads\CoSy-4thCoSy\CoSy-4thCoSy
- Ran also on  
-  s" //Cosy1511/d/CoSy-4thCoSy/CoSy/CoSy.csy" restorefile >t0> rho
- t0 ` text v@ 
- | ======================== | Thu.Nov,20171102 | ======================== |
-  s" ./CoSy/CoSy.f" F> VMlf >T0> rho
- T0 { s" |" ss } 'm >t1>
- T0 
- t1  t1 ' rho 'm ,/ & at  
-  " |" _i
- >a> at 
- T0 lst
- | ======================== | Fri.Nov,20171103 | ======================== |
-macro : char parsews drop c@ ?literal ; forth
-| returns integer value of following character . eg | char A _i  |>| 65
-| when compiling , appends char as literal .
-| word same as GForth std  |  added to   ./CoSy/util.f
-
- char A _i
-: tst char A  ;
- 
- tst  | |>| 
-.
-  char 1 _i
- | ======================== | Sun.Nov,20171105 | ======================== |
-   -183. _f absf dup rep_ 360. _f swap -f 
- ' xx _i 
- o Top irritation changes drastically when other heads involved . 
- | ======================== | Mon.Nov,20171106 | ======================== |
- f( 39.038681 -105.079070 )f f( 17.3850 78.4867 )f -f
- 
- ` USA.CO.WP  ` India.Hyderabad cL 
- R0 f( 39.038681 -105.079070 )f f( 17.3850 78.4867 )f ,L ,L  >t0>
- t0 >T0>
- t0 1 _at +/
- | ======================== | Tue.Nov,20171107 | ======================== |
- ' rep _i
-: rep_ dup vsize ( a s ) dup allocate >r> swap ( a r s ) move r@ refs0 r> ; 
-: rep  dup Type@ if rep_ ;then  duplst ;
-
-   2 _i dup rep +i 
-  ` tst s" str" >< >t0> rho
-  t0 ` tst v@
-   ` tst s" str" >< dup  rep ,L
-dup rep ,L
-   ' rep
-
-: dot *f +/ ;
- f( -1 0 1 )f f( -1 0 1 )f dot
-: norm dot rep_ 
- | ======================== | Wed.Nov,20171108 | ======================== |
-Realizing ' rep  and therefore ' storelst must not ref- ergo free argument .  
-  ` tst s" str" >< 
- >t0> DMP
- t0 storelst 
- t0
- | ======================== | Thu.Nov,20171109 | ======================== |
- | ======================== | Sun.Nov,20171112 | ======================== |
-| Converting  ' daysdif  used to compute days of my life to take CoSy dates
-: date_ ( yyyymmdd -- d m y ) >r> vbody @ dtupk r> ref0del ;
-: daysdif^ >r date_ r> date_ daysdif _i ; 
- 19441108 20171108 2_i daysdif^  |>| 26663 
-| Added to   ./CoSy/Furniture.f 
- | ======================== | Mon.Nov,20171113 | ======================== |
-https://groups.google.com/forum/#!topic/comp.lang.forth/DM3EUGb_b4Y
-(uncompress '((4 A) B (2 C) (2 A) D (4 E))) 
- i( 4 1 2 2 1 4 )i &    |>| 0 0 0 0 1 2 2 3 3 4 5 5 5 5 
- s" ABCADE" R0 at 	|>| AAAABCCAADEEEE
-https://groups.google.com/forum/#!topic/comp.lang.forth/oOZzjvcYASc
- s" 127.0.0.1       0x1  0x2     00:11:22:33:AE:5E        *    ethx" >t0>
- t0 "bl VM dae 3 _at s" :" VM
- | ======================== | Tue.Nov,20171114 | ======================== |
-| One of those words motivated by " greatest irritation " 
-
-| append catinate ( ' cL ) object to list word in Dictionary . 20171114.16
-: v_cL ( D w o -- ) >r vx_ dup @ r> cL swap rplc ;  
-: Dv_cL _d --cab v_cL ;
-
-A couple of examples :  I'm currently keeping my general ledger as a simple 
-list , ` LedgerList , of enclosed transactions in the form , 
- `( TS From To Amnt Comment )`
- eg :
-  20171114.1630 _f ` PSBT ` PayPal 42.94 _f s" balance due " 4 times cL
-I would then execute 
- ` LedgerList Dv@ >t0> R0 enc cL ` LedgerList Dv! 
-kept in a bunch of accounting related lines in ` state to append the transaction .
-Now that's simplifed to 
- ` LedgerList R0 enc Dv_cL
-
-A simple email list can be kept as a text string and appended to with a line like :
- someDic ` ML "lf s"  Georgie Jessel <GJ@randomname.gov> " v_cl
-
- | ======================== | Wed.Nov,20171115 | ======================== |
-Perhaps the shortest path to emerge from WinTel is straight to the web . 
-Am looking for HTML or MarkDown interface .
-Implemented  Bash under Win 10 . looked at https://sourceforge.net/projects/colono/
-Need to master  ./lib/net/sockets | 
- | ======================== | Thu.Nov,20171116 | ======================== |
-: one23 123 ; 	| Reading http://www.forth.org/POL.pdf wondered how much code
-| literals take in Reva 
- s" see one23 " forth> 		| Just the move , inline .
-  $7B _i 	|>| 123 
-| -- 
-| In discussions on | http://cosy.com/#PlanetaryPhysics 
-| started implementing basics . W stat names too .
-: dot *f +/ ;
- f( -1 0 1 )f f( 1 2 3 )f dot 	|>| 2.00 
-: norm^2 dup rep dot ;
-| f( -1 0 1 )f norm^2 		|>| 2.00 
-| : sqrtf ['] fsqrt eachMfr ; 	| added to float fns @ ./CoSy/CoSy.f
-: norm norm^2 sqrtf ;
- | ======================== | Fri.Nov,20171117 | ======================== |
- f( -1 0 1 )f dup rep cor
-' norm^2 on2 *f 
-
-: cor 2p> dot LR@ ['] norm^2 on2 *f %f ;
- -1 2 ' 1+ on2 
-
- f( -1 0 1 )f norm 	|>| 1.41 
- ' _mod _i
- s" ./CoSy/math.f" F>  
- res> >t0> s" ./CoSy/math.f" >F  t0
- s" ./CoSy/math.f" F>  ^eval
- ' norm _i
- | ======================== | Sat.Nov,20171118 | ======================== |
-snow | 0648 | em> .. | 0749 |  | 1033 | Forth Day . started 0930 | 
- | archived schedule | http://cosy.com/y17/SV-FIG_ForthDay1118.html
-  Brad : WebGL  
-  20.  2. 2_f ^f |  favg 
-
- | ======================== | Sun.Nov,20171119 | ======================== |
-| read Ken Thompson Turing lecture .
-  http://delivery.acm.org/10.1145/1290000/1283940/a1983-thompson.pdf?ip=208.85.181.91&id=1283940&acc=OPEN&key=4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35%2E6D218144511F3437&CFID=1007666721&CFTOKEN=97164967&__acm__=1511124191_7869141420f7830f65cb402e815b5427
-| 1339 | really need to grok sockets .
- s" C:/4thCoSy/lib/net/sockets" F>
- But more fundamentally need to enhance sting and sort vocabulary .
- s" ./CoSy/math.f" F>  
- res> >t0> s" ./CoSy/math.f" >F  t0
-| want to flesh out a few more fns from K.CoSy .math.a  / Arthur Whitney's lib
-: f^2 fdup f* ; 	| not defined in lib/math/floats . much more efficient than { rep *f }
-: ^2f ['] f^2 eachMfr ; 
-| added to CoSy floating fns in  ./CoSy/CoSy.f  
-| Uploaded Arthur Whitney's K math functions | 
-  http://cosy.com/K/Math_AW.txt
- | ======================== | Mon.Nov,20171120 | ======================== |
-  ` Fact Dv@ ` Fact v@ >t0>
- res> >T0> 
- T0 ` Fact Dv@ ` Fact v! 
- t0 VMlf s" : G " con 
-| Added Gravitational constant to Facts . 
-: G 6.674e-11 _f ; 	| m^3 * kg^-1 * s^ -2  | 1 in Planck length mass time
-: Gforce ( r m0 m1 ) *f G *f swap f^2 %f ; 
-
-| \/ | important fn | \/ |  added to  ./CoSy/CoSy.f
-: .. dup rep ;
-
-| \/ | added to ./CoSy/math.f | \/ | 
-| Note use of  ' on2  which applies fns in way APLs including K can't .
-: var 1p> ^2f favg R@ favg ^2f -f 1P> ;
-: dev var sqrtf ; 
- 20 _iota i>f dev
-
-: cov 2p> *f favg LR@ ['] favg on2 *f -f 2P> ;
-: cor 2p> cov LR@ ['] dev on2 *f %f 2P> ; 
-
- 20 _iota i>f .. reverse cor 10 _i fmtnF
-| need to deal w rounding . 
- | ########################### |
-| 1341 | Decided to publish files as they currently stand to be able to
- mention math stuff . Still plan much more cleaned up version -- soon .
- | ======================== | Tue.Nov,20171121 | ======================== |
-| 1104 |  Tweeted updates | 1228 | 
-  s" (header) " ??
-
- help (header)
- | ======================== | Fri.Nov,20171124 | ======================== |
-| did some consolidating of mathy fns from ./CoSy/Furniture.f in ./CoSy/math.f
-| Seem to have duplicate setions of ` text . still easiest to compare in Jedit .
- text> VMlf rho |  s" ./CoSy/text.txt" >F
-
-| re : | https://groups.google.com/forum/#!topic/comp.lang.forth/2EHMK4JmO1g  
- 10 _iota i( 5 2 )i take >t0> | flip 
- 
- | ======================== | Sat.Nov,20171125 | ======================== |
- see pi | Some variable ' pi exists the origin of which I strangely can't find .
- overwriting in math.f w  : pi fpi _f ;
- | ======================== | Sun.Nov,20171126 | ======================== |
-GHW Bush now 93 y 163 d . Oldest ever prez . When I was young HH was the old guy
- 18740810 19641020 2_i daysdif^ |>| 32943  | Herbert Hoover life span . 
- 32943. 365.25 2_f %f |>| 90.19 
-: fracf ['] ffrac eachMfr ; 	| not defined . added to  /cosy.f 
- R0 fracf 365.25 _f *f     |>| 70.49 
- 18740101 ymd>fixed 18740810 ymd>fixed - .
-| 1345 | 
- | ======================== | Thu.Nov,20171130 | ======================== |
-| in response to thread on SV-FIG ml , implementing ' factors  from K.CoSy
-|  factors />/ { t @ & 0 = x !/: t : 1 + ! _ _sqrt x }
-| See | Re: [svfig] Highly divisible numbers |
- http://www.cosy.com/CoSy/y17/Re%20%20%5bsvfig%5d%20Highly%20divisible%20numbers.html
-
- s" ./CoSy/math.f" F> >t0> ^eval 
- res> s" ./CoSy/math.f" >F
- 60 _i factors 	|>| 1 2 3 4 5 6 
- 64 _i factors  |>| 1 2 4 8 
- 65 _i factors 	|>| 1 5 
-  60. _f f( 1 2 3 4 5 6 )f %f f>i 	|>| 60 30 20 15 12 10 
- 60 _i >t0> factors >t1> 
- t1  t0 t1 ' i>f on2 %f f>i ,L 
-: factors .. i>f sqrtf f>i iota i1 +i .. --bac _modi 0=i & at ;
- 60 _iota i1 +i >t0>
- t0 { _i factors } 'm
-Posted to SV-FIG | 1737 |   
- | ======================== | Sat.Dec,20171202 | ======================== |
- s" c:/CoSybob/CoSy/CoSy.csy" F> restorelist >t0> ` T0 v@ 
- t0
- Dnames
-  s" : & " ??
- | ======================== | Sun.Dec,20171203 | ======================== |
- ` sys Dv@ ` CoSySource v@ >t0> 
-  t0 ' F> 'm >t1> ' rho 'm ,/
-  t1 { "lf VM rho } 'm ,/
-  R0 +/
-` rho 'm ,/ 
-  t0
- | ======================== | Fri.Dec,20171208 | ======================== |
-| 1232 | ( ) | 1615 | 
- s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> >t0> rho
-| In ./CoSy/SaveRestore.f , changing name ' storelst^ to ' lst>str 
-| likewise ' restorelist to ' str>lst
-[ moved \/ Sat ]
- s" C:/4thCoSy/lib/net/sockets" F> |  ^eval
- res> s" C:/4thCoSy/lib/net/sockets" >F
- needs net/sockets
-  REVAUSERLIB  
- words~ ~util
- .~
- .contexts
- libdir 
- os _i
- | ======================== | Sat.Dec,20171209 | ======================== |
-| really need somebody who understands it to make an example of how to
-| load and use the ./lib/net/sockets vocabulary . Set up 2 local CoSy's 
-| talking to each other .
-| Need to settle on some socket <-> browser "live" editiable TUIGUI .
-| rather than tracking down if all the Bombs in the old IUP interface are 
-| CoSy's or its . It's needed anyway .
-| \/ | .CSV < > CoSy Dictionary Table \/ | 
- s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> >t0> rho
-  t0 str>lst >t1> dnames 
- t1 ' rho 'm
- t1 1 _at ' rho 'm ,/	|>| 14 14 14 14 14 14 
- t1 1 _at { ['] rho 'm ,/ } 'm 
- t1 1 _at { -1 _cut } 'm  { ['] rho 'm ,/ } 'm ' rho 'm ,/ |>| 13 13 13 13 13 13 
- t1 1 _at { -1 _cut } 'm enc t1 1 _at!
- t1 1 _at rho  
- t1 s" Date" v@
- t1 0 _at ' rho 'm 
- t1 0 _at 0 _at 
-
- t1 dnames -1 _at 	| bunch of blanks 
- R0 >T0>
- t1 T0 v@ 
- t1 1 _at ' rho 'm
-| t1 1 _at { -1 _cut } 'm t1 1 _at!
- 
-| Updated and fixed freeing \/  | in  CoSy.f
-: sym>str> ( sym -- str ) .. dup sym>str swap ref0del ; 
-: str>sym> ( str -- sym ) .. dup str>sym swap ref0del ; 
- AF1  s" SYMBOL" str>sym> lst AF0 	| chked created & freed 
-
- t1 dnames ' str>sym> 'm enc  t1 0 _at!
- t1 ` SYMBOL v@
- T0 lst>str s" C:/CoSyBob/acnts/y17/HBasis.csdt" >F
- s" C:/CoSyBob/acnts/y17/HBasis.csdt" F>  str>lst >t0>
- t0 ` Date v@
- T0 dnames 5 _at DMP
-| somehow the bit count in one symbol in this DT got off by a byte ?!
- T0 1 _at ' Type@^ 
- | ======================== | Sun.Dec,20171210 | ======================== |
-| 1156 | | 1448 | 
- t1 >T0> 
- T0 dnames sym>str>' "bl MV |>| SYMBOL DESCRIPTION TYPE QTY Basis Date
- 
- T0 dnames >t0> ` Basis ?sym
- t0 4 _at ` Basis strmatch
- t0 5 _at >t1>
- t1  DMP cr ` Date DMP
-028DFFC8 01 00 01 00 01 00 00 00 02 00 28 00 00 00 00 00 ..........(.....
-028DFFD8 44 61 74 65 0D 00 00 00 49 23 70 72 E9 98 0C 08 Date....I#pr....
-
-028FCFB0 01 00 01 00 01 00 00 00 00 00 20 00 00 00 00 00 .......... .....
-028FCFC0 44 61 74 65 00 00 00 00 4D 23 71 77 E9 98 0E 00 Date....M#qw....
- t0 3 _at DMP
- s" Basis" >t1> bits@ 
-| ' sym>str not fixing bit count .
-
-: sym>str ( sym -- ) TypeC over Type!  dup sym# over cell+ !  byte swap bits! ;   
-
- t0 { bits@ 8 / _i } 'm
- t0 sym>str>' { bits@ _i } 'm 
- t0 
- t0 5 _at DMP | $20 swap bits!
- T0 dnames 5 _at   DMP 
- T0 s" C:/CoSyBob/acnts/y17/HBasis.csdt" >F
- s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> 
- T0 1 _at { ['] Type@^ 'm } 'm 	| I'm real happy that this sort of each each works . I don't think recursive { { } } does .
-| Can never remember which . need to make CoSy table | \/ |
- s" Types " ??
-| a[ Types Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv , ]a
-  s" Type0 , TypeC , TypeI , TypeFl , TypeS , TypeV , TypeA , TypeFv" s"  , " toksplt
- R0 >T0> 
- T0 T0 { ^eval _i } 'm >t0> ,L >t0> 
- t0 ` sys Dv@ ` Types v!
- ` sys Dv@ ` Types v@ >t0> ` TypeFl v@ 
-| really neat that /\ is that simple . Strings work as well as symbols -- which I'm coming to see as a superfluous type
- t0 t0 dnames { v@ fmtI$ } 'R ,/
- t0 dnames R0 ,L flip
- | ======================== | Mon.Dec,20171211 | ======================== |
- s" C:/CoSyBob/acnts/y17/HBasis.csdt" F> str>lst >T0> dnames  
- T0 dnames sym>str>' s"  \t " MV >t0>
- T0 0 _at sym>str>' enc T0 1 _at flip cL 
- R0 "ht ' MV 'L 
-"lf MV  >t0> rho
- t0 s" /CoSy/tst.csv" >F
- s" /CoSy/tst.csv" F> -2 _cut >T0> rho
- T0 -2 _take c>i
- T0 -2 _cut "nl VM "ht ' VM 'L >t0> 	| need to know if "lf or "lf "cr line delimiter
- t0 0 _at t0 1 _cut flip ,L >t1>
- | ======================== | Tue.Dec,20171212 | ======================== |
-| T0 -1 _cut "ht VM "lf ' VM 'L >t0> 	| delimiters not commutable .
- "nl "ht ,L 
-: csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM R@ 1 _at ['] VM 'L 2P> ;
- T0 "nl "ht ,L csv>lst lst>DT 
-: lst>DT 1p> dsc R@ 1 _cut flip ,L 1P> ; 
-: csv>DT csv>lst lst>DT ;
- T0 "nl "ht ,L csv>DT >T1> rho
-| 1435 | 
- T1 rho
- T1 1 _at rho
- T1 1 _at flip 
-: DT>lst 1p> dsc enc R@ 1 _at flip cL 1P> ; 
- T1 DT>lst >t0>
-: lst>csv 2p> dsc ['] MV 'L R@ 1 _at MV 2P> ; 
- t0 "nl "ht ,L reverse lst>csv 
-
-: tst 2p> ,L L@ R@ ,L ,L 2p> ;
- s" asf" s" qwer" i( 1 2 3 )i ,L tst
-
- t0 { "ht MV } 'm | "lf MV >t1> -2 _take c>i
-  R0 >t1> { -1 _at } 'm
-  R0 >t1>
-  t1 ,/ c>i
-  "cr c>i
- s" C:/CoSy/BobA/acnts/CHK_259bk.CSV" F> >T0> -2 _take c>i
-lst>csv
- T0 -2 _take c>i
-
-: DT>csv 2p> --aba dnames sym>str>' swap MV    2P> ;
-
-( DT str -- csvStr ) | turns DictionaryTable into .csv format string w str as the delimiter and "lf as the line separator
-  
-: csv>DT ( str tok -- DTable ) | converts .csv string w lines delimited by
-| "lf and labels in first line to "Dictionary Table" essentially 
-| equivalent to K's
- 
-| 20171213.1629 |( Added notes : the equivalent old K.CoSy | see http://cosy.com/K/CoSy/K_CoSy.htm
- csv2DT	: { ltab2dic @ + csvcutD[ x ]' y } \ splits y on char x \ 
- ltab2dic : { tab2dic[ ` $ in[ ; ALPHabet , DIGITS ]' *:' x ; 1 _' x ] } \ convert labeled table to dictionary \
- csvcutD : { ( nq 1 _ )' ( & uq[ d ] & d = x ) _ d : x , y } \ split values y separated by character x \
-
- dic2csv : { tab2csv[ x ] dic2ltab y } 	\ convert columns of y to csv format using delimiter x 
- dic2ltab : { { ( ! x ) ,' x[] } x } \ Converts dictionary to Table Labeled with each var name prepended to its value 
- tab2csv : { MV[ x ]' ( $ + y ) }  \  convert columns of y to csv format using delimiter x
-
-You can see they are comparable in size and even similar in structure . 
-Admitedly , csvcutD in particular does more and needs some words yet to be translated  )|
-
- | ======================== | Wed.Dec,20171213 | ======================== |
-| 1319 | ( Consider that CoSy is linearizing and saving ' R every timestamp and 
-| line you execute )
-| saving to GitHub | 1500 |   
- | ======================== | Sat.Dec,20171216 | ======================== |
-| 1500 | I've evolved to keeping a ledger of my transactions , particularly 
- by noting upcoming payments due as , eg :
-  ` BHEnergy 104.32 _f cL 
- in my calendar on the day due , then when the day comes and I pay it fleshing
- it out to , eg :
-  20171216.1526 _f ` PSBank ` BHEnergy 104.32 _f s" gas " 4 times cL 
- where ' times is a Reva word .
- The items are 
-  ` TimeStamp ` From ` To ` amount ` note  4 times cL
- Down in ` state , I keep a number of accounting related lines including first
-  ` LedgerList R0 enc Dv_cL 	| append item from day 
-
-  ` LedgerList Dv@ >T0>  reverse 	| check posted 
- But sometimes I don't have a note , so here I'm cleaning up , ie : adding 
- an empty string to any items which don't have notes so I can convert it
- to a .csv for output and reconciliation with my legacy K.CoSy accounts .
- Reading the list from my personal CoSy .
-  s" C:/CoSyBob/CoSy/CoSy.csy" F> str>lst ` LedgerList v@ >T0> rho |>| 74 
- Which ones just have 4 items 
-  T0 ' rho 'm ,/ 	|>| 4 4 4 4 4 5 5 4 4 4 4 4 5 5 4 5 5 5 5 4 ...
-  R0 4 _i =i & >T1> 	|>| 0 1 2 3 4 7 8 9 10 11 14 19 ...
- So those are the items we want to modify .  
-  T0 t0 { ix _i } 'R >t1> 	| addresses of selected items
- | ======================== | Sun.Dec,20171217 | ======================== |
-| continuing :
-  T0 T1 { ix _i } 'R >t1> 	| addresses of selected items
-  t1 dsc >_ dup @ zic cL swap rplc 	| Worked !
-| pulling it together :
-  
-: @x! ( lst idx f -- lst ) | applies ' f to indexed items in ' lst .
- >aux   >t1> 
- T0 T1 at 
-: tst zic cL o ; 
- T0 T1 0 _at at tst
- T0 T1 at ' tst 'm >t0>
-: @x! >aux { ix dup @ o aux@ execute o swap rplc o cr zic } 'm auxdrop ;
- T0 T1 { zic cL o } @x! 
- see i#
- | ======================== | Mon.Dec,20171218 | ======================== |
- s" : rotate" ?? 	| ' rotate failing on floats 
- f( 0 1 2 3 4 )f 2 _rotate 
- i( 0 1 2 3 4 )i >t0> 2 _rotate
-| Was failing because ' if@ and ' if! work from float stack w nothing on stack .
-| fixed by copying logic of ' reverse .
-| 1856 | 
- | ======================== | Tue.Dec,20171219 | ======================== |
-: @x! >aux o { ix dup @ o aux@ execute o swap rplc $.s cr ev } 'R auxdrop ;
-: t0 zic cL ;
-: tst { ix dup @ o t0 execute o swap rplc $.s cr ev } 'R ;
-| !!! problem because " each " fns use ' aux stack !!! |
-| updating " each " fns w stack frame versions 
-
-: 'd >r 2p r> LR@ longer_ ev swap 0 ?do L@ i _at R@ i _at l0@ execute cL loop 2P> ; 
- AF1  5 _iota s" as" { cL enc } 'd lst AF0  | works & clean first time 
-
- T0 T1 { zic cL } @x! 
-  ` tstScript Dv@ s" /CoSy/temp.txt" >F
-  s" /CoSy/temp.txt" shell^
- ` tstScript ->
-  ` tstScript Dv@   ^eval  
-
-: tst >r 2p r> l0@ 2P> ; 
-  s" zero " s" 1 " s" r " tst
- T0 T1 { i@  } 'R 
- 
-: tst 0do i _i loop ;
-  0 tst 
- | ======================== | Thu.Dec,20171221 | ======================== |
- see 'R
-: tst0 nip _i ;  
- s"  ' tst0 $. " forth>  | $634B54 
- T0 T1 { _at s" " cL } 'R
-
- | ======================== | Sun.Dec,20171224 | ======================== |
-| ' 'R  seems working . removing traces & replacing in CoSy.f | 
-: 'R : eachright ( LA RA fn -- R )
-  | iterates over raw items of RA . result of fn must be a CoSy object 
-  >r 2p r> $.s cr | fntype TypeFl =if z" nonce " throw ;then 	| Floats are sui generis
-    R@ i# l0@ $.s cr fntype VecInit 
-    dup i# 0 $.s cr ?do L@ R@ i i@ l0@ $.s cr execute refs+> l1@ i i! loop 
-   l1@ $.s cr o 2P> ;
- T0 T1 { ix dup @ s" " cL swap rplc ev } 'R
- T0 T1 at
- T0 rep >t0> T1 at
-: @x! >aux { ix dup @ aux@ execute swap rplc ev } 'R refs- auxdrop ;
-  t0 T1 { s" " cL } @x!
- t0 ' rho 'm ,/
-| ! Working !  Simpler tha APL or K ! | 2030 | 
- t0 >T0>
- s" T0  lst " forth> rho
-"lf "ht ,L lst>csv 
- | ======================== | Mon.Dec,20171225 | ======================== |
-| need to "hack" general format fn by "capturing" output of ' lst which 
-| foolishly directly outputs rather than formatting then outputing .
-: FMT >aux s" aux@ lst " forth> auxdrop ;
-| tested w AF1 AF0 for cleanup .
- T0 dsc { FMT -1 _cut } 'm  >t0>  | each item ends w "lf . 
-| 1203 | (nonce) et al bombings 
- 
-  s" C:/reva201101/lib/ui/gui" F> >t0> rho
-  s" C:/4thCoSy/lib/ui/gui" F> >t1> rho
- t0 t1 ,L ' rho 'm
-  t0 t1 ' VMlf on2 
- t0 t1 ,L ' rho 'm
- see sp 
- 1 2 3 
- . . . 
- | 1406 | 
- | ======================== | Fri.Dec,20171229 | ======================== |
-  sp .  | 4356208 
-  sp _i
-  t0 
- help catch 
- | ======================== | Sat.Dec,20171230 | ======================== |
- | ======================== | Sun.Dec,20171231 | ======================== |
  | ======================== | Sun.Jan,20180107 | ======================== |
 Going to see if I can go directly to redirecting ' exception | 1418 | 
 
@@ -2845,7 +1943,6 @@ And I've split out and uploaded to the
  
   s" 0123456789"  swap  membv
 | s"  | ======================== | Sat.Jul,20170701 | ======================== | "  >T
- 
  ' ALPHabet _i
 David Smith1 day ago
  
@@ -2859,12 +1956,213 @@ David Smith1 day ago
  ' c= _i
  s" : ss " ??
  res> >T1> 
- .\
  s" DS | "  T1 lfVM ' cL 'R 
- s" dir .\" shell>
- s" C:/4thCoSy/CoSy/CoSy - Copy (2).bk" F> >t0> rho
- t0 str>lst >t1> ` res v@ >T1>
- T1
+ | ======================== | Thu.Dec,20181206 | ======================== |
+| A little calc of the sort I do all the time 
+  f( 560 315 )f ' %f ./ 1%f  f( 260 320 400 )f *f
+| For calculating embed sizes for YouTube <iframes> .
+ | ======================== | Fri.Dec,20181207 | ======================== |
+| 2007 | posted YouTube splitout @ 
+ https://youtu.be/8lMnaDV5Mzo
+ https://twitter.com/CoherentSystems/status/1070767038916952064
+ https://www.facebook.com/CoherentSystems/
+ https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/2013381855628505/
+& emailed SV-FIG .
+Annotating YouTube :
+| >~ 12:50 | The example I was presenting in raw Forth was 
+  1 2 - .			| try this with sF6 . More subtle , try F6
+| >~ 16:10 |  Finding definition of ' ('
+ s" : (' " ??
+| I somehow lost that In&Out burger transacton but here's Friday Evening :
+ (' 20181116.20 _f ` cash ` MurphySt  f( 5 1 2.78 6 1 )f s" Paul&Harvy beer . lighter . Murphy'sLaw beer " ') 
+ R0 >t0> rho
+| the line I was describing how useful ' | is in executing pieces of lines :
+  ` text 	>t0>  Dv@ lfVM >t1> s" (' " con  s" ` cash" con  reverse
+| But in my personal log , that finds 45 matching lines .
+  t1 rho	| that's currentl 3094 separate lines 
+  t1 ' rho 'm  t1 rho' match	| takes way longer than it should .
+| Oh I've got some tracers in ' match | was :
+|  dup i# 0do over i i@ over i i@   $.s 2dup ,L lst cr   match_ 0if  0 leave 
+| much better but not fast .
+ | ======================== | Sat.Dec,20181208 | ======================== |
+| 1645 |  Continuing :
+  1 2 - _i 	| try this with F6 . Sticking  ' _i on the end of almost anything will make it safe
+ | ======================== | Sun.Dec,20181209 | ======================== |
+ ` asdf s" asdf" match 	| I become less enamored of symbols being a separate type .
+ R `( sys Tui font )` v@ 	| response to 
+| 2059 | ran into need in my main accounting 
+   s" C:/CoSy/tmp.txt" F> lfVM 1 _at >T0>
+ "Status","Date","Description","Debit","Credit"|"Cleared","09/23/2018","WOODLAND HARDWARE      WOODLAND PARK CO |","133.67",""|"Cleared","10/07/2018","NETFLIX.COM            NETFLIX.COM   CA |","11.44",""|"Cleared","10/08/2018","ONLINE PAYMENT, THANK YOU               |","","250.00"|"Cleared","10/10/2018","INTEREST CHARGED TO STANDARD ADV        |","0.43",""|"Cleared","10/10/2018","INTEREST CHARGED TO STANDARD PURCH      |","110.44",""|"Cleared","11/07/2018","NETFLIX.COM            NETFLIX.COM   CA |","11.44",""|"Cleared","11/08/2018","ONLINE PAYMENT, THANK YOU               |","","400.00"|"Cleared","11/12/2018","INTEREST CHARGED TO STANDARD PURCH      |","128.55",""|"Cleared","11/16/2018","FOX RENT A CAR SAN FRA LOS ANGELES   CA","224.46",""|"Cleared","11/19/2018","FOX RENT A CAR SAN FRA LOS ANGELES   CA","","150.00"
+ T0  s/" \""  | { =i } 'L
+ T0 s/" \"" ssc >t0>
+ i1 i0 T0 rho take >t0> R0 at! t0
+ t0
+ T0
+ t0 T0 rho >_ intVecInit >t1> 
+ i1 t1 t0 at! t1 
+   t1
+ R0 +/
+ R0 T0 rho nbool>
+: nbool> ( i n -- n rho bool of i ) i1 --cab >_ intVecinit swap at! ;   
+ ' nbool> _i
+ T0 t1 & at
+ reset 
+ T0 
+  10 intVecInit 
+ | ======================== | Mon.Dec,20181210 | ======================== |
+ T0 s/" \"" ssc >t0>
+  t0  t0 rho >_ 2 / _partition >t0> 	| note the raw Forth  2 / 
+: 2splt dup 0 _at swap 1 _at ;
+ t0 { 2splt i1 +i thru } 'm  >t1>
+ T0 t1  ' at 'R
+ T0 rho >_ intVecInit dup i1 swap t1 ,/ at!
+ 
+: at!> over >aux at! aux> ;
+ i1 T0 rho >_ intVecInit t1 ,/ at!>
+
+| the boolean way 
+ T0 c>i s/" \"" c>i =i
+: =c ['] c>i on2 =i ;
+ T0 s/" \"" =c >t0> ' <>I scanI  t0 maxi
+ T0 t1 & at
+ ' at!> _i
+ T0 rho
+ 1 2 3 
+ ' --dabc _i
+ t0  t0 { ['] -i ./ } 'm   ' cL 'd
+ t0 i( 0 1 )i ' +i 'L  
+
+ ' 2splt _i 
+ lst
+ t1 dsc >a> 0 _at aux@ 1 _at  thru  a- 
+ t1 dsc dup 0 _at swap 1 _at 
+
+ `( 1 2 )` >t0> 0 _at |  {{ >a> 0 _at aux@ 1 _at a- }} 
+  t0 |   dup 0 _at swap 1 _at 
+ | ======================== | Tue.Dec,20181225 | ======================== |
+ ` ToDo | s" : 'm " ??  | operates on naked 
+ ` ToDo ->
+| removing offer : | 20170131.1045 | NOW AWARDING A SHARE IN CoSy FOR FIXES AND EXTENSIONS OF CoSy |
+  f( 1 2 3 4 )f ' 1%f 'm 
+
+ | ======================== | Wed.Dec,20181226 | ======================== |
+ http://cosy.com/y18/NL20181224.html
+ out  | 2203 | 
+ | ======================== | Thu.Dec,20181227 | ======================== |
+| 1121 | 
+  1 _i enc >t0>
+  1 _i t0 0 
+ dependencies 
+  s" pair" ??
+  i1 >t0>
+  i( 1 1 )i >t0>
+   t0 ' + _delta
+  t0
+ 1 2 2_i -i
+
+  i1   t0 ' + _delta cL rho | i1 cL
+ 
+|  : saveTSclone  R fullCoSyFile ymdhm cL s" .csy" cL savelist ;
+| fullCoSyFile ymdhm cL s" .csy" cL |>| C:\4thCoSy.\CoSy\CoSy201812272146.csy
+| /\ wrong | fixed ' saveTSclone & moved from ` script0 to ./CoSy/Derived.f
+
+ s" C:/4thCoSy/CoSy/CoSy - Copy (4).bk" F> str>lst ` text v@
+ s" fullCoSyFile" ??
+ | ======================== | Fri.Dec,20181228 | ======================== |
+| Motivated by David Smith . Forth spreadsheets . https://youtu.be/if1Psu6RJbs
+| Pascal's Triangle example .
+| ' _delta , K's "eachPair" very old & had some problem . So deleted from CoSy.f
+| Created ' '" in ` tstScript so could edit multiline . mainly working on integer lists
+ s/" '\" " ?? 	| may not be a great name because of embedded \" . 
+ http://www.cosy.com/CoSy/y18/Re%5bsvfig%5d_Pascal'sTriangle.html
+| renamed  ':  | '" is " char in Reva | '" $22 =I _i | It's why I wish I had more fonts
+ 10 _iota ' - ':
+ i1 enc >t0> 
+ t0  i1 t0 -1 _at ' + ': cL i1 cL cL >t0>
+ s" C:/4thCoSy/CoSy/math.f" F>
+ | ======================== | Sat.Dec,20181229 | ======================== |
+| 1059 | 
+    d;lasdfkas f;sd kf l;skdfksdak ';asdfklas
+  s" ./CoSy/CoSy.f" F> rho
+  1 _i DMP
+  s" Hello World " 
+  1 _i r
+  ( rho rho ) | dimension 
+  R `sys v@
+|  2 - .   
+  T0
+  R 0 _i at
+  3.14 _f DMP
+  (' (' 1 _i ')` asdf s" asdfasd "  20181229.1147 _f i( 1 2 3 1024 )i  ') >t0> 
+  t0 ' Type@^ 'm
+  t0 dsc rho
+  10 _i iota >t0> 
+ t0 ..  { _i *i } 'R
+.. 
+ see aaply 
+ s" +i " ??
+ t0 "lf 2 _take  VM rho
+ | ======================== | Sun.Dec,20181230 | ======================== |
+ | ======================== | Mon.Dec,20181231 | ======================== |
+ | ======================== | Tue.Jan,20190101 | ======================== |
+  Dnames R 1 _at rho' ,L flip dsc
+( 
+ ` help
+ 0 
+ )
+| Something sometime 0ed the key ` help variable . restoring from last TSclone .
+ s" C:/4thCoSy/CoSy/CoSy201812281320.csy" F> str>lst ` help v@ ` help Dv!
+| -- |
+  s" ./lib/util/misc" F> 
+ i1 enc >t0>
+| remembered I had ' braket  to simplfy Pascal triangle step .
+ s" : braket " ??
+ t0 t0 -1 _at ' + ': i1 braket cL >t0>
+
+: a@ aux@ ; 	| added to  ./CoSy/ParameterPushing.f  
+: /\a refs+> (aux) @ dup @ refs- ! ; | like >t0 . replaces value , handles ref count . 
+| AF1 1 _i >a  2 _i /\a AF0  AF> 	| test of counting & freeing 
+ 
+| simple looping of expression xt n times . Must be " self contained " leaving nothing on stack .
+: nxtimes ( n xt --  ) swap 0 ?do dup xeq  loop drop ; 	| saved to CoSy.f
+ 
+| Now can define  PascalTri ( n-1 -- n row Pascal triangle )
+: PascalTri i1 enc >a { a@ a@ -1 _at ['] + ': i1 braket cL /\a } nxtimes a> ;
+|  33 PascalTri 	| That's the largest triangle before integer overflow .
+
+ t0 i0  { <i +/ } 'L  ,/ -0+i &
+ t0 i( 33 34 )i at | interesting . Integer overflows at just 34
+| Added to ./CoSy/math.f 
+
+| -- |
+ s" |a s d  a s df " s" |" ss dsc
+ lst
+
+ text> lfVM s" | " ' ssc 'L
+: prt<f 2p> ss1st 
+
+: prt<=l 2p> ['] reverse on2 ss dsc i-1 *i L@ swap cut 2P> ;
+ | ======================== | Wed.Jan,20190102 | ======================== |
+| In reply to https://twitter.com/_akhmorn/status/1077706349457428480
+ 6 _iota i1 +i  .. { _i +i } 'R
+ s" ss1st " ??
+
+: ss1st ( s0 s1 -- idx ) 2refs+> 2dup >r van 
+	--aab r> van search 2drop swap - _i --cab 2refs- ; 
+ " a s d  a s df "  " |"  search 
+ drop type
+
+  s" a s d  a s df |" s" |" ss1st
+ | ======================== | Sun.Jan,20190106 | ======================== |
+| In response to Andreas Bernhard Wagner
+| https://twitter.com/lowfatcomputing/status/1081922018210131968  
+: avgf  1p> +/ R@ rho i>f %f 1P> ; 
+: gavg  1p> ['] *f ./ R@ rho i>f 1%f ^f 1P> ; 
+  ' *f ./ R@ rho i>f 1%f ^f
+  
+ 10 _iota i1 +i i>f >t0> 2 _fmtnF "bl ' cL 'L ,/ |
+ t0 ' avgf ' gavg 2_i cL ' xeq 'R
+
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
@@ -2880,10 +2178,15 @@ David Smith1 day ago
 rho lst
  mark forget 
  
- s" ./CoSy/math.f" F> | ^eval  
+ s" ./CoSy/math.f" F> >t0> | ^eval  
  res> s" ./CoSy/math.f" >F 
- 
+  R 1 _at  ' rho 'm
+ s" asdf;lkj " >t0> 
+ t0 
+  lst 
  forget
+  R type@ _i
+
 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
@@ -2907,15 +2210,10 @@ rho lst
 			 | Your CockPit  |  Sandy Steier abt K.CoSy
 			 https://www.1010data.com/company/our-story/
 
- | ======================== | Thu.Nov,20181108 | ======================== |
- | ======================== | Sun.Nov,20181111 | ======================== |
-
 	o Conceptual Horizon Stack 
 	o lists like Fourier transform domain . Entire object vs point .
 	o vocabulary of operations on lists . `( logical arithmatic selection order )`
 	o delimiting strings . 
-
-
 
 |  Amount I don't know of anything other than APL & Forth massive .
    including even DOS & GitHub .  Really not intrested in programming per se |
