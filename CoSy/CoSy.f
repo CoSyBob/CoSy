@@ -222,7 +222,7 @@ alias: Type@ @		alias: Type! !
 : intVecInit ( n - objAdr )		| make header and allocate space for int vec of length n
    cellVecInit int> ;			| integer vector type -1
 
- 0 intVecInit refs+> value evI 	| empty integer vec . 
+ 0 intVecInit refs+> value ei 	| empty integer vec | renamed from evI 20190121.	 
 
 : _i ( cell -- 1_item_intvec ) 
    1 intVecInit >r> 0 ii! r> ;
@@ -754,9 +754,6 @@ choices: istore
 : i! ( item a i -- ) 
   over @ istore ;
 
-
-: i_ dup 0 i@ swap ref0del ;  | raw first item of list . 
-
 | APL's ` iota on a CoSy integer singleton . And version returning float .
 : iota  >_ _iota ;  : iotaf iota i>f ;
 
@@ -1066,13 +1063,16 @@ variable indentv   : indent indentv @ spaces ;
 	| This is a generalization of APL's dyadic iota , and
 	| K's ? both of which are functions which assume the boolF : ` = | 
    >lpstk 2p
-    L@ i# 0 ?do L@ i _at R@ lpstk@ execute i_ 
+    L@ i# 0 ?do L@ i _at R@ lpstk@ execute >_ 
      if lpstkdrop 2P i _i unloop ;then loop
 	lpstkdrop L@ rho 2P>  ;  
 
 | more efficient search for 1st occurance of string in string | 20180315
 : ss1st ( s0 s1 -- idx ) 2refs+> 2dup >r van 
-	--aab r> van search 2drop swap - _i --cab 2refs- ; 
+	--aab r> van search 
+	if drop swap - _i --cab 2refs- ;then
+	drop 2refs- ei  ; 
+| 20190122.2033 | fixed to return empty on no occurance .
 | thought it would be useful in making | : tst f( 1 0 )f ; | work .  
 
 0 [IF]
@@ -1347,9 +1347,11 @@ alias: _ cut 	| The K name .
 : tokcut ( str tok -- CV )	| cuts string at occurences of string `tok but includes segment before first token 
   2p LR@ ssc i0 swap ,I L@ swap cut 2P> ;
  
-: VM : toksplt ( str tok -- CV )	| like ' tokcut but deletes the tokens from the cut pieces 
-   | cr ." toksplt " ( 2p> tokcut  i0  R@ rho   ) 
-   2p LR@ swap cL >aux+> dup R@ ssc cut 	| appends 
+: VM : toksplt ( str tok -- CV )	
+| like ' tokcut but deletes the tokens from the cut pieces .
+| Note , empty tok will return empty .
+| 20190124 replaced ' cut w ' cut\ .  
+   2p LR@ swap cL >aux+> dup R@ ssc cut\ 	| appends tok at front then cuts 
    aux- R@ rho ['] cut eachleft  2P> ;
  
 | Finessing bomb on 0 occurrences of tok . See Mon.Mar,20170306 |
@@ -1406,7 +1408,7 @@ alias: _ cut 	| The K name .
 | 
    dup @ if ;then		| transpose of a simple obj is itself 
    dup i# 0;drop 		| same for empty
-   refs+> dup ['] rho 'm ,/ ['] min _./ i_ cellVecInit >aux> 	| ob nbdy
+   refs+> dup ['] rho 'm ,/ ['] min _./ >_ cellVecInit >aux> 	| ob nbdy
     i# 0 ?do dup i _nth refs+> aux@ i i! loop 
     refs- aux> ; 
 
@@ -1636,7 +1638,6 @@ needs SaveRestore.f
 | environmental variable . If a second argument is present , it is
 | loaded instead . 
 | CoSyFile dsc o restorefile ' R rplc
- 
 
  COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
 
@@ -1760,9 +1761,10 @@ cr ." here "  $.s cr
 
 | needs math/big
 
- ` script0 Dv@ ^eval
  needs Job.f 	| doesn't run right from w/i script0 
 
+ ` script0 Dv@ ^eval 
+ 
 needs Tui.f
 
 : EoDefs ; 

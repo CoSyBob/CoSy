@@ -24,6 +24,9 @@ cr ." | Furniture begin | "
 | |/\| MISC UTILS |/\|
 
 | |\/| FILE & OS FNS |\/| with CoSy args
+| since  ' s"  was changed to not escape ` \ , some of these conversions are
+| not needed as much .
+| Note that while MS doesn't care about case , F> in particular does .
 
 : dosslash^ ( str -- str ) { dosslash str } onvan ; | convert all / to \ |	
  
@@ -91,13 +94,14 @@ cr ." | Furniture begin | "
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ \/ Stack made with CoSy obs \/ \/ \/ |
 ev refs+> variable, stk			| set stk to an empty vector 
-
+ 
 : p ( obj -- ) stk @ cL  stk rplc ;		| push 
-
+ 
 : P ( -- obj ) stk @			| pop
    dup i# 0if drop ev refs+> ;then		| if empty return empty
    dup dsc  swap i1 _   stk rplc  dup refs-ok ; 
 | /\ /\ /\ Stack made with CoSy obs /\ /\ /\ |
+
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ \/ |  REF COUNTING  | \/ \/ \/ |
 | These fns are useful for checking that created obs get collected .
@@ -116,26 +120,27 @@ variable AFptr
 : AF1 AFptr off  AFbufON ; 		: AF0 AFbufOFF ; 	: AF> AFbuf AFptr @ _take ; 
  
 | /\ /\ /\ |  REF COUNTING  | /\ /\ /\ |
+
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ | Time Fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
  
 : ymd.hms_ time&date _ymd.hms_ ;  : ymd.hms ymd.hms_ str ; 
 | : |ymd.hms| ymd.hms s" |" braket ; : |ymd.hms|_ |ymd.hms| str>pad_ ;
-
+ 
 : _ymdhms _ymdhms_ str ;      : ymd.hm ymd.hm_ str ;
-: ymdhms ( -- yyyymmdd.hhmmss ( string ) time&date _ymdhms ;
-
+: ymdhms ( -- yyyymmdd.hhmmss ( string ) time&date _ymdhms ; 
+ 
 : ymdhm ( -- yyyymmdd.hhmm ) ymdhm_ str ;
 : |ymd.hm| ymd.hm s" | " s"  | " ,L braket ; : |ymd.hm|_ |ymd.hm| str>pad_ ;
-
+ 
 | Converting  ' daysdif  used to compute days of my life to take CoSy dates
 : date_ ( yyyymmdd _i -- d m y ) >r> vbody @ dtupk r> ref0del ;
 : daysdif^ >r date_ r> date_ daysdif _i ; 	| 20171112 
-
+ 
 | Cut text into day entries ( approximate as can be seen from def . )
  "lf s"  | ======================== | " cL refs+> value daylnTok 
 : daylncut ( str -- listOFstrings ) daylnTok tokcut ;
-
+ 
 | \/ Calendar \/ | 
  
 | : dt time&date 6 s>iv ;
@@ -143,14 +148,15 @@ variable AFptr
 : daylns ( d m y n -- ) | outputs daylines for begining date + n days . 
  >r date>fixed _i r> _iota +i { fixed>date dayln type cr } eachM ;
 | >r date>fixed _i r> _iota ['] +i aaply { fixed>date dayln type cr } eachM ;
-
-| : DAYLNS ( date number -- str ) 2p L@ i_ dtupk R@ i_  
-
+ 
+| : DAYLNS ( date number -- str ) 2p L@ >_ dtupk R@ >_  
+ 
 0 [IF]
 : _jd ( v_yyyymmdd -- v_julian ) | same as K _jd except 00010101 is 1 instead of 20350101 -> 0 .  
 [THEN]
-
+ 
 | /\ /\ | Time Fns | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
+
 | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ | 
 | \/ \/ | partitioned string fns | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 
@@ -164,17 +170,28 @@ variable AFptr
 | see 20180729
 : inb ( lst tok -- lst ) 2p> rho { take R@ match } 'L ,/ 2P> ;
 | bool of lines starting w tok 
+ 
 : in 2p> --aab inb & at 2P> ;
 | lines starting w tok 
+ 
 : ninb inb 0=i ;
 : nin 2p> --aab ninb & at 2P> ;
 | the obvious complements 
-: afteri ( str tok -- str ) tokcut 1 _at ;
-| portion of string after but including tok 
-: beforei >a> tokcut dsc a> cL ;
-| portion before but including tok 
- 
-: braketed ( str tok0 tok1 ,L -- str ) 2p> dsc afteri R@ 1 _at beforei 2P> ;
+
+| 20190203 | \/ | vocabulary found useful over the years | \/ |
+: prt<f ( str tok -- PaRT_Before_First ) 2p> ss1st L@ swap take 2P> ;
+: prt<=f ( str tok -- PaRT_Before_Firstincluding )
+   2p> ss1st R@ rho +i L@ swap take 2P> ;
+: prt>=l 2p> ['] reverse on2 prt<=f reverse  2P> ; 
+: prt>l 2p> ['] reverse on2 prt<f reverse  2P> ;
+
+: prt>f  2p> ss1st R@ rho +i L@ swap cut 2P> ;
+: prt>=f 2p> ss1st L@ swap cut 2P> ;
+: prt<=l 2p> ['] reverse on2 prt>=f reverse  2P> ; 
+: prt>l 2p> ['] reverse on2 prt>f reverse  2P> ;
+| /\ |
+
+: braketed ( str tok0 tok1 ,L -- str ) 2p> dsc prt>=f R@ 1 _at prt<=l 2P> ;
 | portion of string between but including two token strings . eg :
 |   s" Gilgamesh Athorya <e9gille@hmail.com>," s" <" s" >" ,L braketed
 | <e9gille@hmail.com> 
@@ -260,6 +277,4 @@ variable AFptr
 | `( Type0 TypeC TypeI TypeFl TypeS TypeV TypeA TypeFv )` dup+
 |  { van eval _i } eachM> ' cL across  over refs-ok  cL  R ` Types v!
 
-." | Furniture end | " cr 
-
-
+." | Furniture end | " cr
