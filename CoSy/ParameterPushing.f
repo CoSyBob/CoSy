@@ -4,7 +4,7 @@ cr ." | ParameterPushing > "
 | |\/| StackFrames |\/| ================================== \/ |  
 ." |\\/| StackFrames |\\/| "  
  
-| Implementing the notion in George B. Lyons : Stack Frames and Local Variables :  http://www.forth.com/archive/jfar/vol3/no1/article3.pdf
+| Implementing the notion in George B. Lyons : Stack Frames and Local Variables :  http://dl.forth.com/jfar/vol3/no1/article3.pdf 
  
  s0 cell- dup constant s1 dup dup !  variable, SFptr 	 	
  | relies for stopping on the 0th stack cell being set to itself 
