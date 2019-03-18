@@ -9,6 +9,7 @@
  
  
  
+ 
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
@@ -101,14 +102,17 @@ One can now stay fairly easily executing at the 4th.CoSy list level using F6 .
 But tapping shift F6 simply executes raw Forth leaving things on the stack
  sF6 does not try to output the top item .
 
-| 20160605.1150 | implemented  ' forth> which eliminates regular need for 
- raw Reva Forth execution for getting Reva help .
-  s" help see " forth> 	| Help on Reva word ' see
-  s" see dup " 	forth> 	| See x86 code for ' esi@
-  s" words @ " 	forth> 	| words containing s" @" 
-  s" res> Help" forth>	| show help on each word in a string . Reva help often lists
-   | related words at the end of a definition . I often edit down the res
-   | contents down to these lists and then sF6 this line to display them all .
+  s" dup " Help		| Help on Reva word ' see
+
+  res> blVM ' Help 'm	| show help on each word in a string .
+   | Reva help often lists related words at the end of a definition .
+   | I often edit down the ` res contents down to these lists
+   | and then use a line like this to display all the related word .
+| EXERCISE | Make a word to automate this extraction .
+
+  s" dup " See	 	| See x86 code for ' dup
+
+  s" @ " words> 	| words containing s" @" . Note : just in the CoSy context
 
  | ======================================================================= |
 
@@ -458,18 +462,21 @@ Yes geometric is good for lots .
 | 
    dup @ if ;then		| transpose of a simple obj is itself 
    dup i# 0;drop 		| same for empty
-   refs+> dup 2 _take rho'  ,/ ['] min _./ >_ cellVecInit >aux> 	| ob nbdy
+   refs+> dup 2 _take rho'  ,/ ['] min _./ >_ cellVecInit >aux> | ob nbdy
     i# 0 ?do dup i _nth refs+> aux@ i i! loop 
     refs- aux> ;
  
-  i( 4 2 3 )i ' _iota 'm 2 _take >t0>
- t0  t0 flip ( ' ,/ 'm ) ,L
+  i( 4 2 3 )i ' _iota 'm >t0> | 2 _take >t0>
+AF1  t0  t0 flip  ' ,/ 'm  ,L lst AF0 AF> >t1>  rho'
+ t0  2 _take rho' ,/ ' min _./ | 
+ 
  t0 ' rho
-
-  s" asdf" flip
+  s" _nth " ??
  ev flip
-AF1 (' s" asdf" s" qw" ') flip ' >t0 AF0 AF>
+AF1 ('  ') flip ' >t0 AF0 AF>
  R0 +-splt
+ 
+
 | 20190203.1412 | 
  | ======================== | Sat.Jan,20190119 | ======================== |
  | ======================== | Sun.Jan,20190120 | ======================== |
@@ -588,7 +595,7 @@ s" Gilgamesh Athorya <e9gille@hmail.com>," s" <" s" >" ,L braketed
  t1 { ^eval _i } 'm ,/ >t1>
  t1 0 _at t1 1 _at daysdif^  |>| 89 
 | punted 
- 20181221 ymd>fixed 44 + fixed>ymd _i
+ 20181221 ymd>fixed 44 + fixed>ymd _i |>| 20190203 
 | unfinished .
 
  | ======================== | Mon.Feb,20190204 | ======================== |
@@ -618,24 +625,242 @@ s" Gilgamesh Athorya <e9gille@hmail.com>," s" <" s" >" ,L braketed
 
 | now can check all the archives for any days which contain the phrase ` filter 
  T1 { .. F> daylncut s" filter" con cL } 'm
- 
+ | ======================== | Tue.Feb,20190205 | ======================== |
+| PeakInter.net effectively down . 
+  fileDialog >t0> | browse for file names | combining multiple file names :
+ s" C:/4thCoSy/CoSy|y2016.txt|y2018.txt|y2017.txt|y2015.txt|" -1 _cut s" |" VM >t0>
+ t0 dsc s" /" cL  t0 1 _cut ' cL 'R >t0>
+ t0 { .. F> daylncut s" sort" con ,L } 'm
+  s" C:/4thCoSy/lib/alg/hsort" F> 
+ Dnames
+  ` script.sort ->
+  needs alg/hsort
+ see hsort 
+ t1 dsc van cells/
+  hsort 
+ s" cells/" ??
+ t1 ' hsorti 'm  
+ t1 dsc  t1 1 _at i-1 *i ,L ' hsorti 'm
+ lst
+ t1 flip  i( 1 -1 )i ' *i aaply flip
+ see hsorti 
 
+: hsorti rep_ dup van cells/ hsort ;
+ s" aaply" ??
+ 42677480  o
+ | ======================== | Thu.Feb,20190207 | ======================== |
+ 4 2 swap 2dup - --cab + /mod . .
+: MGdemo 2p> -f LR@ +f %f 2P> ;
+  f( 1 2 3 )f f( 4. 3 2. )f MGdemo 
+ | ======================== | Sun.Feb,20190210 | ======================== |
+| 1150 | exploring what would be involved in building ' _i and ' _f actions 
+ into F6 interpreting | 1620 | back to ' flip problem 
+  s" C:/4thCoSy/CoSy/ParameterPushing.f" F> lfVM dae >t0> rho
+ t0
+ t0 { s" | " cL } 'm >t1> { s" |" prt<f } 'm  s" : " con >t1> rho
+ s" ss" ??
+ 
+ s" intv" ??
+  2 3 =I 
+ " c" 
+ type
+ s" at!" ??
+: =c ( str char -- bool )
+: =c over i# intVecInit >aux ssc i1 swap aux@ swap $.s at! aux> ; 
+  i1 15 intVecInit >aux> 7 _i at! aux> 
+
+ s" qeawr;l asdf l; "  s" a" over i# intVecInit >aux 
+| i>b ( i n -- bool of length n ) >
+ 
+ over o drop
+ aux@ lst
+ 
+  s" : =c " ??
+  s" : c@ " ??
+t1 | ,/ c>i 
+ t0
+ s" c>i " ??
+ t1
+ t1 0 _at  s" | " prt<f
+ s" prt<f" ??
+ | ======================== | Mon.Feb,20190211 | ======================== |
+| ( i n -- bool of length n with 1s at i ) 
+: i>b >_ : _i>b intVecInit >aux> i1 --cba at! aux> ;
+
+| ( str tok -- bool version of ' ssc ) 
+: =c over i# intVecInit >aux ssc i1  aux@ --bca at! aux> ;
+ | ======================== | Sun.Feb,20190217 | ======================== |
+ https://twitter.com/CoherentSystems/status/1097259435687317504
+| 1526 | clean up | 
+ needs alg/hsort
+: hsorti rep_ dup van cells/ hsort ;
+  ` script.sort ->  ^eval 
+  ` script.sort Dv@ lfVM ` sort. con
+ forgetsort
+ | ======================== | Mon.Feb,20190218 | ======================== |
+ s" shell" ??
+  ref
+  s" notepad \\cosy\\ref.txt" shell^ 
+ s" .\tmp.txt" F> 
+ s"  notepad " start
+ | ======================== | Fri.Feb,20190222 | ======================== |
+  s" C:/4thCoSy/CoSy/y2018.txt" F> daylncut s" nxtimes" con
+   10 16 _rand 4 _partition >t0> 
+ | ======================== | Sat.Feb,20190223 | ======================== |
+SV-FIG on | 1138 | Ting geneology | 
+ `( parents children )` (' `( John Charlotte )` `( )` ') ,L >t0>
+  `( Bob )` t0 enc ,L >t1>
+ t1 `( Bob parents )` v@ 
+  t1 `( Bob children )` v@ 
+| `( BradNelson https://github.com/flagxor )` |
+ https://en.wikipedia.org/wiki/Boehm_garbage_collector http://www.hboehm.info/gc/#details
+| I still cannot conceive of using anything other than exact reference accounting 
+ for allocating and freeing . And I can't imagine better than maintaining an 
+  inventory if 2^n byte slots as Arthur Whitney uses | Ken Thompson disagrees .
+ CoSy has the structures needed to implement generic words recognizing type but
+  currently " left as an exercize" . The CoSy header 
+ s" header " ??
+| Andreas Wagner | https://github.com/lowfatcomputing https://hackaday.io/lowfatcomputing
+ | hyperstatic | mark smith bind trick | 
+| SamFalvo | see Joe Armstrong & Alan Kay - Joe Armstrong interviews Alan Kay
+ https://youtu.be/fhOHn9TClXY |
+| --- 
+   s" ./IntroHelp.txt" F> >t0>
+ ` IntroHelp Dv@ s" C:/4thCoSy/CoSy/IntroHelpArk20190223.txt" >F
+ R ` IntroHelp vdel
+ | ======================== | Sun.Feb,20190224 | ======================== |
+| Enhanced info at |  s" header " ?? |
+| Need to make Types clearer .
+ `( sys Types )` Dv@ >t0>
+ t0 dsc "ht ' cL 'd  t0 1 _at { fmtI dsc } 'm ' cL 'd
+ t0 1 _at ,/ hex fmtI decimal
+  t0 1 _at 
+ s" bool" ??
+  s" : fmtI" ??
+ | ======================== | Mon.Feb,20190225 | ======================== |
+ text> lfVM >t0> rho
+ t0 dsc >t1> 
+ t1 0 i@  
+ { [ "bl >_ ] literal } xeq _i
+
+ s" ] " Help
+
+ s" ] ' '' (create) (header) [ ['] back compile create does> find find-dict findprev header" >T0>
+ T0 blVM { Help  s" |--" "lf braket cL } 'm 	| got kinda fancy .
+  s/" s\" \" " 
+ s" : Help" ??
+| Replacing old raw forth output def in   ./CoSy/Derived.f with 
+| Reva help on Reva word returned as CoSy string | in 
+: Help ( word -- Reva_help_on_Reva_word ) s" help " swap cL forth> ;
+  s" " words>
+ T0 b Help
+  xwords>
+ { [ "bl >_ ] literal } dup . value tst
+ tst xeq 
+ s"  ] l" ??
+
+ | ======================== | Tue.Feb,20190226 | ======================== |
+Updating Opening help above to use new ' Help def . Was :
+| --- | \/ | --- |
+| 20160605.1150 | implemented  ' forth> which eliminates regular need for 
+ raw Reva Forth execution for getting Reva help .
+  s" see " Help
+  s" help see " forth> 	| Help on Reva word ' see
+  s" see dup " 	forth> 	| See x86 code for ' esi@
+  s" words @ " 	forth> 	| words containing s" @" 
+  s" res> Help" forth>	| show help on each word in a string . Reva help often lists
+   | related words at the end of a definition . I often edit down the res
+   | contents down to these lists and then sF6 this line to display them all .
+| --- | /\ | --- |
+ 
+| making ' See like ' Help  | added to Furniture.f 
+: See ( word -- assembler_code ) s" see " swap cL forth> ;
+ s" see" See
+ Dv@ lfVM rho'
+  t0 lfVM rho'
+  s"  notepad " start
+  s" cs->" ??
+ | ======================== | Wed.Feb,20190227 | ======================== |
+ macro : ]lit p: ] p: literal ; forth 
+ see ]lit
+  { [ "bl >_ ]lit } xeq _i
+  s" macro " Help
+  s" ?literal " ??
+: tst char A ;
+ | ======================== | Fri.Mar,20190301 | ======================== |
+  s" : fill " ??
+  s" fill_" -10 _fill
+: _fill _i 
+: fill ( l n -- l ) 2p L@ L@ rho i-1 +i 
+  R@ iota mini 
+   at    2P> ;  
+ s" xwords" ?? 
+ xwords> { -1 _at } 'm "bl MV blVM reverse
+
+|  : gfg ( v g f -- v g f g ) | notion of a fork of self inverse ' g | unfinished
+|  s" asdf" ' reverse { 10 _fill } over 
+ | ======================== | Mon.Mar,20190304 | ======================== |
+| One of those minor changes which make a significant difference .
+| Changing def of ` from making symbol to just making 1 word string .
+| fns that work on symbols should work on non-blank strings .
+| See Morten Kromberg's Q at http://cosy.com/CoSy/MinnowBrook2011.html .
+
+ s" : ` " ??
+| : ` : sym ( <word> -- sym | )	| takes next word input and creates symbol 
+|   p: parsews (sym) compiling? if refs+> literal, then  ;
+
+| takes next word input and creates string  
+: ` p: parsews _str compiling? if refs+> literal, then  ;
+ s" `( " ??  	| similarly | in  CoSy.f
+ | ======================== | Tue.Mar,20190312 | ======================== |
+ s" : fill " ??
+: _fill _i : fill ( l n -- l ) 
+ dup 0 i@ 0 <if  2p L@ L@ rho i-1 +i R@ iota mini at 2P> ;then 
+ >r reverse r> -1*i fill reverse ;
+ s" negate" ??
+  see fill 
+ s" <if" Help
+  s" asdf" 20 _fill
+ | ======================== | Wed.Mar,20190313 | ======================== |
+ s" conditionals " Help 
+| I really am an astoundingly stupid programmer . It can take me all over the
+| place before I realize the problem is ' <if where ' >if is needed .
+| generalizing ' fill for negatives . developed using ` tstscript 
+
+: _fill _i : fill ( l n -- l ) 
+  dup 0 i@ 0 >if 2p L@ L@ rho i1 -i R@ iota mini at o cr 2P> ;then 
+   >r reverse r> -1*i fill reverse ;
+
+ s" asdf" i( 20 -20 )i ' _fill 'R 
+: tst 0 >if  s" true " else s" false " then ; : ;tst 0 >if s" true " ;then s" false " ;
+  -1 dup tst swap ;tst ,L 
+| 1836 | 
+ | ======================== | Sat.Mar,20190316 | ======================== |
+ s" : See" ??
+ s" prior " Help 
+ s" asdf" "bl cL 20 _fill rho
+ i( 20 -20 )i 
+| 1648 | 
+ | ======================== | Mon.Mar,20190318 | ======================== |
+Uploading | Saturday's YouTube about ' fill | 1243 | 
+ 
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@ ^eval 	| save . Then execute to redefine .
    forgettst
-  DMP | R0 DMP cr  ev >R0 R0 DMP 	| sF6 . useful for executing when ' save bombs  
+ reset
+ DMP
+   R0 DMP cr  ev >R0 R0 DMP 	| sF6 . useful for executing when ' save bombs  
  Dnames | { Dv@ rho } 'm lst 	| sF6 . check if any ' rho' crazy 
   s" dir cosy" shell> 
  s" .\CoSy\CoSy.bk" F> str>lst ` help v@ rho
  mark forget 
  
  s" ./CoSy/math.f" 
- s" ./CoSy/Furniture.f" 
- s" ./CoSy/CoSy.f" 
- R0 >t0> F> >t1> | ^eval  	| for editing or evaluating a file 
+ R0 >t0> F> >t1>  ^eval  	| for editing or evaluating a file 
+ t1
  res> "lf "nl ,L ssr t0 >F 
   R 1 _at  ' rho 'm
  forget

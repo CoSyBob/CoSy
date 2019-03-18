@@ -1,5 +1,4 @@
  |  ToDo | --------------------------------------- |
-| 20170131.1045 | NOW AWARDING A SHARE IN CoSy FOR FIXES AND EXTENSIONS OF CoSy |
 
              | -------- | 4thCoSy | -------- |
 Bugs : 

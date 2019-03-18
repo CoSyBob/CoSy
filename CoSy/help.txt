@@ -49,8 +49,9 @@ https://www.forth.com/starting-forth/ 	| Leo Brodie
 |  CoSy links |\/|
   http://cosy.com/CoSy/4th.CoSy.html
   http://cosy.com/CoSy/4thCoSy/RevaHelp.htm
-  http://cosy.com/CoSy/4thCoSy/Help.html 	
+  http://cosy.com/CoSy/4thCoSy/Help.html
+  http://cosy.com/CoSy/Structure.htm 	
 
 |  Other |\/|
  https://groups.google.com/forum/#!forum/comp.lang.forth   
- https://groups.google.com/forum/#!forum/comp.lang.apl
+ https://groups.google.com/forum/#!forum/comp.lang.apl 

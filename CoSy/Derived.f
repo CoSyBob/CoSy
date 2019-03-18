@@ -9,12 +9,6 @@ cr ." | Derived begin | "
 
 | \/ \/ | CoSy Help Words | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
  
-| \/ | raw Forth output .  Use sF6  | \/ |
-: Help ( cv -- ) | prints Reva help on multiple words .
-   "bl toksplt s/"  cr .\" -------\" cr cr help " swap  ['] cL eachright  
-   ['] cL across ^eval ; 
-| /\ | raw Forth output .  Use sF6  | /\ |
-
 : (CShelp) ( str file -- occurrences ) slurp^ emptyLn toksplt   
    swap con dup i# if { "nl swap cL } eachm then ;
  
@@ -35,6 +29,7 @@ cr ." | Derived begin | "
 
 | /\ /\ | CoSy Help System | /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ |
 
+: saveTSclone  R COSYSTARTFILE ymdhm cL s" .csy" cL savelist ; | 20181227
 
 | \/ \/ | Accounting tools | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
 | Accounting is one of the highest value uses for any computing language

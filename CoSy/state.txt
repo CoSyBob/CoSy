@@ -4,46 +4,45 @@
  Dnames 	| names in ' _d dictionary . initialized to ' R
  fileDialog 	| Get file name |
    
+ text> daylncut s" times" con 
  ` script0 -> 	| display final startup script for editing . Set display parameters
   bye 		| close CoSy . If cmd wdo running , restart with Restart .
 
 | NB: examples below generally have whatever phrase I last searched for .
  
-  s/" memb" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+  s/" : vdel" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
 	 	`( sys CoSySource )` Dv@ 	| list of scripts searched
   
-  s" alph" words>	| defined words containg  phrase  . use "bl for all words
+  s" " words>	| defined words containg  phrase  . use "bl for all words
  	| ' forth>  executes raw Forth capturing and returning output |
-  s" see r@ see rr@ see rpick "  forth> 	| see x86 code for word  	
-  s/" help search " forth>
-  s" res> Help " forth> 	| useful for looking at list of related words 
- 
+  s" see r@ see rr@ see rpick "  forth> | see x86 code for word , here several
+  s/" later " Help  	| useful for looking at list of related words 
+  res> blVM ' Help 'm >T0> 
+words~ ~floats
+
   ` text 	-> 	daylncut >t0> s" unique " con
   ` help 	->
   ` ref 	->
   ` Addrs 	
   ` ToDo 	->
-  ` script0 	->
+  ` script0 	->	| final script evaluated on start up 
   ` BROWSER	->
   ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
  
-  R0 ->
   R0 Dv@ VMlf s" 'd " con 
   R0 Dv@ s" ( " toksplt s" morse" con 
-  ` text Dv@ daylncut >t0> s" 20180627" con | reverse
+  ` text Dv@ daylncut >t0> s" 20180315" con | reverse
   ` text Dv@ lfVM s" fmtn" con
   res> >t0> 	| useful after editing list of "See also:" refs in help 
-  s"  cr help " t0 nlfy ' cL eachright ,/  spool^ 	| help on each word in res |
   s" help " shell>
  
   ` Fact Dv@ dnames 
- s" restore" ??
   
 | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
 | \/ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ---- | \/ | 
 
-  `( help ToDo res text state )` ( LanguageLinks ) sym>str>' >t0> 
-  CoSyDir 
+  `( ToDo text help state )` ( LanguageLinks ) >t0> 
+ CoSyDir 
   t0 { dup Dv@ swap CoSyDir swap s" .txt" cL cL  >F ev } 'm  
   s" text" Dv@  s" .\CoSy\text.txt" >F 
   s" .\CoSy\text.txt" shell^ 
@@ -54,9 +53,15 @@
 
 | /\ | ---- SAVING MAIN TEXT WINDOWS for GITHUB publishing ----    | /\ |  
 | ~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
+ s" ~\/" 69 _take  s" | " s"  |" ,L braket
+| ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/ |
+| \/ | ---- Editing MultiLine fns w ` tstScript . 	   ----    | /\ |   
 
- s" : 1p " ??
-
+ ` tstScript -> 	| Test script for interactively editing multiline fns
+ ` tstScript Dv@ ^eval 	| save . Then execute to redefine .
+   forgettst
+ s" " words>
+ s" _nth " ??
   ` sys Dv@  ` CoSySource v@
   s" /4thCoSy/CoSy/AltStackOps.f"  F>
   ` ASCIIbrowser Dv@
@@ -70,7 +75,7 @@
 |\/| |\/| |\/|  DOS & NETWORK COMMUNICATION & SYNCHRONIZATION  | |\/| |\/| 
 
   fileDialog >t0> | browse for a file name .
-
+ 
  s" dir /? " shell> 	 		| help for windows  dir cmd .
  s" dir C:/4thCoSy/CoSy/" dosslash^ shell> 	| using dosslash^ to use forward slashes
  s" dir " CoSyDir cL shell> 		| dir  defaults to dir Reva started in .
@@ -80,7 +85,7 @@
   | note use of non-resulting  ' shell .   ` shell> bombs CoSy when task done .
   
 | copying to another machine on network 
- s" dir \\\\CoSy2013\\4thCoSy\\CoSy\\ "  shell> 	| useful to check connection .
+ s" dir \\CoSy2013\4thCoSy\CoSy\ "  shell> 	| useful to check connection .
 
  s" dir CoSy\\*.f /b /s "  shell> >t0> | get full source file names ,
  t0 "nl toksplt  -1 _i cut* >t0> 	|  split on nl . drop empty last row
@@ -95,29 +100,39 @@
 | to when I'm going shopping , or returning .  I'll execute one of the strings
 | below to set R0 , then restore that file 
 
-| \/ | RESTORING AN ITEM FROM A *.csy FILE | \/ |
+| \/ | RESTORING AN ITEM FROM FILES | \/ |
 
- fileDialog >t0> | browse for file name
+ fileDialog >t0> | browse for file name or names | NB . ' fileDialog sometimes bombs
+
+| \/ | parsing multiple file names returned using ctrlEnter w FileDialog . |
+| eg: arkived activity logs or .csy dictionaries 
+
+| As selected by fileDialog :
+ s" C:/4thCoSy/CoSy|y2015.txt|y2016.txt|y2017.txt|y2018.txt|" s" |" VM >t0> 
+ t0 dsc s" /" cL  t0 1 _cut -1 _cut ' cL 'R >t0> 	| flesh out full paths .
+ t0 { F> daylncut s" notep" con } 'm 	| finding all days in files containg phrase
+ t0 { F> lfVM s" notep" con } 'm 	| finding all days in files containg phrase
  
+| /\ | 
+
+ t0
+
+| For CoSy dictionary ` SAVE files | 
+
  s" C:/4thCoSy/CoSy/CoSy.csy" 
  s" C:/4thCoSy/CoSy/CoSy.bk" 
  s" //COSYSTICK/c/4thCoSy/CoSy/CoSy.csy" 
  s" D:/CoSy.csy" F> str>lst ` T0 v@
- 
 
-| \/ | parsing multiple file names returned using ctrlEnter w FileDialog . |
- s" //Cosy1511/d/CoSyBob/CoSy|CoSy - Copy (10).csy|CoSy.csy|" >t0>
- t0 s" |" toksplt >t0>
- t0  0 _at s" /" cL  t0  i( 1 2 )i at ' cL 'R
-| /\ | 
 
  s" //Cosy1511/c/CoSy-4thCoSy/CoSy/CoSy - Copy (2).csy" F> >t0> rho
 
  ' str>lst _i
   txt 2@ setval dup textwdo !   
  
- R0 >t0> F> >t1> rho  	| check shapes for integrity .
- R0 F> str>lst >t0> rho'
+ R0 >t0>
+ t0 F> >t1> rho  	| check shapes for integrity .
+ t1 str>lst >t0> rho'
   t0 ` text v@
   t0  ` text  >t1> v@ 	|  Stick in whatever object you want 
  s" needs" words> >t0> 
@@ -129,17 +144,14 @@
 : >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ; 
  T0 >text
 
-
 rho |  ` text v@
   T0 10 _take
    R0  R t1 v!	| replace local of object copy with one from file read . 
- ` ToDo ->
 
- ` text 
 | /\ | RESTORING AN ITEM FROM A *.csy FILE | /\ |
  
 
-| \/ | 
+| \/ | Saving a item in ' R as a file | \/ |
 | ` ForthDayStanford151121 Dv@ s" C:/4thCoSy/CoSy/text.txt" >F
 
 
@@ -194,8 +206,6 @@ revaver str  |>|
  ` ref Dv@ vm s" visa" con 	| return lines in ` ref  containing s" visa" | F6
 | ======================================================================= |
    s" ~\\/" 70 _take  
- 
-
 
  | ###################################################################### |
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 

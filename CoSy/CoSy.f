@@ -69,6 +69,10 @@ alias: nakedallocate allocate 	alias: nakedfree free
 cr ." \\/ DYNAMIC \\/  "  $.s cr 
 
 | The fundamental objects in CoSy are vectors ( lists ) and functions .
+| All lists have a 4 cell header :
+| ( type  count ( bits refs ) meta	)  <---   body of object   --->  |  
+| See also | http://cosy.com/CoSy/Structure.htm
+| http://cosy.com/CoSy/4th.CoSy.html#CoSyHeader
 
 4 constant Head#
 
@@ -333,6 +337,10 @@ ev refs+> value t1
 
 |  \/ OPERATORS ON GENERAL VECS \/ 
 
+
+| simple looping of expression xt n times . Must be " self contained " leaving nothing on stack . 20190101
+: nxtimes ( n xt --  ) swap 0 ?do dup xeq  loop drop ; 	| saved to CoSy.f
+
 : eachMcr ( CSob fn -- CSadr )	| `each Monadic cell resulting
    over refs+> vdup >aux		| fn must not change type .
    over i# 0 ?do over i ic@ over execute aux@ i ic! loop
@@ -504,12 +512,15 @@ s"  " refs+> dup vbody HT swap c! constant "ht
 " "  (sym) refs+> constant `_	| empty symbol . Raises issue of notation of empty symbol don't have in K .
 
 macro
-: ` : sym ( <word> -- sym | )	| takes next word input and creates symbol 
-  p: parsews (sym) compiling? if refs+> literal, then  ;
+: sym ( <word> -- sym | )	| takes next word input and creates symbol 
+  p: parsews _str compiling? if refs+> literal, then  ;
+
+| takes next word input and creates non-blank string | 20190304 
+: ` p: parsews _str compiling? if refs+> literal, then  ;
  
-: `( 		| input symbols up til " )`" -- vecOfSyms |
+: `( 		| input non-blank strings up til " )`" -- vecOfSyms |
   10 K* dup cellVecInit 
-   swap 0do parsews 2dup " )`" cmp if (sym) refs+> over i ic!
+   swap 0do parsews 2dup " )`" cmp if _str refs+> over i ic!
     else 2drop i Vresize leave then loop compiling? if refs+> literal, then ; 
  
 forth
@@ -1051,7 +1062,7 @@ variable indentv   : indent indentv @ spaces ;
 	| index of first item in LA on which { RA boolF }
 	| returns true . Returns _n if not found . 
 	| This is a generalization of APL's dyadic iota , and
-	| K's ? both of which are functions which assume the boolF : ` = | 
+	| K's ? both of which are functions which assume the boolF : ' = | 
    >lpstk 2refs+> over
     i# 0 ?do over i i@ over lpstk@ execute		 
      if lpstkdrop 2refs- i unloop ;then loop
@@ -1061,7 +1072,7 @@ variable indentv   : indent indentv @ spaces ;
 	| index of first item in LA on which { RA boolF }
 	| returns true . Returns LA rho ( bad idea : Returns _n ) if not found . 
 	| This is a generalization of APL's dyadic iota , and
-	| K's ? both of which are functions which assume the boolF : ` = | 
+	| K's ? both of which are functions which assume the boolF : ' = | 
    >lpstk 2p
     L@ i# 0 ?do L@ i _at R@ lpstk@ execute >_ 
      if lpstkdrop 2P i _i unloop ;then loop
@@ -1087,7 +1098,7 @@ variable indentv   : indent indentv @ spaces ;
 	| index of first item in RA on which ' boolF 
 	| returns true . Returns RA rho if not found . 
 	| This is a generalization of APL's dyadic iota , and
-	| K's ? both of which are functions which assume the boolF : ` = | 
+	| K's ? both of which are functions which assume the boolF : ' = | 
    >aux 1p
     R@ i# 0 ?do R@ i i@ aux@ execute 
      if auxdrop 1P i _i unloop ;then loop
@@ -1134,6 +1145,9 @@ variable indentv   : indent indentv @ spaces ;
     dup ['] + across  -1 >aux  intVecInit >aux
     dup i# 0 ?do dup i i@ 0 ?do j aux@  auxx> 1+ >auxx>  i! loop
 			  loop refs- aux> aux> drop  ;
+
+| ( i n -- bool of length n with 1s at i ) sort of inverse of ' & | 20190211  
+: i>b >_ : _i>b intVecInit >aux> i1 --cba at! aux> ;
 
 : reverse ( v -- r )	| 0 1 2 3 -> 3 2 1 0
   dup v#@ VecInit		| v r
@@ -1233,7 +1247,6 @@ variable indentv   : indent indentv @ spaces ;
 : strupr ( a n -- a n ) 2dup bounds do i c@ uc i c! loop noop ;
 | : upper 1p> .. dup van strupr 2drop 1P> ; 	| 20180915
 
-  
 | String Search . Returns indices of all occurences of S1 in S0 
 | modeled on K _ss function 
 | ' ssc is case sensitive . ' ss  is not . 
@@ -1245,6 +1258,9 @@ variable indentv   : indent indentv @ spaces ;
       if over auxx@ - aux@ i ii!	| S1 S1a S1n S0+ n- 
        else aux> i _take auxdrop leave
       then loop 2P> ; 
+ 
+| ( str tok -- bool version of ' ssc ) | 20190211 
+: =c over i# intVecInit >aux ssc i1  aux@ --bca at! aux> ;
 
 : _2takecalc ( i# n -- m )	>r> abs swap - 0 min r> sn * ; 
 | computes parameter to convert a ` cut to a ` _take . 
@@ -1289,12 +1305,14 @@ alias: _ cut 	| The K name .
     ['] * scanI >aux> -1 i@ _take  aux> i-1 cut reverse >aux>  
     i# 0 ?do aux@ i i@ _partition loop auxdrop ;
 
-| A useful variant from K.CoSy . See 20180506
-| like singleton ' take but fleshes out with last ite
-: _fill _i : fill ( l n -- l ) 2p L@ L@ rho i-1 +i R@ iota mini at 2P> ;
-| algorithm from K but not generaized to neg arg .
+| A useful variant from K.CoSy . See 20180506 
+| like singleton ' take but fleshes out with last item 
+| generalized to take negative arg 20190313 . 
+: _fill _i : fill ( l n -- l ) 
+  dup 0 i@ 0 >if 2p L@ L@ rho i1 -i R@ iota mini at 2P> ;then 
+   >r reverse r> -1*i fill reverse ;
 | like  x # y  but repeats last element of y if x > # y
-| { :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
+| fill : { :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
 
 0 [IF]
 : nub ( v -- uniqueElements ) local[ v | r ]

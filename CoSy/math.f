@@ -31,6 +31,10 @@
     dup if swap over mod gcd else drop then ;
  | From http://ronware.org/reva/wiki/index.php/Intermediate_Tutorial
 
+|  PascalTri ( n-1 -- n row Pascal triangle ) | 20190101 
+: PascalTri i1 enc >a { a@ a@ -1 _at ['] + ': i1 braket cL /\a } nxtimes a> ;
+|  33 PascalTri 	| That's the largest triangle before integer overflow .
+
 | /\ MATH /\ |
 | =============================================== |
 | \/ | Stats | \/ |
@@ -47,6 +51,9 @@
 
 | 20 _iota i>f .. reverse cor 10 _i fmtnF
 | need to deal w rounding . 
+
+| Geometric mean | 20190106 
+: gavg  1p> ['] *f ./ R@ rho i>f 1%f ^f 1P> ; 
 
 | /\ | Stats | /\ |
 | =============================================== |
@@ -88,7 +95,7 @@ needs random/gm
    dup intVecInit >aux
    0 ?do dup rand um* nip aux@ i ii! loop drop aux> ; 
 
-: rand ( i n -- iv )  2p L@ i_ R@ i_ _rand 2P> ; 	| n rands in  i iota . 
+: rand ( i n -- iv )  2p L@ >_ R@ >_ _rand 2P> ; 	| n rands in  i iota . 
 
 : perm >_ : _perm ( n -- [ random permutation of n items ] )
   dup _iota >aux dup dup _rand 
@@ -147,12 +154,4 @@ end
    dup while   
    2drop ;
 
-." | /\\ MATH /\\ | "
-
-
-
-
-
-
-
-
+." | /\\ MATH /\\ | " 

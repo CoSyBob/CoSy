@@ -222,6 +222,11 @@ variable AFptr
    { "lf toksplt 2 _take } 'm  ;
 | all words in all contexts. returned  
 
+| Reva help on Reva word returned as CoSy string | 20190225 
+: Help ( word -- Reva_help_on_Reva_word ) s" help " swap cL forth> ;
+
+| x86 assembler code of word .
+: See ( word -- assembler_code ) s" see " swap cL forth> ;
 
 : .needs> ['] .needs spool blVM i-1  _ dsc ;
 
