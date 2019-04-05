@@ -15,6 +15,10 @@ cr ." | Furniture begin | "
 | Delete All Empties . Deletes all empty , items of a list . 
 | translated from K | { x @ & 0 < #:' x } |
 
+| ( str -- str ) Delete Redundant ( all but first of sequences of )
+|  blanks  in string  y 	| 20190325
+: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini 0=i & a> swap at ;
+
 : MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
 | Matrix to Vector . Ravels , eg : lists of strings LA inserting token RA
 | , eg : "bl or "lf , as a delimiter | in K | { ( # x ) _ ,/ x ,/: y }

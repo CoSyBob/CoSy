@@ -7,8 +7,7 @@
 			 write something . tap F11 .
  __________________________________________________________________________
  
- 
- 
+
  
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
@@ -842,8 +841,172 @@ Updating Opening help above to use new ' Help def . Was :
  i( 20 -20 )i 
 | 1648 | 
  | ======================== | Mon.Mar,20190318 | ======================== |
-Uploading | Saturday's YouTube about ' fill | 1243 | 
+Uploading | Saturday's YouTube about ' fill | 1243 | Updated GitHub |
+ https://youtu.be/jJZUg_Hzkf8
+| 1549 | Joules is a better unit that watt*hours |
+  ` Fact dup ,L -> lfVM s" watt" con
+| K | : JpKWh :   */ 1000 60 60 />/ 3600000 
+: J%Ws f1. ;  
+    1. _f J%Ws | *f
+  1. _f 
+ f( 1 60 60 24 7 365.25 )f `( Fact  
+ ` Fact Dv@ dnames
+   ` Physics
+   _d dnames
+  ` Fact Dv@ ' _d rplc  | 20190318.1924 | !!!
+| First time I ever tried . appears to work to move to subdirectory | 1925 | 
+ ` Fact Dv@ dnames 
+  Dnames
+ R ' _d rplc
+ s" rplc " ??
+  R DMP
+| 1941 | 
+ s" : D" ??
+| 1948 | 
+ ` Fact Dv@ ' _d rplc
+ | ======================== | Sat.Mar,20190323 | ======================== |
+| 1202 | Ting https://youtu.be/1RRA5o0Qxxs very interesting talk on adruino HTML interface .
+  s" repeat " Help
+  res> blVM >t0> ' Help 'm
+  t0 ,/ | blVM
+ s" flow-control" Help
+ s" appstart " ??
+ s" C:/CoSyBob/CoSy/CoSy.csy
+ s" getval " ??
+  reswdo @ getval  >t0> rho
+ _str >t0> rho
+  s" alts" ??
+ s" ./CoSy/Tui.f"  F>
+./CoSy/AltStackOps.f" F> 
+  f( 1920 1080 )f .. 2. _f ^f +/ sqrtf %f 50. _f *f 	| thinking of getting a
+| 50" 4K screen . Wanted edge dimensions . 
+  f( 43.5787 24.5130 )f f( 510 285 )f ,L { ['] %f ./ } 'm
+ f( 43.5787 24.5130 )f f( 510 285 )f %f
+ s" : sq" ?? 
+ | ======================== | Sun.Mar,20190324 | ======================== |
+| 2107 | | Another word I found quite useful in K.CoSy | s" C:/CoSy/tmp.txt" F> 
+| main objective to pick out words w ` * in my shopping list . 
+| DRE		/ from K.CoSy
+|  Delete Redundant ( all but first of sequences of ) Elements  x  in string  y 
+| { ( x = * y ) _ y : y _di & t & 1 ! t : x = y : x , y }
+
+ s" C:/CoSyBob/CoSy/CoSy.csy" F> str>lst ` ToDo v@ >T0> | my shopping list .
+ res> >T0> 
+ T0  "lf "bl ,L  ssr  "ht "bl ,L  ssr >t1>
+ T0  (' "lf "ht ') "bl ' ,L 'L  ' ssr Y./ >t1>	| factored 
+   "bl t1 cL "bl =c >t0> 
+ t1 t0  t0 1 _rotate mini 0=i  & at
+ R0 blVM  s" *" con
+ | ======================== | Mon.Mar,20190325 | ======================== |
+| ( str chr -- str ) Delete Redundant ( all but first of sequences of )
+|  Elements  x  in string  y 
+: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini 0=i & a> swap at ; | added > Furniture.f
+ t1 drb >t0>
+ t0 blVM s" *" con "bl MV  t0 blVM s" +" con "bl MV ,L
+: drb "bl : dre 2p> swap cL R@ =c >a> 1 _rotate a> mini 0=i & L@ swap at 2P> ; 
+ t1 "bl dre
+ | ======================== | Tue.Mar,20190326 | ======================== |
+| : tst  ` asdf ; 	| bombs . Need general soln for ` state_smart words .
+| simple variation on ' ssr | added @ CoSy.f 
+: ssd zic ,L ssr ; 
+ Dnames fmt ,/ >t0> 	| used for something like this 
+ t0  "lf ` ` ,L ' ssd Y./  drb
+
+ s" : `"  ??
+| : tst R `@ T0 ; | bombs
+: `D@ ( <sym> -- val ) p: sym Dv@ ; 
+ `D@ T0 	| is it worthwhile ?  | 20190328.1648 yea , I think so .
+ | ======================== | Thu.Mar,20190328 | ======================== |
+ s" parsews " ??
+: ` p: parsews _str compiling? if refs+> literal, then  ;
+ s" : char " ??
+: char parsews drop c@ ?literal ; 
+: tst char a a _i ;
+  char a _i
+  see tst
+| 1719 | going to test hiding bottom button row . it causes problems . 
+ bye |  | | 1812 | No . fails to load . Better to spend time on  Job.f 
+ | ======================== | Fri.Mar,20190329 | ======================== |
+ Dnames | sym>str>' "bl MV >t0>
+ t0 "bl ss >t1>
+ t1  t1 70 _i _modi ,L  | APLish approach to word wrap algo . 
+ zic ` SkriptThots  Dv! 
+ ` SkriptThots -> 	| removed presentation script from this ` text . 
+ s" C:/4thCoSy/lib/string/regex" F> | ^eval
+ s" .contexts" Help
+ xwords> ' dsc 'm
+ t0 80 _partition { "bl MV } 'm
+ ` partition ??
+ s/" s\" "  ??
+ s" p[ " ??
+ s" C:/4thCoSy/CoSy/y2018.txt" F> daylncut 1 _cut >t0> s" .r " con
+ `D@ .r
+ `D@ text daylncut s" .r " con
+  ' newwdo 
+ | ======================== | Sat.Mar,20190330 | ======================== | 
+| generalizing arbitrary *.csy named files . Example DOS command 
+| to start ` y18.csy residing in ` \CoSyBob\y18\ . ` /k means keep cmd wdo open 
+ C:\Windows\System32\cmd.exe /k "\4thCoSy\CoSy@.bat \CoSyBob\y18\y18"
+ s" savedic" ??
+| in   ./CoSy/SaveRestore.f  fixxed backup problem 
+  s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL    >r> van shell r> ref0del 
+  COSYSTARTFILE |>| .\CoSy\CoSy  	| here
+| to use 
+  CoSyFile 	|>| CoSy
+  s" ren " COSYSTARTFILE cL s" .csy " cL CoSyFile s" .bk" cL cL
+| 2055 | This makes it much simpler to set set up multple ` Jobs in the K.CoSy sense
+| but bk to issue of multiple windows .
+  res> >T0> | simplest way to capture a string w embeded ` " and ` \ is copy to
+  T0  |>| "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"  | & from ` res 
+  T0 `( sys wordpad )` Dv!
+  `( sys wordpad )` Dv@
+  T0 ` C:\4thCoSy\cosy\y2018.txt cL start
+ s" : start " ??
+ s" dir cosy" shell>
+ | ======================== | Sun.Mar,20190331 | ======================== |
+| from K.CoSy | .CoSy.math | 
+ http://cosy.com/K/math_a.txt
+ http://cosy.com/K/math.txt
+ http://cosy.com/K/K_math.rtf
+
+| K definitions | \/ | 
+pv : { +/ y * x ^ # y } ; pv..h : " Present Value of stream y at rate x "
+pv:{[c;t;d] +/c*d^t }  
+ pv[c:.1 .1 1.1 ; t:1 2 3 ] d:%1.1 / Arthur's example
  
+   1.1 _f 1%f f( 1 2 3 )f  ^f  f( .1 .1 1.1 )f *f  +/
+| 1312 | 
+  | ======================== | Mon.Apr,20190401 | ======================== |
+| 1958 | somehow trashed ` help . replaced w file downloaded from GitHub .
+ s" C:/Users/Bob/Downloads/CoSy.csy" F> >T0> str>lst ` help v@ ` help Dv!
+ | ======================== | Tue.Apr,20190402 | ======================== |
+| 1233 | 
+ CoSy environment for you to encode your own thoughts .
+ Electronic Paper 
+
+: `f parsews >>float drop _f ; 	| ` prefix version of ' _f . added to ` script0
+ `f 1
+
+ | ======================== | Wed.Apr,20190403 | ======================== |
+  f( .1 .1 1.1 )f   1.1 _f 1%f   f( 1 2 3 )f  ^f   *f  +/
+  ( cashflow discountRate time ) 
+ 
+  f( .1 .1 1.1 )f o
+  1.1 _f 1%f o
+  f( 1 2 3 )f o
+ ^f  o 
+ *f  o
+ +/ 
+
+: pv ^f *f +/ ;
+ s" pv " See
+ f( .1 .1 1.1 )f   1.1 _f 1%f  f( 1 2 3 )f  pv
+
+ s" +/ " ??
+ f( .1 .1 1.1 )f   1.1 _f 1%f  f( 1 2 3 )f  ^f *f   ' +f ./
+| 1419 |*   *| 1445 | 
+ | ======================== | Thu.Apr,20190404 | ======================== |
+Uploading to GitHub 
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
@@ -867,102 +1030,8 @@ Uploading | Saturday's YouTube about ' fill | 1243 |
 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
- SKRIPT THOTS |
+ ` SkriptThots ->
 
- 80 _iota 2 _i fmtnI flip ' ,/ 'm "lf MV
-          1111111111222222222233333333334444444444555555555566666666667777777777
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
-
-				http://cosy.com/
-		   http://cosy.com/y16/CS(OS)2_1107%23Scr0.jpg
-
-		| NB: universal disclaimer : CoSy follows an
-		      IRRITIATION DRIVEN DEVELOPMENT
-				 agenda particularly wrt bugs |
-
- 			      | Electronic Paper |
-
- 				 { dP%dt max } 
-
-			 | Your CockPit  |  Sandy Steier abt K.CoSy
-			 https://www.1010data.com/company/our-story/
-
-	o Conceptual Horizon Stack 
-	o lists like Fourier transform domain . Entire object vs point .
-	o vocabulary of operations on lists . `( logical arithmatic selection order )`
-	o delimiting strings . 
-
-|  Amount I don't know of anything other than APL & Forth massive .
-   including even DOS & GitHub .  Really not intrested in programming per se |
-		http://cosy.com/y16/CS(OS)2_1107%23Scr0.jpg
-		file:///C:/cosyweb/y16/CS(OS)2_1107%23Scr0.jpg
-
-  HORIZONS : Conceptual . 
-  	Forth more than any other language recognises that
-	language is a hierarchy . 
-     However : all languages have a focus on some level
- 		can't descect below . diffusion above 
-
- 
-   BOTH Iverson & Moore insisted on Interactive environment . 
-   
-   BOTH creation of vocabulary oriented rather than "programs" -- Sam Falvo 
-	       Programming an act of constructing sentences .
-
-	https://twitter.com/CoherentSystems/status/1030908216987639808
-	http://cosy.com/Science/NotationIverson.gif
-
- 
-	|	FORTH IS THE MAINLINE TO THE SILICON 	  |
-	  A Forth system you can live in  | Straight Forward |
-
-	|  APL  WHOLE OBJECT VOCABULARY LIKE FOURIER TRANSFORM TO SCALAR |
-
-   	APL invariance w size
- 
-  Want basic Forth word by word interpretation with words knowing their
-   meaning in context inside themselves not by reference to parsing tables .
-
-  CoSy ref counted lists of lists complementary to other vocs .
-
-     o vocabulary of logic & computations ordered sets 
- 
-     o  Whole system or as Component
-
-		
-	o THE ONLY APL NOT WRITTEN IN  C | TRANSPARENCY 
-	o FAR MORE FLEXIBLE THAN ANY TRADITIONAL APL 
-		. interplay of stack and lists unexpected
-		
-	o WANT ON MY PHABLET 
-
-		MAKE A BUSINESS , ie: CASH FLOWING ECOSYSTEM 
- 
- 
-     o Need New TUI . Replace IUP 
-
-  o Uses from smart phone environment to hearing aids to modeling the planet
-    to "AI" 
-  o Python challenges 
-
---
-   ? Know APL ? | Concatinative languages - Joy 
-  Recursive defs . 
-  
-   Alan Perlis : Epigrams in Programming #9 
-  It is better to have 100 functions operate on one data structure than 10 functions on 10 data structures. 
-
-
-  cosy.com/y16/CS(OS)2_1107.html#Scr1 
-  cosy.com/y16/CS(OS)2_1107.html#Scr2
-  cosy.com/y16/CS(OS)2_1107.html#Scr4
-  cosy.com/y16/CS(OS)2_1107.html#Scr5
-
-  http://cosy.com/Science/ComputationalEarthPhysics.html#YouTubePhysicsDemoFund
-
- ` ToDo ->
- CoSy  tying together systems for High Net Worth Individual .
- 
  | ###################################################################### |
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
 | \/ | Line to make more calendar \/ |
@@ -1003,8 +1072,6 @@ Uploading | Saturday's YouTube about ' fill | 1243 |
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
  SCRIPT THOTS |
-  http://cosy.com/Science/ComputationalEarthPhysics.html#YouTubePhysicsDemoFund
-  
 
  ` ToDo ->
  CoSy  tying together systems for High Net Worth Individual .

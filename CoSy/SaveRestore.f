@@ -68,10 +68,11 @@ cr ." | SaveRestore begin | " type cr
 : savelist ( lst str -- ) | Write list to file 
   2p>  van (savelst) 2P ;
 
-: savedic ( -- ) | save dictionary	|
+: savedic ( -- ) | save dictionary	| see also 20190330 
   R storelst str  | computed 1st , the left on stack  
   s" del " COSYSTARTFILE cL s" .bk" cL { shell nil } onvan drop  
-  s" ren " COSYSTARTFILE cL s" .csy CoSy.bk" cL >r> van shell r> ref0del 
+  s" ren " COSYSTARTFILE cL s" .csy " cL CoSyFile s" .bk" cL cL 
+    >r> van shell r> ref0del 
    COSYSTARTFILE s" .csy"  cL Foverwrite  ;
 
 | ======== |

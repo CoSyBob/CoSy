@@ -464,7 +464,7 @@ i( )i refs+> constant zild	| 0 iota
 macro
 : "_ '" parse compiling? if (") ;then "" ; 	| 20180306
 : s" p: "_ p: str ; 	| like Reva ' " but no escape .
-: s/" p: " p: str ; 	| like Reav ' " . | NOT ANS s" I didn't know about . 
+: s/" p: " p: str ; 	| like Reva ' " . | NOT ANS s" I didn't know about . 
 forth 
 
 s" " refs+> constant zic 	| empty char string  
@@ -1160,7 +1160,7 @@ variable indentv   : indent indentv @ spaces ;
 
 : (' _n ; 
 
- ." : (' " cr 	| replaced \/ w simply output of string . still don't understand 
+."    " | replaced \/ w simply output of string . still don't understand 
 | 20180702
  
 | help dup 	| totally bizarre . need invocation of ' help between defs of 
@@ -1305,14 +1305,17 @@ alias: _ cut 	| The K name .
     ['] * scanI >aux> -1 i@ _take  aux> i-1 cut reverse >aux>  
     i# 0 ?do aux@ i i@ _partition loop auxdrop ;
 
+| like singleton ' take , but repeats last element of v if y rho i < |
+| for neg i repeats 0th char . 
 | A useful variant from K.CoSy . See 20180506 
 | like singleton ' take but fleshes out with last item 
-| generalized to take negative arg 20190313 . 
+| generalized to take negative arg 20190313 .
+| Youtube | https://youtu.be/jJZUg_Hzkf8 | 
 : _fill _i : fill ( l n -- l ) 
   dup 0 i@ 0 >if 2p L@ L@ rho i1 -i R@ iota mini at 2P> ;then 
    >r reverse r> -1*i fill reverse ;
-| like  x # y  but repeats last element of y if x > # y
-| fill : { :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
+ 
+| K | fill : { :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
 
 0 [IF]
 : nub ( v -- uniqueElements ) local[ v | r ]
@@ -1385,7 +1388,8 @@ alias: _ cut 	| The K name .
 
 : htVM ( str -- list_of_strings_split_on_tab ) "ht toksplt ; 
 
-: ssr ( str  s0 s1 ,L -- str ) | replaces occurences in str of s0 with s1   
+| ' ssr replaces occurences in str of s0 with s1 . ' ssd deletes .   
+: ssd zic ,L : ssr ( str  s0 s1 ,L -- str ) | 20190326 
   2p L@ R@ 0 i@ toksplt dup i# 1 =if refs- L@ 2P> ;then  
   R@ 1 i@ ['] cL eachleft ,/ R@ 1 i@ rho -1*i cut 2P> ;
 
@@ -1420,7 +1424,7 @@ alias: _ cut 	| The K name .
 : _nth ( CSob n -- CSadr )  	| extracts nth item from each item of CSob  
    _i 2refs+> ev  2 pick i# 0 ?do 2 pick i i@ 2 pick at\ cL loop >r 2refs- r> ;     		
 
-: flip ( CSob -- CSob )    | Transpose list of 2 lists .
+   : flip ( CSob -- CSob )    | Transpose list of 2 lists .
 | returns list of each item of 1th list w corresponding item of 1st suject
 | to the minimum length of the 2 lists . 
 | 
@@ -1623,7 +1627,7 @@ $006346964 value TypeDic		| " dic"
 
  macro
 : `` p: sym vx_ ;	| returns address of dic obj . 
-: `@ ( dic <sym> -- val ) p: sym v@ ;
+: `@ ( dic <sym> -- val ) p: sym v@ ;   
 : `! ( val dic <sym> -- ) p: sym v! ;
 : `. p: `@ lst ;
 
@@ -1656,12 +1660,13 @@ needs SaveRestore.f
 | environmental variable . If a second argument is present , it is
 | loaded instead . 
 | CoSyFile dsc o restorefile ' R rplc
-
+ 
  COSYSTARTFILE s" .csy" cL ." COSYSTARTFILE " o cr restorefile ' R rplc    
-
+ 
 | restore | R R --> _R | neat line , but then R `. _R  is recursive catastrophy  
-
+ 
  cr ." /\\ RESTORE /\\" cr
+
 
 | ' dup doesn't work in computations w refd lists . 
 | Need to ' rep to get 2 0 counted copies .
@@ -1674,7 +1679,6 @@ needs SaveRestore.f
 	    duplst ;
  
 : .. dup rep ; 	| equivalent of ' dup for CoSy objs .
-
 
 : >at!> rep dup at! ; 
 
@@ -1743,7 +1747,8 @@ needs SaveRestore.f
 
 : Dv@ ( sym -- val | error ) _d swap encatom ['] v@ Y./ ;  
 
- 
+: `D@ ( dic <sym> -- val ) p: sym Dv@ ; 	| Useful ? 20190326 
+
 : Dv! ( val sym -- )	| Root variable store 
    _d swap v! ;
 
@@ -1783,6 +1788,7 @@ cr ." here "  $.s cr
 
  ` script0 Dv@ ^eval 
  
+
 needs Tui.f
 
 : EoDefs ; 
