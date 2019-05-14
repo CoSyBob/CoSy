@@ -16,12 +16,13 @@ cr ." | Furniture begin | "
 | translated from K | { x @ & 0 < #:' x } |
 
 | ( str -- str ) Delete Redundant ( all but first of sequences of )
-|  blanks  in string  y 	| 20190325
-: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini 0=i & a> swap at ;
+|  blanks  in string  y 	| 20190325 | fixed 20190411 
+: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini & a> swap dvi ;
 
-: MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
+: MV over Type@ 0if  2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P>  ;then drop ;
 | Matrix to Vector . Ravels , eg : lists of strings LA inserting token RA
 | , eg : "bl or "lf , as a delimiter | in K | { ( # x ) _ ,/ x ,/: y }
+| Just returns simples | 20190510 |
 
 : rho' ['] rho 'm ;  | rho on each item of list . for convenience 
 
@@ -32,8 +33,8 @@ cr ." | Furniture begin | "
 | not needed as much .
 | Note that while MS doesn't care about case , F> in particular does .
 
-: dosslash^ ( str -- str ) { dosslash str } onvan ; | convert all / to \ |	
- 
+
+| convert all / to \ |	| 20190415
 : />\  s" /" s" \" ,L ssr ; 	| probably what you want vs dosslash^ 
 | 20180815 | corrected for change in ' s" 
 
@@ -182,6 +183,9 @@ variable AFptr
 : nin 2p> --aab ninb & at 2P> ;
 | the obvious complements 
 
+| delete leading blanks . 20190430 
+: dlb 1p> dup { 32 <> } f?m cut 1P> ;
+
 | 20190203 | \/ | vocabulary found useful over the years | \/ |
 : prt<f ( str tok -- PaRT_Before_First ) 2p> ss1st L@ swap take 2P> ;
 : prt<=f ( str tok -- PaRT_Before_Firstincluding )
@@ -255,6 +259,8 @@ variable AFptr
 
 | Set & see significant digits variable used by formatting fns . 20180702 
 : _>sigdig _i : >sigdig >_ sigdig ! ; 	: sigdig> sigdig @ _i ; 
+
+: Pi fpi _f ;
 
 : PoT 1p R@ R@ +/ %f 1P> ; | Proportion of Total . I find very useful 
 

@@ -1,0 +1,571 @@
+abs2loc	convert absolute name  y  to name local to x 	{ symdrop[ # nd x ; y ] }
+absKa	1 if symbol begins with a dot ( is absolute )	{ "." = * $ x }
+absnm	return full name for local 	{ rel[ _d ] x }
+acntbreakout		{ Q : PRTBF[ ; " " ]' rlb' x `description
+ QW : + x[ ; = Q ]
+QWE : ` $' ? Q
+QWER : drpl[ . x ]' QW
+@'[ y ; QWE ; : ;  QWER ] }
+AcntDescrpFill	 idiosyncratic fn to fill who and taxType fields based on description field (AF) . Syntax : f[ DT ; descrp ; who type ] 	{ .[ x ; ( `who `taxType ; CONN[ x `description ; y ] ) ; : ; z ] }
+af1B	 Boolean of all 1s after first occurance of 1 in x 	|\|:
+aggreD	 like `aggregate but returns DT 	{ r : .() ; r[ z , x ] : aggregate[ x ; y ; z ] ; r }
+aggreDF		{[ x;y;z;f] r : .() ; r[ z , x ] : aggregateF[ x ; y ; z ; f ] ; r }
+aggregate	sum col(s) x of dic y for each unique value of col or cols z	{ ( + ? z ) , sumf'' y[ VEC x ; = z : + y @ VEC z ] }
+aggregateF	 like aggregate but applies f to cols z before grouping	{[ x;y;z;f] + ( ? z ) ,' +/' y[ x ; = z : + f y @ VEC z ] }
+AllConnectPlotlist	 plot list for all connect graph of x points 	{ Q : +:' 1 _ 0 ,' ! x
+QWE : + ( x + 1 ) # QW : CP x
++:'' QW[ { x + ( - x ) _  Q }' ! x - 1 ] }
+AllConnectPlotlistOld		{ Q : +:' -1 _ 2 _ 0 ,' ! x
+QWE : + ( x + 1 ) # QW : CP x
+( , , QWE ) , +:'' QW[ { ( y + Q ) ! x }[ x ]' ! x ] }
+alldics	 absolute names of all subdictionaries of tag `x 	{ :[ 0 < # x : dicsabs x ; x , ,/ _f' x ; 0#` ]  }
+allDTs		{ x @ & DTKa' x : alldics x }
+allJobObsCON	 all Jobs in dic `x which CONtain phrase z in object `y , and the containing lines 	{[ x ; y ; z ] ( x ; t ) @\: & ( ~ 0 = #: )' t : { CON[ x y ; z ] }[ ; y ; z ]' x : allJobs x }
+allJobs	 absolute names of all Jobs among the subdictionaries of `x 	{ x @ & jobKa' x : alldics x }
+allJobtextsCON	 all Jobs in dic x which CONtain phrase y in `text , and the containing lines 	{ JobtextsCON[ allJobs x ; y ]}
+allmatch	1 iff all items of x are identical 	{ &/ match1st x }
+allobs		{ x d/:' !:' x : x , alldics x }
+amend	 applies fn y to x . If x a tag , modifies x . (AF) 	{ .[ x ; () ; y ] }
+apv	 Arithmetic Progression Vector . ( start ; increment ; count ) 	{ x + ( ! z ) * y }
+assign	 assigns value  y  to absolute symbol x 	{ .[ x ; () ; : ; y ] }
+atdepth	 atdepth[ n ; f ] applies f at depth n . From Arthur Whitney kx.com/listbox/k/msg00441.html 	{ x' }/
+atdepthER	 "EachRight" variant of `atdepth 	{ x/: }/
+avg	average of list of numbers	{ ( +/ x ) % # x }
+Bayes		{ ( x * y ) % ( x * y ) + ( 1 - x ) * 1 - y }
+between		{ ( 1 -1 * #:' x ) +/: cover[ x ; y ] }
+betweenv		{ y @ ,/ to ./: between[ x ; y ] }
+bitcnt	counts of numbers of 1s in each string of 1s in boolean vect	{ x - 0 , -1 _ x : ( +\ x )[ & x > ( 1 _ x ) , 0 ] }
+brak	 catinates opening and closing items  y  before and after  x  	{ y[ 0 ] , x , y[ 1 ] }
+brakr	like  brak  but with the closing string the reflection of the opening	{ brak[ x ; ( :: ; |: ) .\: y ] }
+brakSP	 brackets x with SPace character 	{ brak[ x ; "  " ] }
+CCON	case sensitive CON	{ x @ CCONN[ x ; y ] }
+CCONB	case sensitive CONB . Bottom level for all `CON fns . Uses  _ss  so literals "?[^-]" must be escaped with [] .	{ ~ ~ #:' x _ss\: y }
+CCONN	case sensitive CONN	{ & CCONB[ x ; y ] }
+CCP	 Closed Circle Path 	{ ( x +1 ) # CP x }
+ceiling	 if x is not integer , returns next higher 	-_-:
+chrA	 enlist char strings to make "atomic" 	{ :[ chrKa VEC x ; , x ; x ] }
+chrKa	 1 iff x is character 	{ 3 = _abs 4: x }
+CIN	Case sensitive `IN 	{ x @ CINN[ x ; y ] }
+CINB	Case sensitive , Bool of x matching y up to length of y	{ ( ( # y ) #/: x ) ~\: VEC y }
+CINN	Case sens , indices of x matching y upto # y	{ & CINB[ x ; y ] }
+citi2csydate	 convert CitiBank post 200407 dates to CoSy integers 	{ csydatef ( cutonany[ "-'/" ] x ) 2 0 1 }
+clean	deletes trash ( items ~ `delete ) from dictionary x ( AF ) 	{ ( . x ) _di trash x }
+cleannuls		{ .[ x ; () ; { x _di ( Dnulvals x ) _dv `r } ] }
+cleanscript		{ ( 1 _ -1 _ )' VMn ncovered[ kc , ck ; MVn brak[ ; "  " ]' x `text ] }
+clncols	 delete empty columns of text table 	{ x @ & ~ &/'&/' " " = x }
+clnnums	 deletes all chars in x not legal in numbers , eg "$" 	{ in[ x ; DIGITS , "-+.e " ] }
+cols	like  { ( -1 , x ) # y } but fills with prototype elements to fill last row 	{ ( -1 , x ) # take[ x * ceiling ( # y ) % x ] y }
+combinations		{ ( */ fact' x ) % fact @ +/ x }
+commacnvt	 eliminates commas from name x reversing first last 	{ MVs @ | DRB' cut[ "," ] x }
+Comments	help attributes on symbols	{ ( x ; ( ~ x ) @' `h ) }
+commute		{ y x }
+comptab	 applies fn x ( eg : + or % ) across both rows and cols of y adding summary col & row .	{  y ,' x/' y : y , , x/ y }
+CON	rows of text x CONtaining string y . See `CCONB for search details .	{ x @ CONN[ x ; y ] }
+CONB	Boolean of rows of text x CONtaining string y , or  x ~/: y for non text	{ :[ &/ -3 = ( 4::' x ) , 4: y : VEC y ; CCONB . lower' ( x ; y ) ; x ~\: y ] }
+CONN	Indexs of row of text x CON str y	{ & CONB[ x ; y ] }
+cover	 indices of top level cover of start/stop tokens `x  in string `y 	{ QW : ,/ coverraw[ x ; y ] ;QW : QW @ & |/ ( 1 >': ; 0 = )@\: 0< nestlevel QW ;( _ ( # QW ) % 2 ; 2 ) # QW }
+covered	contents of substrings of y covered by tokens x	{ y @ ,/ to ./: cover[ x ; y ] }
+coveredin		{ y @ ,/ to ./: coverin[ x ; y ] }
+coverin		{ ( 1 -1 * #:' x ) +/: cover[ x ; y ] }
+coverraw	 indices of occurances of ( starting & ending ) toks in string 	{ ( + y _ss/: x ) +\: 0 , # *| x }
+CP	 x points around a circle 	{ + ( _sin ; _cos ) @\:  ( ! x ) * ( 2 * Fact `Pi ) % x  }
+cross	 all pairs of each x with each y . Cartesian or cross product . 	{ ,/ x ,/:\: y }
+csv	ravel matrix x separating rows by commas	{ MV[ "," ; x ] }
+csv2dic	 convert comma separated values to dic 	{ ltab2dic DEcols @ + csvcut' x }
+csv2DT	 better name for `csv2dic but splits y on char x 	{ ltab2dic DEcols @ dtb'' + csvcutD[ x ]' y }
+csvcut	split comma separated values	{ ( nq 1 _ )' ( & uq[ d ] & d = "," ) _ d : "," , x }
+csvcutD	split values y separated by character x 	{ ( nq 1 _ )' ( & uq[ d ] & d = x ) _ d : x , y }
+csvcvnt	idiosyncratic fn for CitiBank ledgers 	{ x : ( + csvcut' x ) 1 3 2 4
+x[ 1 ] : rtb' x[ 1 ] ; x[ 3 ] : .:' x[ 3 ] ; x }
+csyCurfn	idiosyncratic fn for extracting text from HTML page "	{ r : 0: "/CoSy/Current.htm"
+MVn r @ to . ,/ CONN[ r ]' ( "<A NAME=\"Current\" >" ; "<A NAME=\"EoCurrent\" >" ) }
+csydate		{ csydatef cut[ "/" ] x }
+csydatef		{ . ,/ -4 -2 -2 #' ( "20" ; "0" ; "0" ) ,' x }
+csydatei		{ MV[ "/" ] 0 4 6 _ $ x }
+csydnm	 OS directory name for x 	{ ( csynm x ) , "/" }
+csyfnm	DOS directory file name to save K dic x	{ DRIVE , (csynm x ) , ".csd" }
+csyhnm	file name to save as HTML 	{ (csynm x ) , ".htm" }
+csynm	OS directory name from dictionary name	{ _ssr[ $ x ; "." ; "/" ] }
+csynmI	CoSy dictionary name from OS directory name	{ ` $ _ssr[ x  ; "/" ; "." ] }
+csypgbody		{ betweenv[ ( "<a name=\"startbody\" >" ; "<a name=\"endbody\" >" ) ; x ] }
+ctitln	 Centered Title Line 	{ , brakr[ y ; x , SP ] }
+ctrl_s	"save" key definition	{  save x ; "saved " , ( $ x ) , " " , tsl _ltime _t }
+ctrl_v	 stack pop and insert 	{ @[ x ; ! x ; :
+ ( .R `ins)'[ x[] ; y 1 ; * ( .R `P ) `.S  ] ] }
+CUT	split x on occurances of first element	{ 1 _' ( & x ~\: * x ) _ x  }
+cut	 cut y on occurances of x , deleting the y's . cf: `splt 	{ CUT x , y }
+CuteHTML		{ ` 3: "C:/Program Files/GlobalSCAPE/CuteFTP/CuteHTML/cutehtml.exe " , u2d x }
+CUTel	 CUT x on empty lines 	{ 1 _' ( & 0 = #:' x ) _ x : ( ,"" ) , x }
+cutonany	 cut y on any of the items in x . eg : cutonany[ "<@" ] for email addresses 	{ 1 _' ( 0 , & |/y ~\:/: x ) _ y : " " , y }
+cutOnEmpty	 cut list x on empty elements , eliminating the empties 	{ 1 _ 1 _' ( 0 , & 0 = #:' x ) _ x }
+d	join-with-dot : (`x.y + `z.w -> `x.y.z.w) / from MK Rosenberg / inverse : `nd 	{ ` $ ( $ x ) , "." , $ y }
+d2h	 format integers as hex 	{ "0123456789ABCDEF" 16 _vs x }
+d2u	 change dos file name \s to unix /s 	{ _ssr[ x ; "\\" ; "/" ] }
+DAE	 Delete All Empty items of x 	{ x @ & 0 < #:' x }
+Dappend	append items of dictionary y which match names in dictionary x	{ x[] : x[ ! x ] ,' y[ ! x ] ; x }
+dateD	 day from date in yyyymmdd form 	{ ( , 100 ) _vs x }
+dateM	 month from date in yyyymmdd form 	{ * 100 100 _vs x }
+datesplt	 spilts dates in  yyyymmdd[.hhmmss] form into yyyy mm dd integers	{ 0 100 100 _vs _ x }
+dateY	 year from date in yyyymmdd form 	{ _ x % 10000 }
+datfmtyho	 convert date format from Yahoo historical to K readable 	{ csydatef @ $ | ( .: ; monthnum ; y2k @ .: )@' cut[ "-" ; x ] }
+dayCON	 returns `dayln delimited notes for days in `x containing phrase `y 	{ ( -1 _ 1 _ )'' VMn' 1_' CON[ toksplt[ "\n / ====" ; MVn brakr'[ x ; " " ] ] ; y ] }
+dayln	 returns "day line" for date ( eg : 20040229 ) for delimiting text 	{ ctitln[ hr ; Dfmt @ * x ] }
+daylnSplt		{ VMn' 1_' toksplt[ x ; MVn brakr'[ y ; " " ] ] }
+daystamp	 timestamp comment 	{ kc , tsl[ , * x ] , ck }
+Ddel	dic with names y deleted from dic x . (AF) 	{ Dsel[ x ; ( ! x ) _dvl VEC y ] }
+DEcols	 Delete totally empty cols of table x 	{ x @ & 0 < |/' #:'' x }
+default	 if x does not exist ( or _n ) , set to y . return value . cf `nulval 	{ assign[ x ; :[ _n ~ . x ; y ; . x ] ] ; . x }
+delete	set names in x to be deleted on next save	{ .[ ; () ; : ; `delete ]' x }
+deli	 deletes items y from x ( AF ) 	{ .[ x ; () ; : ; ( tagval x ) _di y ] }
+delimCON		{ ( -1 _ 1 _ )'' VMn' 1_' CON[ toksplt[ x ; MVn brakr'[ y ; " " ] ] ; z ] }
+delsinglmsk	 mask to delete single 1 from each string of 1s in boolean 	{ x | t & 0 , -1 _ t : ~ x }
+demo	 Try eg : demo "THANK YOU ! "  .  Showed it to Vidal Sasson ~ `82 	{ t0 , | t0 :  x ,' |:' x : 11 37 # x }
+Dempty	 copy dictionary x with entries emptied 	{ x[] : 0 #' x[] ; x }
+depth	maximum depth of list 	{ :[ @ x ; 0 ; 1 + |/ _f' x ] }
+Dfmt	 date format 	{ MV[ "." ; ( $ ( DoW ; MoY )@\: x ) , $ VEC  x ] }
+dfmt	 date format 	{ fill[ -8 ; "20" , $ x ] }
+dic2ltab	Converts dictionary to Table Labeled with each var name prepended to its value	{ { ( ! x ) ,' x[] } x }
+dicKa	1 iff  x  is a dictionary or one's tag	{ 5 = 4: tagval x }
+dics	subdictionaries of dictionary `x	{ :[ 0 = # t : . tagval x ; 0 # ` ; ( ! x ) @ & 5 = 4::' t[ ; 1 ] ] }
+dicsabs	 absolute paths of subdictionaries of dictionary `x 	{ d[ x ]' dics x }
+dlb	Delete Leading Blanks 	{ ( ( x = SP ) ? 0 ) _ x }
+dltb	 delete leading & trailing blanks 	{ dlb dtb x }
+dnpk	unpack a dic packaged as nam	{ @[ ` ; ( * x ) , ~ * x ; : ; .:' x 1 2 ] }
+Dnul	 Delete null values ( _n ) from x 	{ x @ & ~ _n ~' x }
+Dnulvals	 names of items in dic x whose value is nul 	{ ( ! x ) @ & _n ~' x _n }
+DO	 iterates expression y over list x , setting variable w to index of current item  a : x w 	{ r : ! w : 0
+ y : . "{[ a ; w ] " , y , "}"
+ do[ # x ; r ,: y[ x w ; w ] ; w +: 1 ]
+ r }
+dock	 attach items x to GUI display 	{ .[ ~ _d ; `a ; , ; x ] }
+dospath	 change Unix slashes to DOS backslashes 	{ _ssr[ x ; "/" ; "\\" ] }
+DOSR	execute DOS cmd & return result . Mod frm GregHeil ; Klist 980708 . eg :  DOSR "\\dir "	`4:
+dot		+/*
+DoW	Day of Week 	{ days ( _jd x ) ! 7 }
+dpk	packs a dictionary	{ ( x ; . . x ; . . ~ x ) }
+dpkc	pack dictionary cleaning trash ( items ~ `delete )	{ ( x ; . clean x ; . . ~ x ) }
+DRB	Delete Redundant Blanks in string	{ ( x = * y ) _ y : y _di & t & 1 ! t : x = y : x , y }[" "]
+DRE	Delete Redundant ( all but first of sequences of ) Elements  x  in string  y	{ ( x = * y ) _ y : y _di & t & 1 ! t : x = y : x , y }
+Drename	 renames items  y  in dic x  to names z 	{ . .[ . x ; ( ( ! x ) ?/: y ; 0 ) ; : ; z ] }
+drpl	replaces contents of dic x with y 	{ x : Dempty x ; x[] : y ; x }
+Dsel	dic of names y selected from dic x . (AF) 	{ .[ x ; () ; : ; . ( . tagval x ) ( ! x ) ?/: VEC y ] }
+DSORTa		{ x[] : SORTa[ x[] ; ( ! x ) ? y ] ; x }
+DT	 create attributed Dictionary Table named x with contents y 	{ setDTattr .[ x  ; () ; : ; y ] }
+DT2acnt		{ Q :  &:' x[ y ] = z
+QW :: Dsel[ x ; ( ! x ) _dv y 0][ ; Q 0 ]
+QWE :: @[ Dsel[ x ; ( ! x ) _dv y 1 ][ ; Q 1 ] ; ( ! x ) ? `dollars ; -: ]
+r : .() ; r[ SYMSssr[ ! x ; y ; `tofrom ] ] : QW ,' QWE ; r }
+DT2csv	 convert columns of y to csv format using delimiter x 	{ tab2csv[ x ] dic2ltab y }
+DT2html	 convert Dictionary Table to HTML table 	{ tab2html dic2ltab x }
+DTaddCol	add a column named y of type z to DT x ( AF )	{ @[ x ; y ; : ; ( DTc tagval x ) # z ] }
+DTaddlbl	 returns DT of table named `x with col named y of name `x . used by `DTjoinA 	{ DTaddCol[ . x ; y ; x ] }
+DTanywhere	 return rows of DT x CONtaining phrase y in any col treated as character string 	{ DTat[ x ; CONN[ MVs' + $ x _n ; y ] ] }
+DTapnd		{ .[ x ; , y ; , ; z ] ; DTpad x }
+DTat	returns dic of rows y from each item in dic x . modulo indexing 	{ x[] : x[ ; y ! DTc x ] ; x }
+dtb	Delete Trailing Blanks 	{ | dlb . | x }
+DTc	 count ( # ) of Dictionary Table . Length of it columns 	{ ( ^ x _n ) 1 }
+DTcat	catinate dictionary tables x and y having same columns .	{ x[] : x[] ,' y[] ; x }
+DTcombine	 catinate cols name in  y  of DTs named in  x  appending col `z with appropriate labels from x 	{ r : .() ; r[ y ] : ,/' + ( .:' x ) @\: y ; r[ z ] : ,/ ( DTc' .:' x ) #' x ; r }
+DTcon	 Return rows of dictionary table x whose item y CONtains z 	{ DTat[ x ; CONN[ $ x y ; z ] ] }
+DTcsvsave		{ ( x , "/" , ( $ y ) , ".csv" ) 0: DT2csv[ "\t" ] y }
+DTemfmt		{ MVs' + ( x `FullName ; x[ `email ] brak\:  "<>" ) }
+DTextract	extracts all entries from DicTab x where column(s) y match z 	{ x[] : x[ ; ,/ &:' x[ VEC y ] = VEC z ] ; x }
+DTins	 insert z at row y in Dictionary Table x . ( # z ) ~ # x[] 	{ x[] : Tins[ x[] ; y ; z ] ; x }
+DTinsP	 insert prototype of row y at y in Dictionary Table x 	{ DTins[ x ; y ; proto' x[ ; , y ] ] }
+DTjoin	 joins cols z of DTs x and y . x & y can be tags . z defaults to cols in both . 	{ :[ _n ~ z ; z : in . !:' x , y ] ; r : Dsel[ x ; z ] ; @[ r ; z ; , ;  y[ z ] ] }
+DTjoinA	 DTjoin but adds col names of source accounts `x and `y 	{ DTjoin[ ; ; _n ]/ DTaddlbl[ ; `acnt ]' x }
+DTKa	 1 if x is a Dictionary Table ( every entry has same length ) 	{ `DT ~ ( ~ x ) `type }
+DTmerge	merges col c1 into col c0 where t0 on c0 is true . (AF)	{[ d ; c0 ; t0 ; c1 ] ; t : & t0 d c0 ; .[ d ; ( c0 ; t ) ; : ; d[ c1 ; t ] ] }
+DTmod	replace items in column c1 where test t0 applied to column c0 is true with value t1 . See use in MEJA.y2009. (AF)	{[ d ; c0 ; t0 ; c1 ; t1 ] ; t : & t0 d c0 ; .[ d ; ( c1 ; & t0 d c0 ) ; : ; t1 ] }
+DTmodify	 apply action a1 to column c1 where test t0 applied to column c0 is true . (AF) 	{[ d ; c0 ; t0 ; c1 ; a1 ] ; .[ d ; ( c1 ; & t0 d c0 ) ; a1 ] }
+DTnat	returns dic of rows not in y from each item in dic x	{ x[] : x[ ; ( ! DTrho x ) _dvl y ] ; x }
+DTncon	 Return rows of dictionary table x whose item y does NOT CONtains z 	{ DTat[ x ; NCONN[ x y ; z ] ] }
+DTpad	 `pad applied to DTs . (af) 	{ .[ x ; , ! x ; : ; pad x _n ] }
+DTrho	"rho" ( count ) of items of table dictionary	{ # * x[] }
+DTs		{ t @ & DTKa' t : dics x }
+DTsort	Sort all items of Dic Tab x on values of item y	{ x[] : SORT[ x[] ; ( ! x ) ? y ] ; x }
+DTsorta	Sort all items of Dic Tab x on values of item y regardless of case 	{ x[] : SORTa[ x[] ; ( ! x ) ? y ] ; x }
+DTspltCrdDeb		{ .[ x ; , y symcat' `Crd `Deb ; : ;  spltpn x y ] }
+DTsymbolize	 convert col(s) y in DT x to symbols (AF) 	{ @[ x ; y ; ` $ DRB' $: ] }
+DTwhere	 dic x where z applied to  x y  is true . 	{ DTat[ x ; & z x y ] }
+DTwhereB		{ z x y }
+DTwhereCON		{ DTwhere[ x ; y ; CONB[ ; z ] @ $: ] }
+Dtypes	 table of type of each object in Dictionary x 	{ ( ! x ; nc' x _n ) }
+dup		{ p x ; x }
+Dxeq	f7 : execute under .R root dic	{ y : .[ x . ; y ; : ] ; :[ ~ * y ; y[ 1 ] ; y ] }
+EMadrsplt	 split and clean email address into name and "@" address fields 	{ x : splt[ "<" ] x ; .[ x ; 1 ; PRTBF[ ; ">" ] 1 _ ] }
+EMbody	 return body ( lop off header ) of email in matrix form 	{ ( 1 + ( #:' x ) ? 0 ) _ x }
+EMcln	 convert email string to matrix with junk chars deleted 	{ VMn _ssr/[ x ] . + ( ( "=\n" ; "" ) ; ( "\r" ; "" ) ) }
+EMdomain		{ MV[ "." ] ( - 2 & # x ) # x : cut[ "." ] EMsubdomain x }
+emfmt	 formats `FullName and `email fields of adr list for mailing 	{ MVs' + ( x 0 ; x[ 1 ] brak\:  "<>" ) }
+EMfrom	 return "From: " address from email msg in form ( Name ; user@domain ) 	{ x : take[ -2 ] splt[ "<" ; 6 _ * CIN[ x ; "From: " ] ] ; .[ x ; 1 ; yx[ _ ]/[ ; 1 -1 ] ]}
+EMfrom3		{ x : take[ -2 ] cut[ "<" ] 6 _ * CIN[ x ; "From: " ] ; x[ , 0 ] , cut[ "@" ] -1 _ x[ 1 ] }
+EMheader	 returns header section from email 	{ ( ( #:' x ) ? 0 ) # x }
+EMheads	 parses `name `domain `subject from list of emails . NB : discards any with bad from adrs 	{ + -5 take' ( EMfrom3' x ) ,' ( ,:' EMsubject' x ) ,'  ! # x  }
+EMread	 Read email y from directory x 	{ VMn _ssr[ _ssr[ MVn @ 0: x , "/" , y ; "=\n" ; "" ] ; "=A0" ; " " ] }
+EMsplt		{ 1 _ 1 _' toksplt[ "\nFrom " ; "\n" , x ] }
+EMsubdomain		{ PRTAF[ x ; "@" ] }
+EMsubject		{ ( # t ) _ nulval[ ; "" ] @ * CIN[ x ; t : "Subject: " ]  }
+EMto	 return "To: " address from email msg in form ( Name ; user@domain ) 	{ t : * CINN[ ; "To: " ] x  ; 0 _' x t + ! 1 + ( ( t + 1 ) _ SP = x[ ; 0 ] ) ? 0   }
+EMwebpostform		{ x : EMcln x ; ( ,/( EMheader x ) CIN/: ( "Subject:" ; "Date:" ; "To:" ; "From:" ) ) , EMbody x }
+evaln	evaluate numbers eliminating embedded commas and dollar signs	{ :[ _n ~ x : . x _dv/ ",$" ; 0n ; x ] }
+exist	 does symbol x have a value 	{ ( * | x ) _in ! ( * x ) . 1 _ -1 _ x : nd absnm x }
+existv	 symbols in x which have values 	{ x @ & exist' x : VEC x }
+f4	Insert multi-lines below current line in text	{ .[ _v ; () ; : ; ( .R `ins)[ . _v ; _i + 1 ; $ x ] ] ; }
+f9	 `show $ symbols or last segments of lines which execute to symbols 	{ :[ chrKa x ; x : xeq lastseg x ] ; :[ symKa x ; `show $/: existv x  ] ; }
+fac	 classic recursive Factorial function , scalar only . 	{ :[ 0< x ; x * _f x - 1 ; 1 ] }
+fact		{ */ 1 + ! x }
+factors		{ t @ & 0 = x !/: t : 1 + ! _ _sqrt x }
+Fexist	1 if file named x exist ?  MKR(?)	{ ~ * .[ 0:: ; x ; : ] }
+FibonocciBinet	 Binet , dMoivre closed form calculation of Fibonacci numbers 	{ t : 5 ^ % 2 ; ( -/ ( ( + ; - ) .\: 1 , t ) ^ x ) % t * 2 ^ x }
+fill	like  x # y  but repeats last element of y if x > # y	{ :[ 0< x ; y[ ( ! x ) & -1 + # y ] ; | _f[ - x ; | y ] ] }
+find	sub dictionaries of x ( including x ) where symbol y is defined 	{ x @ & y _lin' !:' x : alldics x }
+fmtTbl		{ ( |/' #:'' x ) { x take' y }' x : $ x }
+fnrplc	 replace string y with string z in fn x , return x if successful 	{ .[ x ; () ; : ; . _ssr[ $ . x ; y ; z ] ] }
+fns	fns in dic `x	{ ( ! x ) @ & 7 = 4::' ( . . x )[ ; 1 ] }
+FNSCCON		{ x CCONN[ $:' .:' x ; y ] }
+FNSCON	functions whose definitions contain string	{ x CONN[ $:' .:' x ; y ] }
+fst1s		{ x > 0 , -1 _ x }
+Fwhere	 table of Files in y with line numbers and lines containing x 	{ WHERE[ ; 1 < #:' ] @ { ( , y ) , ( SP ,' -5 $ x ) ,' t0  x : CONN[ t0 : 0: y ; x ] }[ x ]' y }
+gcd	 Greatest Common Divisor . From Eugene McDonnel's Kidioms list 	{ * | 1 + & &/' 0 = x !/: 1 + ! &/ x }
+GL2acnt		{[ GL ; acnt ]
+Q :  &:' GL[ `to `from ] = acnt
+QW : ( .R `Dsel )[ GL ; ( ! GL ) _dv `to ][ ; Q 0 ]
+QWE : @[ ( .R `Dsel )[ GL ; ( ! GL ) _dv `from ][ ; Q 1 ] ;  ( ! GL ) ? `dollars ; -: ]
+r : .() ; r[ SYMSssr[ ! GL ; `to `from ; `acnt] ] : QW ,' QWE ; r }
+GLextract		{[ GL ; acnt ]  GL[] : GL[ ; ,/ &:' GL[ `to `from ] = acnt ] ; GL }
+GLtfsums		{ +/' x[ `dollars ] @/: GLtf[ x ; y ] }
+gray	 converts binary number to its Gray code which change just 1 bit at a time 	{ x ( ~ = )' 0 , -1 _ x }
+gtv	 values of x greater than y 	{ x @ & x > y }
+h2d	 hex to decimal 	{ 16 _sv "0123456789abcd" ?/: lower x }
+hamiltonian	 path visiting each vertex of cube of dimension x 	{ ( 1 + _ 2 ^ x ) # gray' ncube x }
+hist	 ( unique items of x ; count of each ) 	{ ( ,:' ? x ; #:' = x ) }
+hm	current time . hour & minute	{ C , ( -4 # "000" , $ *| ts x ) , C }
+href	make HTML link for URL x	{ "<a href=\"", x , "\" > " , x , " </a> " }
+html2tab		{ htmlcut[ "TD" ]' htmlcut[ "TR" ] MVn x }
+htmlallcut	 cut html string eliminating all html tags 	{ tokcut[ "<>" ] nencovered[ ( "<" ; ">" ) ] x }
+htmlcom	extract HTML comments 	{ covered[ ( "<!--" ; "-->" ) ] x }
+htmlcomdel	 delete comments from html string x 	{ ncovered[ ( "<!--" ; "-->" ) ] x }
+htmlcut	 splits html  y  on open and close tags  x 	{ PRTBFs[ ; "</" , x ]'  PRTAF[ ; ">" ]' toksplt[ "<" , x ; y ] }
+htmlcvrd		{ covered[ ( "<" , x ; "</" , x , ">" ) ; y ] }
+htmldel	 throw away all html . ( approx ) . 	{ ncovered[ ( "<" ; ">" ) ] x }
+htmlpub	process HTML script with URL available in html.URL	{ html[ `URL ] :: x ; htmlpubraw x }
+htmlpubraw	process HTML file	{ x 0: htmlxeq rtb @' 0: x }
+htmlsplt	 split html string y on tag x , eg : htmlsplt[ "table" ] y 	{ PRTBFs[ ; "</" , x ]'  PRTAF[ ; ">" ]' toksplt[ "<" , x ; y ] }
+htmlxeq	execute K expressions in HTML scripts	{ x : ( 0 , ,/ s1 :: cover[ s0 : ( html `tok )[ `hk `kh ] ; x ] ) _ r : x : MVn x ;:[ # s1 ; ; : r ] ;r : inside[ s0 ]' x[ s2 : 1 + 2 * ! # s1 ] ;r : ( :: ; xeq ) @\:/: *:' tokcut[ ( html `tok ) `hr ]' r ;r : ( { ,/ 1 ! ( html `tok )[ `hr `hk ] , x }' r[ ; 0 ] ) ,' r[ ; 1 ] ,\: ( html `tok ) `kh ;x[ s2 ] : r ; ,/ x }
+httpGetparse		{ 5 _ PRTBFs[ x ; "HTTP" ] }
+HW		{ "Hello World" }
+I1	 origin 1 "iota"  ( count ) 	{ 1 + ! x }
+iabs	 integer absolute value . About 3 * faster than  ( _ _abs ) 	{ x * 1 -1 x < 0 }
+idx	 modulo indexing . / idx[ x ] -1 / is last item of x 	{ x y ! # x }
+Idx1	 origin 1 indexing 	{ x[ y - 1 ] }
+idxs	 like  J's  ! . matrix of all indices into matrix of shape x 	{ x # ! */ x }
+IE		{ ` 3: "C:/Program Files/Internet Explorer/IEXPLORE.EXE " , x }
+IEshow	 show text object in Internet Explorer . makes tmp file 	{ ( t : "d:/misc/CoSyIEtmp.htm" ) 0: x ; IE t }
+in	 items in  x  also in  y 	{ x @ & x _lin y }
+IN	Lines of x matching y upto # y , case insensitive	{ x @ INN[ x ; y ] }
+INB	Bool of char x matching y upto length of y , case insensitive 	{ CINB . lower' ( x ; y ) }
+INcln	 returns lines `IN x , dropping # x ; use on eg , .ldif files 	{ ( # y ) _/: IN[ x ; y ] }
+infixparse		{ Q : SP cut' ( 0 , ,/ _ss[ x ]' vocab ) _ brak[ DRB x ; "  " ]
+  x : ( ( 1 _ Q[ ; 0 ] ) ,\:  " . ( " ) ,'  -1 _ Q[ ; 1 ]
+ ( ,/ x ,\: " ; " ) , ( *| Q[ ; 1 ] ) , ,/ ( -1 + # Q ) # , " ) " }
+INN	indices of items of x matching y upto # y , case insensitive	{ & INB[ x ; y ] }
+ins	basic line insertion fn 	{ y : * y ; ( y # x ) , z , y _ x }
+INS	Insert z at y in x 	{ ( y # x ) , z , y _ x }
+inside	 returns string trimmed by lengh of tokens which cover it 	{ { y _ x }/[ y ; 1 -1 * #:' x ] }
+int		{ x = _ x }
+intercept		{[ p0 ; p1 ] p0[ 1 ] - slope[ p0 ; p1 ] * p0[ 0 ] }
+intercepts		{ intercept .' ( :: ; |: ) @/:\: x }
+interpolate	 straight line value for z in interval x[ 0 1 ] with values y @ x ] 	{ ( x 0 ) -  ( -/ x  ) * y }
+intersect		{ 1 1 _lsq + lineparams' ( x ; y ) }
+intersectlns		{ { x @ & ~ |/' 0i = x } x[ , 0 ] , |:' | intersect[ x ]' y }
+intersectlnsraw		{  x[ , 0 ] , |:' | intersect[ x ]' y }
+intervals		{ y ( -1 + ; :: ) @\: ( x > y ) ?' 1 }
+IrfanView		{ ` 3: "C:/Program Files/IrfanView/i_view32 " , x }
+itemhist	 returns unique items of x and how many of each 	{ ( ? x ; #:' = x ) }
+iz	iz[ `x ; `y ] assign both value and attibutes of y to x	{ .[ ~ x ; () ; : ; . ~ y ] ; .[ x ; () ; : ; . y ] }
+jobKa	 1 if x contains basic Job variables 	{ &/ `l `r `text _lin ! x }
+Jobs	Jobs in dictionary x 	{ t @ & jobKa' absnm[ x ]' t : dics x }
+Jobtext	 text from old CoSy Jobs 	{ VMn @ ( 6: x , "JOB" , $ ( 0: x , "JOBS.TXT" ) ? y ) _dv _ci 13 }
+JobtextsCON		{ ( x ; t ) @\: & ( ~ 0 = #: )' t : { CON[ $ x `text ; y ] }[ ; y ]' x }
+Jobvars	 vars unique to  Job x . ( not in basic set ) . 	{ sort ( vars x ) _dvl ! newjob }
+kql		{ ksql[ _d `ksqlD ; x ] }
+ksql		{ Dxeq[ x ] " .d.r " , 5: y }
+labeltable	 labels table of values z with ( col ; row ) heads y and corner x 	{ ( x , * y ) ,' ( 1 _ y ) ,  z }
+lastseg	 returns section of string after last comment token 	{ *| tokcut[ C ] ( C , SP ) , x }
+lead0I	 left pad formatted single digit w 0	{ -2 # "0" , $ x }
+leaf	 portion of symbol after last dot .  eg : leaf _v 	{ * | nd x }
+LeapYr	 1 iff year(s) are leap . org APL Gene McDonnell 	{ ( ~ = )/  0 = x !\:/: 4 100 400 }
+lineparams		{ % intercepts x }
+linv	 like _lin but returns values selected 	{ x @ & x _lin y }
+lns	 "line" variables in dic x . vars used in form scripts . 	{ ` $ IN[ $ vars x ; "ln" ] }
+locals	 names of locals in fn x . NB : REQUIRES CoSy standard spacing of tokens .	{ ` $ ? NIN[ ( x @ & |/' |/ ( x : VMs @ $ . x ) =/: ALPHabet ) _dvl\: "['\\/\n" ; "_" ] }
+lock	locks variable so can't be edited . eg / lock `asdf.y01.text 	{ @[ ~ x ; `ctrl_v `ctrl_i `ins `del ; : ; 4 # "" ] ; .'[ x[ . ] ; `e ; : ; 0 ] }
+locnm	 strips absolute name y back to local name relative to dic x . No error checking  	{ d/ ( # und x ) _ und y }
+longest	 those items of x with the largest count 	{ x @ & t = |/ t : #:' x }
+lower	 convert to lower case . Mike Rosenberg collection . 	{ ( _ci @[ ! 256 ; 65 + ! 26 ; + ; 32 ] ) @ _ic x }
+lst	 lists items of x with their indices 	{ ( ! # x ; x ) }
+ltab2dic	convert labeled table to dictionary . Gives valence error if any name bad 	{ tab2dic[ ` $ in[ ; ALPHabet , DIGITS ]' *:' x ; 1 _' x ] }
+ltv	 values of x less than y 	{ x @ & x < y }
+match1st	 tests whether each item of x identical to first 	{ x ~\: * x }
+matchR	 do items in symbol list match same item in .R 	{ ( .:' x ) ~' .R x }
+maxdot		{ +/ ( x @ < x ) * y @ < y }
+mdy2csy		{ . ,/ @[ .[ -1 ! cut[ "/" ] x ; 0 ; $ y2k @ .: ] ; 1 2 ; lead0I ] }
+merge		{ x[ t ] : y[ t : & z x ] ; x }
+merge0n	 merge values from y into x where x is 0n 	{ x[ t ] : y[ t : & 0n = x ] ; x }
+mergepn	 merges 2 lists negating values in the second 	{ x[ t ] : - y[ t : & 0 > x ] ; x }
+mindot		{ +/ ( x @ < x ) * y @ > y }
+minpad	 take ( pad ) y to at least length x 	{ take[ x | # y ] y }
+minus		-
+mkdir	 make directory in Operating System 	{ . "\\mkdir " , u2d x}
+mkDT	 make new empty DictionaryTable with names x 	{ x : . x ,\: , () ; x }
+mm	 min and max of list 	(&/;|/)@\:
+MonthDays	 numbers of days in each month correct for leap yrs . Org APL : Gene McDonnell 	{ 28 + 3 , ( LeapYr x ) ,\: 10 # 5 # 3 2 }
+monthnum	 number ( 1 - 12 ) of month name in charater timestamps 	{ 1 + months ? ` $ ( lower 3 # x _dv/ DIGITS , "-" ) }
+MoY	Month of Year 	{ months @ -1 + * 100 100 _vs x }
+mul		{ x _dot\: y }
+MV	Matrix y to Vector with delimiters x 	{ ( # x ) _ ,/ x ,/: y }
+MVn	MV using new line chars 	{ 1 _ ,/ x ,' y }["\n"]
+MVs	MV using spaces 	{ 1 _ ,/ x ,' y }[" "]
+nc	 Name class of x . Emended al la Simon Garland , K-list 020423 	{ ` $ "hSCFIKifcsdnx" 5 + 4: x }
+NCON	rows of text x Not CONtaining string y	{ x @ NCONN[ x ; y ] }
+NCONN	indices of rows of text x Not CONtaining string y	{ ( ! # x ) _dvl CONN[ x ; y ] }
+ncovered	 portion of y not covered by token pair x . cf `htmlcomdel 	{ y ( ! # y ) _dv/ ,/ to ./: cover[ x ; y ] }
+nctb	 neg count of trailing blanks / Eugene McDonnell 	{ - +/ &\ | " " = x }
+ncube	 vertices of measure ( cube ) of dimension x . i.e. : all the x bit binary numbers 	{ + 2 _vs ! _ 2 ^ x }
+nd	 split symbols on dots . early from MKR 	{ ` $ cut[ "." ] @ $ x }
+NE	Not Equal	{ ~ x = y }
+neg	 those values of x less than 0 	{ x @ & x < 0 }
+negate	 demo of " atomic " application of fn 	{ :[ @ x ; - x ; negate' x ] }
+nencovered	 portion of y not covered between token pair x . 	{ y ( ! # y ) _dv/ ,/ ( -1 _ 1 _ ) @/: to ./: cover[ x ; y ] }
+nestlevel	 level of nestng given list of start and close interval endpoints 	{ +\ ( ,/ ( ^ x ) # 1 -1 ) @ < ,/ x }
+NEWJOB	 makes new job named x 	{ ( absnm x ) iz' `.CoSy.newjob ; ~ .[ ~ x ; `created ; : ; tsfmt _gtime _t ] }
+NIN	items of char x not matching y upto length of y , case insensitive 	{ x NINN[ x ; y ] }
+nin	 items of x not in y 	{ x @ & ~ x _lin y }
+NINB	complement of INB 	{ ~ INB[ x ; y ] }
+NINN	complement of INN 	{ & ~ INB[ x ; y ] }
+NMXPND	minor idiosyncratic fn 	{ (SP = * x) _ x: {x , SP , y}/ ( 0 ,& x _lin 26 # ALPHabet) _ x }
+nor	 normal random samples . from http://kx.com/a/k/examples/stat.k 	{[n] if[ n ! 2 ; : -1 _ _f n + 1 ]
+ t : _sqrt -2 * _log * u : 2 -1 # n _draw 0
+ ( t * _sin x ) , t * _cos x : ( 2 * pi ) * * | u }
+norm	 Euclidian norm , or length of a vector 	{ _sqrt +/ _sqr x }
+normalize	 divide vector by its length to make length 1 	{ x % norm x }
+normDev		{ normalize x - avg x }
+now	 current local time ( ymd ; hms ) . arguement ignored 	{ _ltime _t }
+nq	 Deletes quotes ( " ) from string 	{ x _dv "\"" }
+nul0	 If x is _n , returns 0 , else x } 	{ nulval[ x ; 0 ] }
+nuld	like nuldic but assigns to handle x	{ .[ x ; () ; : ; nuldic y ] }
+nuldic	returns empty dictionary of names  x	{ . x ,\: , () }
+nulval	 if x is nil , returns y , else x . cf : `default 	{ :[ _n ~ x ; y ; x ] }
+nunique	return items of x which occur more than once	{ x @ *:' t @ & 1 < #:' t : = x }
+nuniquen	 indices of non-unique items in x 	{ ( ! # x ) _dv/ x ?/: x }
+oh	object handle and its attribute handle	{ ( x ; ~ x ) }
+ONset	 applies z to subset of x satisfying condition y . (AF) . eg : ONset[ x ; 0 > ; -: ] 	{ t : & y tagval x ; @[ x ; t ; z ] }
+ortho	 orthonormalizes columns of a matrix . i.e / r : ortho x ; ( r _mul + r ) ~ r _lsq r / 	{ r : 1 # x : normalize' x
+i : 0
+do[ -1 + # x ; r : r , , normalize x[ i ] - r _dot x[ i +: 1 ] _lsq r ] ; r }
+p	push ( append ) y on `.S	{ ( ,/ @\: )/ ,\ ( , < <: )' x =\: x : ! x }
+P	Pop last item from `x	{ Undo :: t : -1 # . x ; .[ x ; () ; : ; -1 _ . x ] ; t }
+pad	`take  each item of list to length of longest item	{ take[ |/ #:' x ]' x }
+PaperPort		{ ` 3: "C:/Program Files/Visioneer/PaperPort/Pppagevw.exe " , x }
+pascal		{ ( x-1 ) { +': x , 0 }\ 1 }
+paths	full path names of os directory	{ ( x , "/" ) ,/: ! x }
+pctcnvrt	 convert percent in form "ii ii /ii" to "ii+ii%ii" 	{ ,/ @/[ x ; 1 2 ; ( "+" ,  ; "%" , 1 _  ) ] }
+perm		{:[1<x;,/(>:'(x,x)#1,x#0)[;0,'1+_f x-1];,!x]}
+perm2		{{x@<x}x{,/x(1!)\'x,'#*x}/,!0}
+PoD	 x as a proportion of the difference across y / 2 ~ # y . used for interpolation 	{ ( x - y 0 ) % - -/ y }
+pop	Pop last x items from `y . cf : `P 	{ x : - x ; Undo :: t : x # . y ; .[ y ; () ; : ; x _ . y ] ; t }
+pos	 those values of x greater than 0 	{ x @ & x > 0 }
+PoT	 Parts ( proportions ) of total 	{ x % +/ x }
+PRIMES		{[ N ]
+/ Returns prime numbers up to RA . Fastest version of Erotosthenes sieve
+/ among 5 I constructed in a race with optomized Fortran at Northwestern U.
+/ c. 1977 BobA |1992 9 20 15 12, Bob A
+R : _ N ^ % 2 ; V : N # 1 ; J : 2
+ while[ (~<)[ R ; J ] ; V[ -1 + J * 1 _ I1 @ _ N % J ] : 0 ; J : J + 1 + V[ -1 + J + I1 J & R - J ] ? 1 ]
+ 1 + & V }
+proto	 prototype of list x 	{ , 1 # 0 # x }
+PRTAF	 Part After First y in x 	{ ( 1 + x ? y ) _ x }
+PRTAL	part of x after last occurace of y	{ | PRTBF[ | x ; y ] }
+PRTBF	part of x before first occurance of y	{ ( x ? y ) # x }
+PRTBFs	part of x before first occurance of string y	{ ( * x _ss y ) # x }
+PRTBL	part of x before last occurance of y	{ | PRTAF[ | x ; y ] }
+push	push ( append ) y on `x 	{ .[ x ; () ; , ; , y ] ; }
+pv	present value of cashflows(c) at times(t) with discount d . From K mail list .	{[c;t;d] +/ c * d ^ t }
+PythagTrip		{ _ ( ( 2 * x * y ) , ( -/ ; +/ ) @\: ( y , x ) ^ 2 ) }
+QTMASK	1s where x is quoted 	{ x | NE\ x : x = QT }
+rawrawsave		{ x 1: dpkc y }
+rawsave		{ ( Q :: csyfnm x ) 1: dpkc x }
+rawsaved		{ . ( 1: x ) 1 }
+reflex	replace x with y x . (AF but only useful on symbols) 	{ .[ x ; () ; y ] }
+refresh		{ `hide $ x ; S x }
+rel	name y relative to x , unless y already absolute	{ :[ absKa y ; y ; d[ x ; y ] ] }
+rename	 rename `x to `y and mark `x for deletion 	{ iz[ y ; x ] ; delete x }
+restore	restore a dictionary from file	{ y : 1: csyfnm y ; .[ x ; () ; : ; . y 1 ] ; .[ ~ x ; () ; : ; . y 2 ] ; x }
+restoreD	restore subdic of current dic from last global save . use f7 	{ set[ d[ D ; x ] ; savedD x ] }
+rlb	 remove leading blanks / algo frm E McD 	{ x ( & |\ ~ " " = x ) }
+rlcols	 remove leading cols of all x from matrix y . used with SP 	{ ( &/ ( x =' y ) ?' 0 ) _' y }
+rnd		{ ( _ ( x * y ) + .5 ) % x : 10 ^ x }
+rnd2		{ ( _ ( x * y ) + .5 ) % x : 10 ^ x }[2]
+root	portion of symbol before first dot .	{ * nd x }
+round	 simple round to closest integer 	{ _ x + .5 }
+rplcwhere	 replace all occurances of  y  in  x  with  z . ( AF ) 	{ @[ x ; & y ~' tagval x ; : ; z ] }
+rtb	 remove trailing blanks / Eugene McD 	{ ( nctb x ) _ x }
+S	short for  `show $ . Obsolete since  `f9 implemented	`show$
+s	do nothing , return _n	{ x ; }
+save	Saves active dictionary & subs as disk file	{ :[ ~ .R ~ x ; rawsave x ; { saveprep _n ; "/cosy/cosyRoot.csd" 1: dpkc .R } _n ] }
+saved	contents of saved dicionary `x	{ rawsaved csyfnm x }
+savedD	 retreive local object from saved root . Use `F7 	{ ( rawsaved "/cosy/CoSyRoot.csd" ) . ( 2 _ nd D ) , nd x }
+saveprep		{ .CoSy.rdot :: r. ; .CoSy.dotr :: ( .R `vpk ) `.r ; .CoSy.dotS :: ( .R `vpk ) `.S ; .CoSy.dCmds :: ( .R `vpk ) `.Cmds ; }
+scaleXY		{ ( 2 # x ) * x[ 2 ] % x 0 }
+Schwabxtract		{ x : .[ x ; () ; _ssr[ ; "\t" ; "" ]' ]
+x : dlb' x @ & ~ 0 = #:' x
+t : ( "<!-- Start Transaction table -->" ; "<!-- End Transaction rows -->" )
+x : x thru . ,/ CONN[ x ]' t
+x : VMn @ * tokcut[ t 1 ] @ *| tokcut[ t 0 ] MVn x   / extract transaction table
+x : DAE @ htmlcomdel' x                            / delete comments and empty rows
+x : DAE htmlcut[ "tr" ; lower MVn x ]    / split rows
+x : DAE' htmlcut[ "td" ]' x          / split data items
+t0 : x[ & 8 = #:' x ]       / labels
+x : x[ & 17 = #:' x ]       / all the real data
+x : ncovered[ ( "<" ; ">" ) ]'' x    / throw away all html .
+x : + x[ ; & 0 < +/ #:'' x ]       / delete all empty rows , flip
+x : DRB'' _ssr[ ; "&nbsp;" ; "" ]'' x   / delete nonblankspaces .
+t : ncovered[ ( "<" ; ">" ) ]'' t0    / labels , discard HTML
+t : + t[ ; & 0 < +/ #:'' t ]       / delete all empty rows , flip
+t : DRB'' _ssr[ ; "&nbsp;" ; "" ]'' t   / delete nonblankspaces .
+t0 : ` $ in[ ; ALPHabet ]' _ssr[ ; "\n" ; "" ]' ,/ t   / extract legal labels
+t : .() ; t[ t0 ] : x                                  / stuff
+/ t : @[ t ; `quantity `price `amount `feescomm ; { evaln clnnums x }' ]
+@[ t ; `date ; { . clnnums ymd_mdy x }' ] }
+scriptform		{ ( ( $ x ) , " : " , $ . x ; ( $ x ) , "..h : " , 5: ( ~ x ) `h ) }
+set	 same as KDB+ set .  x must be symbol else just returns y 	{ .[ x ; () ; : ; y ] }
+setDTattr	set the attributes for a Dictionary Table	{ .[ x ; ( . ; `kl ) ; : ; ( # ! x ) # , * protoacnt[ . ; `kl ] ]
+t : ( ! protoacnt. ) _dvl `c `a `h
+~ @[ ~ x ; t ; : ;  protoacnt.[ t ] ]  }
+setDTbal	add or set col named `y in DT x to sum col `z (AF) 	{ .[ x ; ( ~ y ; `d ) ; : ; " ( .R `sumscan ) " , $ z ] }
+showspaces	 show locations of spaces in text string 	"-X"@~" "=
+signum	 sign of x , ie :  1 , 0 , -1 / aw 	{ ( x > 0 ) - ( x < 0 ) }
+sIN	 symbols IN . returns symbols x matching symbol y up to length of y 	{ ` $ CIN[ $ x ; $ y ] }
+sINN	 symbols IN . returns indices of symbols x matching symbol y up to length of y 	{ CINN[ $ x ; $ y ] }
+size	 kludge to get general size of an object 	{ # 5: . x }
+skatteramend	 replaces items in x at addresses y with value z 	{ ./[ x ; y ; :[; z ] ] }
+slope	 slope of line between ( x y ) pairs  p0 to p1 	{[ p0 ; p1 ] %/ | -/ ( p1 ; p0 ) }
+SolidAngleDisk	Solid angle of disk of radius ( x 0 ) at distance x 1 	{ pi * %/ x ^ 2 }
+SORT	sort table x on col y 	{ x[ ; < x y ] }
+sort	sort char vector diregarding case 	{ x @ < x }
+sorta		{ :[ 4 = _abs 4: x ; ` $ sorta @ $ x ; x @ < lower x ] }
+SORTa	sort table x on char or sym col y disregarding case 	{ x[ ; < lower @ $ x y ] }
+sortdic	sorts items in dictionary into name alphabetical order	{ . ( . x )[ < ( . x )[ ; 0 ] ] }
+splt	 split y on occuraces of x . cf: `cut 	{ ( 0 , & y ~\: x ) _ y }
+spltcols	 splits text mat y at cols of just char x , usually SP 	{ +:' ( 0 , & &/ x = y ) _ + y : pad y }
+SPLTF	split x on first y 	{ ( 0 , x ? y ) _ x }
+SPLTL	split x on last y	{ | |:' SPLTF[ | x ; y ] }
+spltpn	split list of numbers into positive & negatives , eg creds & debs 	{ 0 + x */: ( ~: ; :: ) @\: x < 0 }
+Ss		{ _ss/ lower ( x ; y ) }
+ssi	 _ss plus length of y 	{ ( # y ) + x _ss y }
+Stocdiagtblfn		{ x : DAE @ htmlcomdel x     / delete comments and empty rows
+  x : DAE htmlcut[ "tr" ; lower  x ]    / split rows
+  x : DAE' htmlcut[ "td" ]' x          / split data items
+  x : + ncovered[ ( "<" ; ">" ) ]'' x    / throw away all html .
+ t1 : `ticker `coverageDate `coveragePrice `lastClose `pctChange `coverageLow `coverageHigh
+t : .() ; t[ t1 ] : 1 _' x
+t[ `lastClose `lastCloseDate ] : + tokcut[ 12 # "&nbsp;" ]' t `lastClose
+ t : Dsel[ t ; `ticker `coverageDate `coveragePrice `lastClose `lastCloseDate `pctChange `coverageLow `coverageHigh ]
+ t[ `coverageDate `lastCloseDate ] : mdy2csy'' @[ t ; `coverageDate `lastCloseDate ]
+t : @[ t ; `coveragePrice `lastClose `coverageLow `coverageHigh ; .:' clnnums' ]
+t : @[ t ; `pctChange ; .01 * .:' clnnums' ]
+t : Drename[ t ; `pctChange ; `Change ]
+t[ `held ] : ( -/ | _jd t[ `coverageDate `lastCloseDate ] ) % 365
+t[ `annualized ] : -1 + ^/ ( 1 + ; %: ) @' t[ `Change `held ] ; t }
+str2sym		{ ` $ in[ x ; ALPHabet , DIGITS ]  }
+sum		{ +/ @[ x ; & x = 0n ; : ; 0 ] }
+sumf	 sum defined value of list of floats	{ +/ x _dv 0n }
+sumscan	acreting sums of defined in list of floats	{ +\ @[ x ; & x = 0n ; : ; 0 ] }
+sv	 symbol from vector ; Steve Apter 0111 	{ ` $ ,/ "." , ' $ x }
+symcat	 catinate symbols as if strings 	{ ` $ ( $ x ) , $ y }
+symdrop	 drops ( _ ) x  dots levels of symbol y 	{ d/ x _ nd y }
+symfmt	 convert x to symbols  ( AF ) 	{ .[ x ; () ; ` $ $: ] }
+symKa		{ 4 = _abs 4: x }
+symrplc	 replace subsymbol y with z in dotted symbols in x (AF) 	{ d/ rplcwhere[ nd x ; y ; z ] }
+syms	 returns names in x whose values are symbols 	{ x @ & symKa' .:' x }
+SYMSCCON	 symbols in list x containing str y , case sensitive 	{ ` $ CCON[ $ x ; y ] }
+SYMSCON	 symbols in list x containing str y , case sensitive 	{ ` $ CON[ $ x ; y ] }
+SYMSCONB	 boolean where symbols in list x contain str y 	{ CONB[ $ x ; y ] }
+SYMSCONN	 indices where symbols in list x contain str y 	{ CONN[ $ x ; y ] }
+symsdotCON	 symbols in x containing symbol y as a subsymbol 	{ x @ & y _in' nd' x }
+symsdotCONN		{ & y _in' nd' x }
+SYMSIN	 symbols x `IN ( starting with ) phrase y 	{ ` $ IN[ $ x ; y ] }
+SYMSINB		{ y ~/: ( # y : nd y ) #' nd' x }
+SYMSssr	 like ssr for strings of symbols 	{ ` $ _ssr . $ ( x ; y ; z ) }
+symtake	 takes ( # ) x  dots levels of symbol y 	{ d/ x # nd y }
+t2d	dic `x with contents from labeled table y	{ .[ x ; () ; : ; tab2dic . y ]  }
+t2h	table to html with delimiter sets t0 and t1	{[ x ; t0 ; t1 ] t1[ 0 ] ,/: ( ,/' + { t0[ 0 ] ,/: ( $:' x ) ,\: t0[ 1 ] }' x ) ,\: t1[ 1 ] }
+tab	expand tabs in text string y to cols x . Greg Heil K-list 030413	{ ,/ p ,' ( x - ( #:' p : cut[ "\t" ; y ] ) ! x ) #\: " " }
+tab2csv	 convert columns of y to csv format using delimiter x 	{ MV[ x ]' ( $ + y ) }
+tab2dic	return dictionary with entries x and values y "	{ x : nuldic x ; x[] : y ; x }
+tab2html	 convert K table ( matrix ) to HTML <table> 	{ brak[ MVn t2h[ x ; tab2html.[ `toks ; 0 ]; tab2html.[ `toks ] 1 ] ; tab2html.[ `toks ] 2 ] }
+tagval		{ :[ 4 = 4: x ; . x ; x ] }
+take	like APL take . like # for x>0 but fills with prototye	{ t : ( 0 | ( iabs x ) - # y ) # 0 # y ; x # :[ 0 < x ; y , t ; t , y ] }
+taxdstrb	 given portion of bill x of subtot y and taxed tot z , distbs tax 	{  z * ( :: ; 1 - ) .\: x % y }
+telenumcnvrt	 convert letters to telephone dial pad numbers 	{ 2 + ,/ CONN[ cut[ "/" ] "ABC/DEF/GHI/JKL/MNO/PQRS/TUV/WXYZ" ]' upper x }
+TextPad		{ ` 3: "C:/Program Files/TextPad 4/TEXTPAD.EXE " , x }
+tfmt	 time format 	{ fill[ -6 ; "0" , $ x ] }
+thru	integers from x thru y	{ x + ! y - x - 1 }
+timestamp	 timexstamp _t />/  "/(/ sat.oct.20011020.2319 /)/" 	{ kc , tsl[ x ] , ck }
+Tins	 insert z at row y in Table x . ( # z ) ~ # x 	{ x ins[ ; y ;  ]' z }
+TinsP	 insert prototype of row y at y in Table x 	{ Tins[ x ; y ; proto' x[ ; y ] ] }
+to	integers from x upto but not including y  ; cf  `thru  	{ x + ! y - x }
+today	date as integer	{ ( _ltime _t ) 0 }
+tokcut	 split string `y at multi char token `x 	{ ( # x ) _' ( y _ss x ) _ y : x , y }
+toksplt	 split string `y at multi char token `x , retaining tokens 	{ ( 0 , y _ss x ) _ y }
+toPoints	 convert plotlists ( x ; y ) to point lists 	{ +:' x }
+trash	names of all obj in dic `x set to `delete	{ ( ! x ) ( & `delete ~' x[] ) }
+ts	time to minute	{ _ ( _ltime x ) % 1 100 }
+TSfloat	 / TSfloat _ltime _t / formats as "yyyymmdd.hhmmss" 	15.6$+/1 1e-006*
+tsfmt		{ MV[ "." ] @ ( $: ; tfmt ) @' x }
+tsl	 tsl _t />/  "sat.oct.20011020.2329" 	{ MV[ "." ; ( Dfmt ; tfmt ) .'  x ] }
+TSORT	sort table ( matrix ) x on col y	{ x[] : SORT[ x[] ; y ] ; x }
+tst		(5+;5*)@\:
+txt2tbl		{ clncols @ + ( 0 , & &/' " " = x ) _/: x : pad x }
+txtxeq		{ :[ chrKa x ; xeq x ; x ] }
+u2d	 convert Unix file name to dos 	{ _ssr[ x ; "/" ; "\\" ] }
+UD	Up Dictionary . returns tag of parent dictionary of `x	{ ` $ PRTBL[ $ x ; "." ] }
+ud	name of dictionary  x  levels above this one	{ ` $ MV[ "." ] ( - x ) _ cut[ "." ] @ $ _d }
+und	 split symbols on dots . early from MKR 	{ ` $ cut[ "." ] @ $ x }
+undock	remove x from display in this GUI	{ .[ ~ _d ; `a ; : ; ( ( ~ _d ) `a ) _dv x ] }
+unique		{ x @ *:' t @ & 1 = #:' t : = x }
+UPDATE	 updates Job variable attributes ( mainly key definitions ) in Job x 	{ @[ x ; t ; : ; .R t : `r. `text. `state. ] }
+upon	 applies x on y and z each extended to length of longer . A theoretical exercise 	{ x/ ( |/ #:' ( y ; z ) ) #' ( y ; z ) }
+upper	 convert to upper case . Mike Rosenberg collection . 	{ (_ci@[!256;97+!26;-;32])@_ic x }
+uq	 unquote mask . [EMcD] 	{ ~ b[ 0 ] |': b : (~=)\ x = "\"" }
+vars	whatever is not a fn or dic	{ ( ! x ) @ & ~ |/ 7 5 =\: 4::' ( . . x )[ ; 1 ] }
+varsIN		{ ` $ IN[ $ vars y ; x ] }
+VEC	 If atom , enlist  /  Was / { :[ @ x ; , x ; x ] } 	{ x , () }
+venn	partition of lists x and y into their Venn parts : intersection and 2 disjoint sets	{ ( x _dvl y ; in[ x ; y ] ; y _dvl x ) }
+view	table of entries , their help , and formatted values	{ ( x ; nulval[ ; "" ]' ( ~ x ) @\: `h ; .:' x )  }
+viewhelp	table of entries , their help , and formatted values	{ ( x ; nulval[ ; "" ]' ( ~ x ) @\: `h ; .:' x )  }
+VM	split string y on char x . See VMn & VMr 	{ 1 _' ( & y = * y ) _ y : x , y }
+VMn	split string on "newline" character  \n  ~  _ci 10 	{ 1 _' ( & x = * x ) _ x : "\n" , x }
+VMr	split string on "newline" character  \r  ~  _ci 13	{ 1 _' ( & x = * x ) _ x : "\r" , x }
+VMs	 VM[ " " ] 	{ 1 _' ( & y = * y ) _ y : x , y }[" "]
+vnpk	unpack variable packed by `vpk	{ .[ * x ; () ; : ; x 1 ] ; .[ ~ * x ; () ; : ; x 2 ] ; }
+vpk	 pack a variable & its attributes 	{ ( x ; . x ; . ~ x ) }
+vs	 vector from symbol ; SA 0111 	{ ` $ 1 _' ( & "." = x ) _ x $: }
+vsave	 save a variable 	{ ( csyfnm absnm x ) 1: vpk x }
+WC	 WordCount . actually number of spaces between words in x 	{ +/ " " = DRB x }
+webdaylnfn		{ "<A NAME = " , ( 5: $ x ) , " > <p align=\"center\"><b>" , ( * dayln x ) , " </b></p>" }
+webfdbkfn		{ brak[ _ssr[ * | cut[ ":" ] PRTBL[ ; "." ] x ; "/" ; "." ] ; webfdbkfntoks ] }
+webheadmfn		{ MV[ " &shy;" ] ( ( & t _lin "/_" ) _ t : PRTBF[ x ; "." ] ) _dv "/index" }
+webtitfn		{ ,/ ( ( & t = "/" ) _ t : PRTBF[ x ; "." ] ) _dv "/index" }
+WHERE	 Returns x where condition y applied to x is true . eg : WHERE[ list ; 2 = #:' ] 	{ x @ & y x }
+where	 like  &  for rectangular boolean arrays 	{ + ( ^ x ) _vs & ,/ x }
+whereachIdxs	 for a matrix like &:' returns , returns all address pairs 	{ ,/ ( ! # x ) ,/:' x }
+xeq	Fundamental trapped execution in current _d	{ x : .[ .: ; x ; : ] ; :[ ~ * x ; x[ 1 ] ; x ] }
+xeqLS		{ xeq lastseg x }
+xpndtabs		{ _ssr[ x ; "\t" ; 4 # SP ] }
+y2k	 interprets 2 digit dates based on my birth year 	{ :[ x > 100 ; x ; :[ 44 > x ; 2000 + x ; 1900 + x ] ] }
+yahooHQ	 convert Yahoo Historical Quote csv files 	{ x: csv2dic x ; x[] : ( ( datfmtyho' ) , 6 # ( .:' ) ) @' x[] ; x }
+ymd_mdy	 "yyyy/mm/dd"  from  "mm/dd/yyyy" 	{ MV[ "/" ] @[ cut[ "/" ] x ; 0 1 ; lead0I ] 2 0 1 }
+yr	 year from date in yyyymmdd form 	{ _ x % 10000 }
+yx	 commute arguments of fn `x . eg :  yx[ f ; l ; r ] ~ f[ r ; l ] 	{ x[ z ; y ] }

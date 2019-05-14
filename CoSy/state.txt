@@ -4,29 +4,31 @@
  Dnames 	| names in ' _d dictionary . initialized to ' R
  fileDialog 	| Get file name |
    
- text> daylncut s" notep" con 
+ text> lfVM ( daylncut ) s" group " con 
  ` script0 -> 	| display final startup script for editing . Set display parameters
   bye 		| close CoSy . If cmd wdo running , restart with Restart .
 
 | NB: examples below generally have whatever phrase I last searched for .
  
-  s/" 0=" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
-	 	`( sys CoSySource )` Dv@ 	| list of scripts searched
-  
-  s" rho" words> >t0>	| defined words containg  phrase  . use "bl for all words
+  s/" \"nl" ?? 	| Help on any phrase in CoSy scripts . Remember to double " \\" .
+  s/" pi " Help 	| RevaForth help  | Empty arg gives overview .
+
+|   often convenient to edit edit Reva ' help into a list then look them all up
+   res> blVM ' Help 'm >T0> 
+
+ 	`( sys CoSySource )` Dv@ 	| list of scripts searched
+  	s" C:/4thCoSy/CoSy/math.f" F> ^eval 	| for various rand & math fns . 
+  s" Wdo" words> >t0>	| defined words containg  phrase  . use "bl for all words
  	| ' forth>  executes raw Forth capturing and returning output |
   xwords> 	| all words in all contexts . 
   
-  s/" contexts" Help 	| RevaForth help  
-  res> blVM ' Help 'm >T0> |  Reva ' help often lists related words . It's
-|  often convenient to edit them into a list then look at all their help .
 
   s" r@ rr@ rpick" blVM ' See 'm | see x86 code for word , here several related
 
  words~ ~floats
-
+ 
    s" f1. " See
-  ` text 	-> 	daylncut >t0> s" unique " con
+  ` text 	-> 	( daylncut ) lfVM >t0> s" drb " con
   ` help 	->
   ` ref 	->
   ` Addrs 	
@@ -34,10 +36,10 @@
   ` script0 	->	| final script evaluated on start up 
   ` BROWSER	-> 	| address of browser used by ' cF9 to open URLs
   ` LanguageLinks -> 	| an informal listing of interesting relevant sites 
- 
+ `( Fact Fact )` ->
   R0 Dv@ VMlf s" 'd " con 
   R0 Dv@ s" ( " toksplt s" morse" con 
-  ` text Dv@ daylncut >t0> s" 20180315" con | reverse
+  ` text Dv@ daylncut >t0> s" 0406" con | reverse
   ` text Dv@ lfVM s" fmtn" con
   res> >t0> 	| useful after editing list of "See also:" refs in help 
   s" help " shell>
@@ -53,7 +55,8 @@
   s" text" Dv@  s" .\CoSy\text.txt" >F 
   s" .\CoSy\text.txt" shell^ 
 
-  s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F 
+  s" help" Dv@ s" \4thCoSy\CoSy\help.txt" >F
+  `D@ state s" \4thCoSy\CoSy\state.txt" >F
  s" dir cosy" shell>
  https://github.com/CoSyBob/CoSy/blob/4thCoSy/LanguageLinks.txt
 
@@ -61,7 +64,8 @@
 | ~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\~/\ |
  s" ~\/" 69 _take  s" | " s"  |" ,L braket
 | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/ |
-| \/ | ---- Editing MultiLine fns w ` tstScript . 	   ----    | /\ |   
+
+| \/ | ---- Editing MultiLine fns w ` tstScript . 	   ----    | \/ |   
 
  ` tstScript -> 	| Test script for interactively editing multiline fns
  ` tstScript Dv@ ^eval 	| save . Then execute to redefine .
@@ -85,10 +89,10 @@
  s" dir /? " shell> 	 		| help for windows  dir cmd .
  s" dir C:/4thCoSy/CoSy/" dosslash^ shell> 	| using dosslash^ to use forward slashes
  s" dir " CoSyDir cL shell> 		| dir  defaults to dir Reva started in .
-
- s" type CoSy\\ReadMe.txt" shell> 	| return contents of text file  
- s" CoSy\\ReadMe.txt" ' shell onvan	| execute file with its associated app .
-  | note use of non-resulting  ' shell .   ` shell> bombs CoSy when task done .
+ 
+ s" C:/CoSy/tmp.txt" F> 	| return contents of text file  
+| got problems | s" CoSy\\ReadMe.txt" ' shell onvan	| execute file with its associated app .
+|  | note use of non-resulting  ' shell .   ` shell> bombs CoSy when task done .
   
 | copying to another machine on network 
  s" dir \\CoSy2013\4thCoSy\CoSy\ "  shell> 	| useful to check connection .
@@ -112,12 +116,12 @@
 
 | \/ | parsing multiple file names returned using ctrlEnter w FileDialog . |
 | eg: arkived activity logs or .csy dictionaries 
-
+ 
 | As selected by fileDialog :
  s" C:/4thCoSy/CoSy|y2015.txt|y2016.txt|y2017.txt|y2018.txt|" s" |" VM >t0> 
  t0 dsc s" /" cL  t0 1 _cut -1 _cut ' cL 'R >t0> 	| flesh out full paths .
- t0 { F> daylncut s" notep" con } 'm 	| finding all days in files containg phrase
- t0 { F> lfVM s" notep" con } 'm 	| finding all days in files containg phrase
+ t0 { F> daylncut s" group " con } 'm 	| finding all days in files containg phrase
+ t0 { F> lfVM s" notep" con } 'm 	| finding all lines in files containg phrase
  
 | /\ | 
 
@@ -172,7 +176,9 @@ rho |  ` text v@
 | \/ \/ \/ | for checking Allocate - Free matching | \/ \/ \/ |
  t0 L|R cL
  AF1    |ymd.hm| str>pad_ type  AF0 | >t0>   | turn on off  allocates frees 
- AF1   5 _iota { . cr } 'M  AF0
+ AF1  s" ab" lst>stk  AF0
+ 
+ s" " words>
  t0 DMP
  
  AF> +-splt | ' rho 'm ,/ | ' = acrossI

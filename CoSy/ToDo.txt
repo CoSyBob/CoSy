@@ -71,5 +71,6 @@ example lists :
 ( greek grocery ; 1843 Briargate Blvd. , w of N Academy )
 ( Schnitzel Fritz ; 4037 Tutt Blvd Colorado Springs CO 80922 ;
  Phone: (719) 573-2000 ; Website: http://www.SchnitzelFritz.com ) 
+--------
 
-
+ CoSy  tying together systems for High Net Worth Individual .

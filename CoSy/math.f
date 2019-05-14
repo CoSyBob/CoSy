@@ -91,7 +91,7 @@ needs random/gm
 : _rand_ ( n -- a ) dup intVecInit >aux
    0 ?do rand aux@ i ii! loop aux> ; 
  
-: _rand ( i n -- ) | n rands in  i iota raw 
+: _rand ( i n -- iv ) | n rands in  i iota raw 
    dup intVecInit >aux
    0 ?do dup rand um* nip aux@ i ii! loop drop aux> ; 
 

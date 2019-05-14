@@ -91,9 +91,12 @@ variable btnswdo
 
 : text> textwdo @ getval str nip ;
 
-: >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ;  
+: >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
+| : >text ( str -- ) textwdo @ z" VALUE"  --bca van zt IupStoreAttribute _i ;  
 | Insert string in ` text window . Replaces current text in ` text window .
 | Necessary for replacing ` text with ` text from another .csy file . 20180708
+
+
 
 : savetext text> R `text v! ;
 
@@ -110,8 +113,6 @@ variable btnswdo
 
 | prior  ~util.save  |
 : save ( callback ) savetext  saverestxt savestate savedic align saveLastsave ;
-
-: >text ( str -- ) { textwdo @ -rot setval drop } onvan ;	| Mon.Jul,20130715
 
 : $.sUpdate spon ." $tack : "  $.s  spoff  
    sWdo @  z" TITLE"  spoolbuf lcount ( 2dup type cr ) zt IupStoreAttribute drop ; 

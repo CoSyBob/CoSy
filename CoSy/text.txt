@@ -9,6 +9,8 @@
  
 
  
+
+
  __________________________________________________________________________
  You have now made and saved your first timeStamped notes
  		| Think of CoSy as intelligent paper |
@@ -20,7 +22,9 @@
  | \/ | Put the cursor on lines below and tap F6      | \/ |
   
   s" Hello World " 		| return a CoSy character list , ie: string .
- 
+
+ HelloPrize 	| F6 this to find out your prize ! | 20190510.1322 |
+
   s" Hello World " reverse 	| See ! it was sitting on  Top of Stack 
 
   s" Hello World " rho 		| ` rho is APL for ` count   number of items .
@@ -990,13 +994,11 @@ pv:{[c;t;d] +/c*d^t }
  | ======================== | Wed.Apr,20190403 | ======================== |
   f( .1 .1 1.1 )f   1.1 _f 1%f   f( 1 2 3 )f  ^f   *f  +/
   ( cashflow discountRate time ) 
- 
-  f( .1 .1 1.1 )f o
+   f( .1 .1 1.1 )f o
   1.1 _f 1%f o
   f( 1 2 3 )f o
  ^f  o 
  *f  o
- +/ 
 
 : pv ^f *f +/ ;
  s" pv " See
@@ -1004,17 +1006,310 @@ pv:{[c;t;d] +/c*d^t }
 
  s" +/ " ??
  f( .1 .1 1.1 )f   1.1 _f 1%f  f( 1 2 3 )f  ^f *f   ' +f ./
-| 1419 |*   *| 1445 | 
+| 1419 |*   *| 1445 | | 20190405.1149 | See | https://youtu.be/0fIWQTl_ENU
  | ======================== | Thu.Apr,20190404 | ======================== |
-Uploading to GitHub 
+Uploading to GitHub
+ | ======================== | Fri.Apr,20190405 | ======================== |
+| 1150 | 
+  ` script.sort -> 
+  s" C:/4thCoSy/CoSy/y2018.txt" F> >t0> | daylncut s" group" con  
+  t0 "lf "nl ,L ssr s" ./tmp.txt" >F
+  s" notepad .\tmp.txt" start
+  s" notepad" shell^
+  s" /" s" \" ,L 
+ ssr ; 
+   `( sys wordpad )` Dv@ s"  /k " cL  s" C:/4thCoSy/CoSy/y2018.txt" />\ cL   start
+ | s" /" s" \" ,L  ssr 
+ />\  >t0> rho
+ s" />\ " ??
+ s" : start " ??
+
+|| ` not taking ` /k out of ' start in ./CoSy/Furniture.f
+|| if needed to ` keep , prepend file name withe s" /k " 
+|| : start s" start C:\\Windows\\System32\\cmd.exe " swap cL shell^ ; 
+| : start s" start C:\\Windows\\System32\\cmd.exe /k " swap cL shell^ ; 
+| For reasons I don't understand , doesn't work w/o the  ` /k  | 1439 | 
+
+| : '(  not trivial . 
+ | ======================== | Sat.Apr,20190406 | ======================== | | 2203 | 
+| copying from i( 20180512 20180519 20180527 )i & updating | a lot of work 
+| consolidated here . 
+
+: setsize ( s" XxY" dlgH -- ) swap z" SIZE" swap van zt IupSetAttribute drop ;
+  s" 635x500" `( .r Tui SIZE )` Dv!
+: getfont ( thndl -- s" " ) z" FONT" IupGetAttribute zcount _str ;
+: settxt ( str txtH -- ) z" VALUE" --bca van zt IupStoreAttribute _i ;
+
+ `D@ .r
+ t1
+  newwdo `( .r Tui hndl )` Dv!  `( .r Tui hndl )` Dv@ >t1>
+  `( .r Tui SIZE )` Dv@  t1 0 i@ setsize
+  `( .r Tui FONT )` Dv@  t1 1 i@ setfont 
+  `( .r text )` Dv@ 	 t1 1 i@ settxt 
+
+  `D@ .r setWdo 
+
+  `( .r Tui hndl )` Dv@ 1 i@ getfont 
+  `( .r Tui hndl )` Dv@ 0 i@ `( .r Tui posXY )` Dv@ lst>stk_  IupShowXY _i
+ 
+
+ `( .r text )` Dv@ `( .r Tui hndl )` Dv@ 1 i@ settxt 
+ 
+  `D@ .r JobHndl | gettxt  `( .r text )` Dv!
+   `( .r Tui hndl )` Dv@ | 0 i@ IupDestroy _i
+  s" JobHndlt " ??
+
+   `D@ .r closeWdo 
+ s" rpl " 
+ s" : closeWdo " ??
+
+ `D@ .r setWdo 
+--
+
+: JobHndl s" Tui" v@ s" hndl" v@ ;
+: JobHndld JobHndl 0 i@ ;  : JobHndlt JobHndlt 1 i@ ;
+
+: setJobtxt ( text job -- ) 2p> s" text"  Dv! LR@ JobHndlt settxt 2P ;
+
+  `( .r text )` Dv@
+  s" C:/4thCoSy/CoSy/y2018.txt" F>
+  s" ./CoSy/Job.f" F> 
+  R0 `( .r text )` Dv!  
+  `D@ .r dup setWdo    showWdo
+  
+ `( .r text )` Dv@  `D@ .r JobHndlt settxt 
+
+ `D@ .r  showWdo
+ `D@ .r JobHndlt gettxt  `( .r text )` Dv!
+ 
+  `D@ .r JobHndlt gettxt 
+  `D@ .r closeWdo 
+
+  t1 0 i@ getsize 
+  t1 1 i@ getfont 
+  t1 0 i@ getpos 
+  `D@ .r JobHndlt _i | gettxt
+ s" JobHndlt" ??
+| 20190504.2201 | 
+ 
+--
+ closeWdo ( Job -- ) s" Tui hndl" blVM v@ >_ IupDestroy drop ; 
+
+ `D@ .r JobHndld closeWdo 
+ ' LR@ _i
+
+---  
+: showWdo ( Job -- ) 1p  newwdo >a> R@ s" Tui" v@ >a> s" hndl" v! 
+| aux@ is Tui  auxx@ is hndl 
+| auxx@ lst aux@ lst  cr
+  a@ s" SIZE" v@ auxx@ 0 i@ setsize
+  a@ s" FONT" v@ auxx@ 1 i@ setfont
+  R@ s" text" v@ auxx@ 1 i@ settxt 
+  auxx@ 1 i@ a> s" posXY" v@ lst>stk_ IupShowXY _i ; 
+ `D@ .r showWdo 
+ `D@ .r 
+ 
+ s" auxx> " ??
+
+ auxdrop a-  1P 
+ ; 
+  s" IupShowXY " ??
+
+ s" `( .r Tui FONT )` " ^eval
+ ' ^eval _i
+  `( .r Tui posXY )` Dv@ t1 0 i@  swap lst>stk_  IupShowXY _i
+  res>  `( .r text )` Dv!
+
+ `( .r Tui hndl )` Dv@ 0 i@ IupDestroy _i
+ i0  `( .r Tui hndl )` Dv!
+   `D@ .r ` Tui v@
+   t1 0 i@   IupDestroy _i
+  
+  t1 
+ 
+ t1 0 i@  swap lst>stk_  IupShowXY _i 
+   drop
+ t0 t1 0 i@ swap lst>stk_ | IupShowXY _i 
+ IupShowXY 
+  t1 1 i@ gettxt `( .r text )` Dv! 
+   
+  s" parse " ??
+ s/" : \" " ?? 
+
+ i( 1 2 )i tst
+ ' lst>stk .
+  IupGetAttribute
+ 
+  t1 0 i@ z" posXY" 
+  t1 0 i@ getpos  2_i cL
+ ` getpos ??
+  3drop 
+ s" >single " Help
+
+ t1 1 i@ z" "  IupGetAttribute 
+  `( .r text )` Dv@ | t1 1 i@ settxt 
+   t1 1 i@ gettxt >t0> 
+  t0 `( .r text )` Dv!
+
+  `( .r Tui posXY )` Dv@ 
+  t1 0 i@ 1000 100 showXY
+  t1 >_ Iupdestroy _i 
+ t1
+
+ z" FONT" IupGetAttribute zcount _str
+| 1232 | 
+  `( .r hndl )` Dv@ >_  1000 100 showXY 
+  `( .r hndl )` Dv@ >_ `( .r Tui SIZE )` Dv@ van zt setsize
+  `( .r hndl )` Dv@ 1 _at >_ z" FONT" `( .r Tui FONT )` Dv@ van zt IupSetAttribute _i
+  s" showXY" ??
+  
+
+  `D@ .r >t0> showWdo
+  t0 ` text v@  t0 `( Tui hndl )` v@ 0 _at  settxt 
+
+
+| ( str attr wdoHndl -- ) 
+: setwAttr 0 i@ --cab van zt swap van zt IupSetAttribute drop ;  
+ s" 635x510" s" SIZE" t1 0 i@ --cab van zt swap van zt IupSetAttribute _i 
+
+ | ======================== | Mon.Apr,20190408 | ======================== |
+  
+: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini 0=i & a> swap at ;
+ s" abc" 1 _rotate
+ | ======================== | Wed.Apr,20190410 | ======================== |
+ s" 2019-02-27  16:40               310 Chase4301.CSV" >t0> drb | problem 
+2019-02-27 16:40 310 Chase4301.CSV2
+   "bl t0 cL "bl =c  >t1> dup 1 _rotate mini 0=i & >t1> 
+ t0 t1 at
+ | ======================== | Thu.Apr,20190411 | ======================== |
+| I flipped  deletion in the K I was translating to complementing and retrieving
+| would have caused index error in K , but CoSy modulo wraps .
+| DRE 	| Definition from K . 
+| Delete Redundant ( all but first of sequences of ) Elements  x  in string  y
+| { ( x = * y ) _ y : y _di & t & 1 ! t : x = y : x , y }
+ s" dvi " ??
+: drb  >a "bl a@ cL "bl =c >a> 1 _rotate a> mini & a> swap dvi ;
+ t0 drb 	| fixed | 2310 | 
+  http://cosy.com/K/verbs.csv 
+ | ======================== | Fri.Apr,20190412 | ======================== |
+ ` help ->
+| added K_verbs.csv to distro . "nl "ht ,L  delimiters w embedded "lf in defs 
+ s" C:/4thCoSy/CoSy/K_verbs.csv" F> "nl "ht ,L csv>lst >T0> rho'
+| continuing on 0406 | ' showwdo 
+ s" C:/4thCoSy/lib/ui/gui" F> s" |||" prt>f >T0> rho
+ T0 s" def:" tokcut "lf ' VM 'L 1 _cut >T1> 
+   T1 { 1 _take dsc } 'm
+ | ======================== | Sat.Apr,20190413 | ======================== |
+| really want to get windows working . continuing @ 0406 
+ | ======================== | Mon.Apr,20190415 | ======================== |
+ s" dosslash" ??
+| deleted | : dosslash^ ( str -- str ) { dosslash str } onvan ; 
+| use ' />\  | left raw util.v  ' dosslash for now .
+ | ======================== | Wed.Apr,20190417 | ======================== |
+: fmt$ 18 _fmtnF ; 	| added to CoSy.f
+: Pi fpi _f ; 	| added to Furniture.f
+ Pi 4 _iota i>f *f fmt$ "bl MV 	| for example | 
+ | ======================== | Fri.Apr,20190419 | ======================== |
+| 1644 | I'd like to see the calculation of the date of ` GoodFriday in ' CoSy |
+| back to ` .r window @ 190406
+ | ======================== | Sat.Apr,20190420 | ======================== |
+ f( 315 560 )f 400. 560. 2_f %f *f 	| resizing YouTube ` <iframe .
+  s" interp" ??
+ (' ' Help ' ?? ') 
+ 0 i@ DMP
+ | ======================== | Mon.Apr,20190422 | ======================== |
+| continuing @ 0406 | | 1512 | Been realizing need sort of inverse to ' ,L 
+: lst>stk >a> i# 0 ?do a@ i _at loop a- ;
+| ( v -- ( v i# items on stack ) ) splits items in v into separate items on stack . 
+| seems to be working so added to CoSy.f 
+
+ s" C:/4thCoSy/CoSy/iup C:/4thCoSy/lib/ui/iup" blVM { F> lfVM } 'm >T0> rho 
+ T0 lst>stk venn >t0
+ t0 rho'
+ t0 dsc
+ | ======================== | Tue.Apr,20190423 | ======================== |
+: lst>stk_ >a> i# 0 ?do a@ i i@ loop a- ; 	| raw version for chars & ints
+| 1437 | more work on windows . 
+ | ======================== | Fri.Apr,20190426 | ======================== |
+| finishing up windows for use . fairly well tamed . | 1333 | |
+ | ======================== | Sat.Apr,20190427 | ======================== |
+| SV-FIG | 1138 | Ting & Brad 's  HTTP interface is THE way to go with interface
+| So what's involved in interfacing | https://opencv.org/ | like IUP is ?
+ | ======================== | Tue.Apr,20190430 | ======================== |
+| from first work on acnts in personal CoSy using  window fns . 
+| delete leading blanks . 20190430 | added to Furniture.f
+: dlb 1p> dup { 32 <> } f?m cut 1P> ; 	| impressed ' f?m worked as expected .
+ | ======================== | Thu.May,20190502 | ======================== |
+|  Ran into problem w ' venn disclosing single text string .
+: venn  2p (' R@ L@ ~membv LR@ membv LR@ ~membv ') 2P> ; 
+| returns list of 3 lists :  ( x nin y ; x in y ; y nin x ) 
+|  Replaced ' at with ' at\ in ' membv  and ' ~membv .
+: ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at 2P> ; 
+| R not memb L  and items of R not in L 
+ | ======================== | Thu.May,20190502 | ======================== |
+ | ======================== | Sat.May,20190504 | ======================== |
+ s" : ['] " ?? 
+ s" compiling" ??
+: tst sym asdf ; 
+  sym asdf
+ | ======================== | Tue.May,20190507 | ======================== |
+| triggered by | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/2098703023763054/?comment_id=2098741733759183&comment_tracking=%7B%22tn%22%3A%22R%22%7D
+ f( 1 2 3 )f 1 _rotate
+: CuboidArea  .. 1 _rotate *f +/ 2. _f *f ;
+ f( 1 2 3 )f CuboidArea |>| 22.00
+ s" 2over " ??
+ 1 2 3 4 2over 
+ s" --abcabc " ??
+: cuboid 2dup * >r >r over * swap r> * + r> + 2* ;
+ 1 2 3 cuboid .
+ s" --abcbca " ??
+ s" rot " Help
+ 1 2 * 2 3 * 1 3 * + + 2 * . 
+ | ======================== | Thu.May,20190509 | ======================== |
+  `( Fact Physics )` Dv@
+
+ | ======================== | Fri.May,20190510 | ======================== |
+| ` script0 -> | added ' HelloPrize | 1344 | 
+| Modified venerable ' MV so simply returns simple rather than bombing . 
+: MV over Type@ 0if  2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P>  ;then drop ;
+| Thus , eg:  T0 "lf MV "lf MV  | can be doesn't bomb . replaced in Furniture.f
+| was | : MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
+
+  s" ./CoSy/Furniture.f" F> `( .r text )` Dv! 	| Save string in ` .r
+ `D@ .r dup setWdo    showWdo 			| create & show 
+ `D@ .r  showWdo 			| show again if hidden 
+ t0 "lf MV dup `( .r text )` Dv!  `D@ .r JobHndlt settxt | assign new text & show
+ `D@ .r JobHndlt gettxt `( .r text )` Dv! 	| retrieve changed text from window
+ `D@ .r closeWdo  				| close it 
+
+ `( .r text )` Dv@ "lf>"nl s" ./CoSy/Furniture.f" >F
+  s" ./CoSy/Furniture.f" F> "nl ss 	| checked that newlines needed in windows files
+  s" : MV " ??
+| /\ | ! First editing of a function in a script file in a CoSy window ! | 1413 | 
+| 2209 | 
+ `D@ .r dup setWdo    showWdo 		
+  t0 "lf MV dup `( .r text )` Dv!  `D@ .r JobHndlt settxt 
+  `D@ .r JobHndlt gettxt  `( .r text )` Dv! 	| swap text v! 
+   `D@ .r closeWdo 
+ `( .r text )` Dv@
+
+| : save&close ( Job -- ) dup JobHndlt gettxt swap text  Dv!  `D@ .r closeWdo  
+ 
+ | ======================== | Sun.May,20190512 | ======================== |
+| 1150 | | 1220 | 
+ | ======================== | Tue.May,20190514 | ======================== |
+ HAVE to get YouTube out | 1131 | 
+  text>
+  s" ./CoSy/Job.f" F> >t0>
+| 1230 | 
+
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  ` tstScript -> 	| Test script for interactively editing multiline fns
   ` tstScript Dv@ ^eval 	| save . Then execute to redefine .
    forgettst
- reset
- DMP
+
    R0 DMP cr  ev >R0 R0 DMP 	| sF6 . useful for executing when ' save bombs  
  Dnames | { Dv@ rho } 'm lst 	| sF6 . check if any ' rho' crazy 
   s" dir cosy" shell> 
@@ -1023,21 +1318,29 @@ Uploading to GitHub
  
  s" ./CoSy/math.f" 
  R0 >t0> F> >t1>  ^eval  	| for editing or evaluating a file 
- t1
  res> "lf "nl ,L ssr t0 >F 
   R 1 _at  ' rho 'm
- forget
 
  |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
- ` SkriptThots ->
+ ` SkriptThots | 20190427.1154 | ->
+ REPL | IDE |   nested ( recursive ) ' { ' } |  clean quotations  ~ [']  | 
+ AWK 
+ Really need Some body who knows GitHub to interface . Simply order by date .
+
+! control over TUI !  |   Ting & Nelson HTTP interface .
+ Was not Functional ! 
+ s" ./CoSy/Tui.f" F> 
+ Work thru problems a thought at a time .
+  text> | HelloPrize 
+ text>  `( .r text )` Dv!  `D@ .r dup setWdo    showWdo 	
 
  | ###################################################################### |
 |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
-| \/ | Line to make more calendar \/ |
+| \/ | Line to make more calendar | \/ |
  
  s" 23 12 2016 30 DAYLNS " forth> 	| insert res in text using  F5 
- 
+
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
 
  |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
@@ -1045,66 +1348,15 @@ Uploading to GitHub
  | ====================================================================== |
  | ###################################################################### | 
  
- s" 23 12 2016 30 daylns " forth> 	| insert res in text using  F5 
-
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
  
-  help '
-  res> Help
-  s" case" CShelp
-
 | ------------------------ |
  ` ToDo ->
  ` ref ->
  ` Addrs ->
 | ------------------------ |
-    resvar 
-  R ` ref v@ vm s" visa" con 
+ 
  | ###################################################################### |  
  |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
  | ###################################################################### |
- | ###################################################################### | 
- 10 _take >t0> ' rho 'm
-
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
-
- | ######################## | e o current work | ######################## | 
- |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\| |/\|
  | ###################################################################### |
- SCRIPT THOTS |
-
- ` ToDo ->
- CoSy  tying together systems for High Net Worth Individual .
- 
- | ###################################################################### |
-|\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| |\/| 
-| \/ | Line to make more calendar \/ |
- 
- s" 23 12 2016 30 DAYLNS " forth> 	| insert res in text using  F5 
- 
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
-
- |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
- s" =" 80 _take
- | ====================================================================== |
- | ###################################################################### | 
- 
- s" 23 12 2016 30 daylns " forth> 	| insert res in text using  F5 
-
- | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |
- 
-  help '
-  res> Help
-  s" case" CShelp
-
-| ------------------------ |
- ` ToDo ->
- ` ref ->
- ` Addrs ->
-| ------------------------ |
-    resvar 
-  R ` ref v@ vm s" visa" con 
- | ###################################################################### |  
- |  /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\  | 
- | ###################################################################### |
- | ###################################################################### | 

@@ -37,7 +37,6 @@ context: ~CoSy  ~CoSy 	." | started | "
  cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
-." chk " cr 
 : instdir appdir rem-separator split-path 2drop ;
 | From Danny (?) to make loading directory independant 
 | " REVAUSERLIB" instdir add-separator setenv
@@ -737,7 +736,7 @@ $40000 constant TypeFv 		| FORTH verb
 
 | ======================================== |
 
-choices: ifetch	( vec idx type -- val )
+choices: ifetch ( vec idx type -- val )
  ' ic@ Type0 choice		' ii@ TypeI choice
  ' ib@ TypeC choice		' if@ TypeFl choice
  ' ic@ default 
@@ -865,6 +864,11 @@ a[ floatFns ' f+ , ' f- , ' f* , ' f/ , ' f= , ' fsin , ' fcos ,
 	swap >aux 2p ( L@ lst cr R@ lst cr aux@ lst cr )
 	aux@ Type@ 0if L@ i# 0do L@ i i@ aux@ R@ i i@ ix rplc loop 2P auxdrop ;then
      R@ i# 0do L@ i i@ aux@ R@ i i@ i! loop 2P auxdrop ;
+
+| ( v -- ( v i# items on stack ) ) splits v into separate items on stack . 
+: lst>stk >a> i# 0 ?do a@ i _at loop a- ; 	| 20190422 
+ 
+: lst>stk_ >a> i# 0 ?do a@ i i@ loop a- ; 	| raw version for chars & ints
 
 : 'm : eachM> ( RA fn -- R )	| each monadic
    over TypeFl =if eachMfr ;then		| Floating , sui generis 
@@ -1086,14 +1090,6 @@ variable indentv   : indent indentv @ spaces ;
 | 20190122.2033 | fixed to return empty on no occurance .
 | thought it would be useful in making | : tst f( 1 0 )f ; | work .  
 
-0 [IF]
-: _f? ( lst RA boolF -- index | _n )
-	| version for naked RA 
-   >aux over refs+ over i# 0 ?do
-     over i i@ over aux@ execute		 
-    if auxdrop drop refs- i unloop ;then loop
-	auxdrop drop refs- _n ;  
-
 : f?m ( lst rawBoolF -- index )
 	| index of first item in RA on which ' boolF 
 	| returns true . Returns RA rho if not found . 
@@ -1103,7 +1099,6 @@ variable indentv   : indent indentv @ spaces ;
     R@ i# 0 ?do R@ i i@ aux@ execute 
      if auxdrop 1P i _i unloop ;then loop
 	auxdrop R@ rho 1P>  ;  
-[THEN]
 
 | /\ OPERATORS /\ ============================================ /\
 
@@ -1344,6 +1339,8 @@ alias: _ cut 	| The K name .
  
 : fmtnF >_ : _fmtnF ( f precison -- strs ) sigdig xchg >r fmtF r> sigdig ! ;
 
+: fmt$ 18 _fmtnF ; 	| max precision 	| 20190417 
+
 0 [IF]
 : fmt ( v -- str )	| format numbers . returns list of each number 
 	| converted to a string .
@@ -1523,11 +1520,11 @@ $006346964 value TypeDic		| " dic"
 : memb ( L R -- bool ) over >a ['] where 'R ,/ a> rho <i ; 
 | Bool of items of R which are in L | See 20180627 
  
-: membv ( L R -- v ) 2p R@ L@ R@ memb & at 2P> ; 
+: membv ( L R -- v ) 2p R@ L@ R@ memb & at\ 2P> ; 
 | Items of R which are in L 
 
-: ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at 2P> ; 
-| R not memb L  and items of R not in L 
+: ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at\ 2P> ; 
+| R not memb L  and items of R not in L . Note use of ' at\ | 20190502 
  
 : venn  2p (' R@ L@ ~membv LR@ membv LR@ ~membv ') 2P> ; 
 | returns list of 3 lists :  ( x nin y ; x in y ; y nin x ) 
@@ -1699,7 +1696,6 @@ needs SaveRestore.f
 | " What is a symbol other than a string ? "
 | /\ | 
 
-
 | ~\/ | DictionaryTable > < .csv text | ~\/~\/~\/~\/~\/~\/~\/~\/~\/~\/~ |
  
 | I've used the term , abbreviated ' DT , in K.CoSy with a rather substantial
@@ -1708,17 +1704,18 @@ needs SaveRestore.f
 | back and forth between CoSy DTs and standard .CSV strings , the most 
 | universal format for bank ledger downloads . See 20171212 .
  
+| splits 
 : csv>lst ( csv d0,d1 -- lst ) 2p> dsc VM dae R@ 1 _at ['] VM 'L 2P> ;
 | see also 20180719 
 : lst>DT ( lst -- DT ) 1p> dsc R@ 1 _cut flip ,L 1P> ; 
 : csv>DT ( csv d0,d1 -- DT ) csv>lst lst>DT ;
  
 | \/ | Example | \/ | 
- 
 | s" C:/CoSy/acnts/y17/CHK.CSV" F> >T0> -2 _take c>i 	|>| 13 10
-|  read in and check if line delimiter is "lf or "cr "lf . generally trailing .
+|  read in and check if line delimiter is "lf or "cr "lf , ie: "nl 
+| which is generally the trailing element .  Win uses "nl . most others "lf
  
-| T0 "nl "ht ,L csv>DT >T1 	
+| T0 "nl "ht ,L csv>DT >T1 	| splits on "nl then each on "ht 
 |  | Note the combining of the line and item delimiters by ' ,L 
  
 | And the inverse 
