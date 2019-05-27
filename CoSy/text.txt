@@ -8,7 +8,7 @@
  __________________________________________________________________________
  
 
- 
+
 
 
  __________________________________________________________________________
@@ -1162,11 +1162,9 @@ Uploading to GitHub
   `( .r hndl )` Dv@ >_ `( .r Tui SIZE )` Dv@ van zt setsize
   `( .r hndl )` Dv@ 1 _at >_ z" FONT" `( .r Tui FONT )` Dv@ van zt IupSetAttribute _i
   s" showXY" ??
-  
 
   `D@ .r >t0> showWdo
   t0 ` text v@  t0 `( Tui hndl )` v@ 0 _at  settxt 
-
 
 | ( str attr wdoHndl -- ) 
 : setwAttr 0 i@ --cab van zt swap van zt IupSetAttribute drop ;  
@@ -1267,15 +1265,17 @@ Uploading to GitHub
  1 2 * 2 3 * 1 3 * + + 2 * . 
  | ======================== | Thu.May,20190509 | ======================== |
   `( Fact Physics )` Dv@
-
+  
  | ======================== | Fri.May,20190510 | ======================== |
 | ` script0 -> | added ' HelloPrize | 1344 | 
 | Modified venerable ' MV so simply returns simple rather than bombing . 
 : MV over Type@ 0if  2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P>  ;then drop ;
 | Thus , eg:  T0 "lf MV "lf MV  | can be doesn't bomb . replaced in Furniture.f
 | was | : MV 2p R@ L@ ['] cL 'R  ,/ R@ rho cut 2P> ;
-
-  s" ./CoSy/Furniture.f" F> `( .r text )` Dv! 	| Save string in ` .r
+   
+  `( .r Tui )` Dv@
+  s" ./CoSy/Furniture.f" F> 
+  res> `( .r text )` Dv! 	| Save string in ` .r
  `D@ .r dup setWdo    showWdo 			| create & show 
  `D@ .r  showWdo 			| show again if hidden 
  t0 "lf MV dup `( .r text )` Dv!  `D@ .r JobHndlt settxt | assign new text & show
@@ -1301,8 +1301,49 @@ Uploading to GitHub
  HAVE to get YouTube out | 1131 | 
   text>
   s" ./CoSy/Job.f" F> >t0>
-| 1230 | 
+| 1230 | | 1340 | 
+ | ======================== | Wed.May,20190515 | ======================== |
+| In response to a tweet by Raul Miller playing on the old saying | https://twitter.com/BobArmstrong/status/1128760491831111680
+ `( A plastic apple a day keeps a plastic surgeon away )`
 
+| Here's ` plastic has been factored out and ' braket ed around the core phrase .
+
+ (' ` A  s" apple a day keeps a"  s"  plastic " enc braket  s" surgeon away " ')  ,/
+  
+| Modulo indexing causes singlton to be used as both ` opening & ` closing
+: :?? s" : " swap cL ?? ;
+ ` braket :?? 
+ | ======================== | Sat.May,20190518 | ======================== |
+ s" :?? " :?? 	| added to ./CoSy/Derived.f . 
+ s" lf>nl " ??	| changed names from "lf>"nl for simplicity . 
+| These edits done in new window editing capability . 
+ | ======================== | Sun.May,20190519 | ======================== |
+ s" 2 item"  s" <i>" s" </i>" ,L braket 
+  s" <i>" s" </i>" ,L
+| 1241 |  
+ ` enc :??
+ | ======================== | Wed.May,20190522 | ======================== |
+| & 20190526.1324 | In answer to a post at 
+| https://www.facebook.com/groups/592667610853437/permalink/2244461939007321/?comment_id=2244523092334539&comment_tracking=%7B%22tn%22%3A%22R%22%7D
+| later also | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/2105139926452697/?comment_id=2105388089761214&comment_tracking=%7B%22tn%22%3A%22R%22%7D
+ `( Fact Physics )` Dv@ ^eval
+| I wrote :
+ f( 260 273 288 )f .. T>Psb 0.2 _f +f P>Tsb ,L
+| to add 0.2 w&m^2 to some relevant Kelvin temperatures . 
+| At the recent NOAA conference it occurred to me this is an example of a functional
+| version of the " plastic apple " example I worked thru  20190515 .
+| in Matrix algebra , on gets forms like | ( Pinverse Q P ) . This is the same
+| 20190527.1034 | Ah . Similarity classes . ( I got kicked oo NU w/o a PhD bcz
+| I learned Similarity classes | as https://en.wikipedia.org/wiki/Matrix_similarity 
+| puts it , A and B are similar iff exists P such that |  B = P^{-1} A P  ||
+| sort of form : convert Temperature to Power , add the Power , convert back to 
+|  Temperature . I worked on it here , but decided not worth the complication at this point .
+  { 0.2 _f +f } _i (' ' T>Psb _i ' P>Tsb _i ') braket 
+ f( 260 273.15 288 )f   { 0.2 _f +f } _i (' ' T>Psb _i ' P>Tsb _i ') braket 
+ `D@ .r  dup setWdo    showWdo 
+ s" C:/CoSyBob/y19/NOAA20190522" F> .. `( .r text )` Dv!  `D@ .r JobHndlt settxt 
+ | ======================== | Mon.May,20190527 | ======================== |
+| 1516 | Updating YouTube Download & s" Hello World " demo | 
 
  | ######################## | e o current work | ######################## | 
  | ~~ | \/ | sometimes useful lines | \/ | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |

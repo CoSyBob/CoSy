@@ -40,9 +40,9 @@ cr ." | Furniture begin | "
 
 : \>/ s" \\" s" /" ,L ssr ; 	| replaces DOS \ w RoW / .
 
-: "lf>"nl "lf "nl ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
- 
-: "nl>"lf "nl "lf ,L ssr ; 	| convert DOS "lf line breaks to UNIX "n| 
+: lf>nl "lf "nl ,L ssr ; 	| convert UNIX "lf line breaks to DOS "nl 
+ 				| changed names from "lf>"nl | 20190518
+: nl>lf "nl "lf ,L ssr ; 	| convert DOS "lf line breaks to UNIX "n| 
 | Use to convert ' res> result for saving as CoSy source file .
 
 : include^ ( fname -- flag ) { (include) ioerr @ _i } onvan ; | returns 0 on success
