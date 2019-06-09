@@ -53,7 +53,7 @@ cr ." | Furniture begin | "
  
 : >F : Foverwrite ( str flnm ) over van --abca van foverwrite  2ref0del ;
  
-: F> : slurp^ ( str -- str ) >r> van slurp r> ref0del
+: F> ( str -- str ) >r> van slurp r> ref0del
 	--aab str swap nakedfree ;
 | Like "slurp" but takes and returns CoSy strings and frees original .
 
@@ -144,8 +144,12 @@ variable AFptr
  
 | Cut text into day entries ( approximate as can be seen from def . )
  "lf s"  | ======================== | " cL refs+> value daylnTok 
-: daylncut ( str -- listOFstrings ) daylnTok tokcut ;
  
+ : daylncut ( str -- listOFstrings ) daylnTok tokcut ;
+
+: daylnDS s" | " VM 2 _at ; | return DayStamp from ' dayln entry |
+|  Thu.May,20190530 
+
 | \/ Calendar \/ | 
  
 | : dt time&date 6 s>iv ;
@@ -185,6 +189,7 @@ variable AFptr
 
 | delete leading blanks . 20190430 
 : dlb 1p> dup { 32 <> } f?m cut 1P> ;
+: dtb reverse dlb reverse ; 	| delete trailing blanks  | 20190608 
 
 | 20190203 | \/ | vocabulary found useful over the years | \/ |
 : prt<f ( str tok -- PaRT_Before_First ) 2p> ss1st L@ swap take 2P> ;
@@ -223,12 +228,12 @@ variable AFptr
 
 : _DMP> ( addr -- str ) s"  DMP " forth> ; | returns ' DMP as str
 
-: words> ( str -- strL ) s" words " swap cL forth> blVM -2 _i cut ;
-| see   s" help words" forth> | use "bl arg all words 
+: Words ( str -- strL ) s" words " swap cL forth> blVM -2 _i cut ;
+| see   s" help words" forth> | use "bl arg all words | renamed 20190529
 
-: xwords> s" xwords " forth> "lf 2 _take toksplt dae
+: Xwords s" xwords " forth> "lf 2 _take toksplt dae
    { "lf toksplt 2 _take } 'm  ;
-| all words in all contexts. returned  
+| all words in all contexts. returned  | renamed 20190529
 
 | Reva help on Reva word returned as CoSy string | 20190225 
 : Help ( word -- Reva_help_on_Reva_word ) s" help " swap cL forth> ;

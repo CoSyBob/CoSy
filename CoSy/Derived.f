@@ -9,7 +9,7 @@ cr ." | Derived begin | "
 
 | \/ \/ | CoSy Help Words | \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ |
  
-: (CShelp) ( str file -- occurrences ) slurp^ emptyLn toksplt   
+: (CShelp) ( str file -- occurrences ) F> emptyLn toksplt   
    swap con dup i# if { "nl swap cL } eachm then ;
  
 : CShelpFul ( str -- refs ) | searches source files listed in 
@@ -23,7 +23,7 @@ cr ." | Derived begin | "
  		| which contain the phase passed
  
 : :?? s" : " swap cL 	| note fall thru to  ' ?? . return only def | 20190518
-: ?? : CShelp CShelpFul >aux+> dup ['] rho 'm ,/ i1 >i & at refs+> aux- refs-ok>  ; 
+: ?? CShelpFul >aux+> dup ['] rho 'm ,/ i1 >i & at refs+> aux- refs-ok>  ; 
 ." Help /\\ " cr | /\ |
 
 | Returns only those file in which the phrase was found
