@@ -10,7 +10,7 @@ cr ." Ron Aaron's " .ver ."  | http://ronware.org/reva/" cr cr
 
 with~ ~sys
 
-needs debugger
+ needs debugger
 
 needs os/shell needs os/dir needs os/fs
 
@@ -34,7 +34,8 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
- cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+: help " Reva help closed for repair " ;
+| cr help  help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
@@ -49,11 +50,11 @@ needs util.f
 
 needs CSauxstack.f
 
+."  | basic needs satisfied | " cr
+
 ' stkprmpt >defer prompt
  | set default prompt to show stack in hex . use " undo prompt " to reset to normal
-
-."  | basic needs satisfied | " 
-
+ 
 | \/ FOR DEBUGGING \/  ==================================== \/
  
 defer AT+> 	make AT+> ; 		
@@ -1515,7 +1516,7 @@ $006346964 value TypeDic		| " dic"
 ;
  
 : match match_ _i ; 
- 
+
 : where ( L v -- idx )  ['] match f? ; 
 | Index of single v in list L . count of L if not found .
  
@@ -1524,7 +1525,7 @@ $006346964 value TypeDic		| " dic"
  
 : membv ( L R -- v ) 2p R@ L@ R@ memb & at\ 2P> ; 
 | Items of R which are in L 
- 
+
 : ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at\ 2P> ; 
 | R not memb L  and items of R not in L . Note use of ' at\ | 20190502 
  
