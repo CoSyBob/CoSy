@@ -34,8 +34,8 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
-: help " Reva help closed for repair " ;
-| cr help  help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+| : help " Reva help closed for repair " ;
+ cr help  help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
