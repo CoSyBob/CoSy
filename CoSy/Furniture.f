@@ -64,8 +64,9 @@ cr ." | Furniture begin | "
 	| need to double \\ in strings since \ is the escape for \" .
 	| see also ` dosslash^  
 
-: dir s" dir " shell> ; 	| trumps Reva ~os dir 
-: cd s" cd " shell> -1 _cut ; 
+ 
+: dir ( path -- dir ) s" dir " swap cL shell> ; |  trumps Reva ~os dir | 20190704
+: cd s" cd " shell> -1 _cut ; 	| current directory 
 
  " COSYSTARTFILE" getenv str >value COSYSTARTFILE 
  COSYSTARTFILE dup s" \" ss -1 _at i1 +i take >value CoSyDir
@@ -190,6 +191,11 @@ variable AFptr
 | delete leading blanks . 20190430 
 : dlb 1p> dup { 32 <> } f?m cut 1P> ;
 : dtb reverse dlb reverse ; 	| delete trailing blanks  | 20190608 
+| see also 20190713
+: dlws 1p> dup { 32 > } f?m cut 1P> ; 	| Delete leading white space 
+ 
+: trim ( str chr -- drop_last_if ) --aba -1 _at =c >_ if -1 _cut then ;
+| delete last char if match | 20190713 | 
 
 | 20190203 | \/ | vocabulary found useful over the years | \/ |
 : prt<f ( str tok -- PaRT_Before_First ) 2p> ss1st L@ swap take 2P> ;
@@ -201,7 +207,7 @@ variable AFptr
 : prt>f  2p> ss1st R@ rho +i L@ swap cut 2P> ;
 : prt>=f 2p> ss1st L@ swap cut 2P> ;
 : prt<=l 2p> ['] reverse on2 prt>=f reverse  2P> ; 
-: prt>l 2p> ['] reverse on2 prt>f reverse  2P> ;
+: prt<l 2p> ['] reverse on2 prt>f reverse  2P> ;
 | /\ |
 
 : braketed ( str tok0 tok1 ,L -- str ) 2p> dsc prt>=f R@ 1 _at prt<=l 2P> ;

@@ -78,8 +78,7 @@ variable btnswdo
 : resvar `resvar Dv@ ;
  
 : res> reswdo @ getval --bc str -1 _cut | cluge to drop trailing cr from ' lst
-   ( "lf>"nl ) ;  | conversion to Win std line brk
-| bombs for some reason if ' "lf>"nl uncommented 
+   lf>nl  ;  | conversion to Win std line brk  | 20190702
 : saverestxt res> R `res v! ;
 : rtype ( a n -- ) reswdo @ -rot setval drop ; 
 : >res ( str -- ) dup van rtype ref0del ;

@@ -10,7 +10,7 @@ cr ." Ron Aaron's " .ver ."  | http://ronware.org/reva/" cr cr
 
 with~ ~sys
 
- needs debugger
+needs debugger
 
 needs os/shell needs os/dir needs os/fs
 
@@ -34,8 +34,7 @@ needs math/mod	needs asm
 
 context: ~CoSy  ~CoSy 	." | started | " 
 
-| : help " Reva help closed for repair " ;
- cr help  help cr 	| shouldn't need this but interaction w ' (' causes bomb 
+ cr  help help cr 	| shouldn't need this but interaction w ' (' causes bomb 
 					| without . 20180704
 
 : instdir appdir rem-separator split-path 2drop ;
@@ -50,11 +49,11 @@ needs util.f
 
 needs CSauxstack.f
 
-."  | basic needs satisfied | " cr
-
 ' stkprmpt >defer prompt
  | set default prompt to show stack in hex . use " undo prompt " to reset to normal
- 
+
+."  | basic needs satisfied | " 
+
 | \/ FOR DEBUGGING \/  ==================================== \/
  
 defer AT+> 	make AT+> ; 		
@@ -494,7 +493,7 @@ s"  " refs+> dup vbody HT swap c! constant "ht
   dup 0 <if 0 swap else 0 then		| if n neg , 0 n  do 
   ?do dup i ib@ aux@ i ib! loop ref0del aux> ; 
 
-
+| \/ | DEPRICATED | \/ |
 | \/ SYMBOL \/ - Symbols are a special character type whose value equals their name .	
 
 1 16 << 1+ constant TypeS
@@ -821,6 +820,9 @@ cr ."  \\/ ops \\/ " $.s cr
 
 | cr cr  ." 0000 " ." Stk : "  $.s  cr cr 
 
+: under ( ... f g -- g f g on stk ) 2>aux auxx@ xeq aux> xeq aux> xeq ;
+| execute ' f ` under to use ` Js term , ' g . see eg: ' dtb  | 20190713
+
 : eachM ( v fn -- ) over refs+> i# 0 ?do over i i@     | CSob fn item
    over execute loop drop refs- ;
 | primative `each Monadic , no result , eg , printing | 
@@ -1102,6 +1104,11 @@ variable indentv   : indent indentv @ spaces ;
     R@ i# 0 ?do R@ i i@ aux@ execute 
      if auxdrop 1P i _i unloop ;then loop
 	auxdrop R@ rho 1P>  ;  
+
+
+| From Gordon Charlton | https://www.facebook.com/groups/PROGRAMMINGFORTH/permalink/2142203446079678/
+| : 'if ( b xt xt --?) >r over and swap 0= r> and or xeq ; | 20190713
+ 
 
 | /\ OPERATORS /\ ============================================ /\
 
@@ -1516,7 +1523,7 @@ $006346964 value TypeDic		| " dic"
 ;
  
 : match match_ _i ; 
-
+ 
 : where ( L v -- idx )  ['] match f? ; 
 | Index of single v in list L . count of L if not found .
  
@@ -1525,7 +1532,7 @@ $006346964 value TypeDic		| " dic"
  
 : membv ( L R -- v ) 2p R@ L@ R@ memb & at\ 2P> ; 
 | Items of R which are in L 
-
+ 
 : ~memb memb 0=i ;  : ~membv  2p R@ L@ R@ ~memb & at\ 2P> ; 
 | R not memb L  and items of R not in L . Note use of ' at\ | 20190502 
  
