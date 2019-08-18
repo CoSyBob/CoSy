@@ -74,6 +74,12 @@ _n dup value dlgH  value txtH
 
 |  auxx@ 1 i@ a@ s" posXY" v@ lst>stk_ IupShowXY _i 1P> ; 
 
+: rShow "lf MV s" .r text" blVM Dv! s" .r" Dv@ dup setWdo showWdo ;
+: rWdoUpdate  "lf MV s" .r" Dv@ JobHndlt settxt ;
+| : rGet ` .r Dv@ JobHndlt gettxt `( .r text )` Dv! 	| retrieve changed text from window
+
+
+
 0 [IF] 
 : showWdo ( Job -- ) 1p  newwdo >a> R@ s" Tui" v@ >a> s" hndl" v! 
 | aux@ is Tui  auxx@ is hndl 
