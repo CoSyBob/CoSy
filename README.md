@@ -9,7 +9,9 @@ I've become disenamoured with particularly Github ( far too complicated ) and
 Facebook ( no fonts & formating )  and have reverted to simple open directories
 and email lists on the CoSy : http://cosy.com/4thCoSy/ .
 Certainly very soon ***CoSy***'s APL level vocabulary will allow much more flexible 
-access to and maintanance of the ` repository ` .
+access to and maintanance of the ` repository ` . The differentiating and storing just
+the differenials of changes in a script which I understand is a key value of GitHub
+is just a few lines of CoSy .
 
 ---
 Follow https://twitter.com/CoherentSystems for all and only 
